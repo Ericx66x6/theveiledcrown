@@ -1,0 +1,86 @@
+import { readFile } from 'node:fs/promises';
+import { CampaignStore } from '../../core/store.js';
+import { PortalService } from '../../core/portal-service.js';
+import { blank, documentSeed } from '../../core/model.js';
+import { gameSettings } from '../../core/settings.js';
+export async function previewFixture() {
+  const game = gameSettings(
+      JSON.parse(await readFile(new URL('../../data/game_data.json', import.meta.url), 'utf8'))
+    ),
+    store = new CampaignStore(documentSeed(game)),
+    service = new PortalService(store);
+  const admin = await service.request('/auth/bootstrap', {
+    method: 'POST',
+    data: { display_name: 'Narrador · QA', username: 'qa-narrador', password: 'senha-ficticia-123' }
+  });
+  const request = (path, method = 'GET', data = {}) =>
+    service.request(path, { method, data, token: admin.token });
+  for (const [id, name, xp] of [
+    [234567, 'Helena Vesper', 65],
+    [345678, 'Lucien Valmont', 32]
+  ]) {
+    const p = blank(game, id);
+    Object.assign(p, {
+      char: name,
+      player: 'Marina · QA',
+      cla: 'Sangue antigo',
+      xp,
+      money: 1200,
+      biography: 'Uma história criada exclusivamente para conferir a interface.'
+    });
+    p.atributes[0].value = 3;
+    await request('/api/admin/characters', 'POST', {
+      character: p,
+      ...(id === 234567
+        ? { access: { username: 'qa-jogador', password: 'senha-ficticia-123' } }
+        : {})
+    });
+  }
+  const a = (await request('/api/admin/accounts')).find((a) => a.role === 'player');
+  await request('/api/admin/accounts/' + a.id, 'PATCH', { character_ids: [234567, 345678] });
+  await request('/api/quests', 'POST', {
+    title: 'Ecos do Livro Vermelho',
+    description: 'Encontre a página desaparecida e descubra quem está apagando os nomes da corte.',
+    assignees: [234567],
+    xp_reward: 8,
+    money_reward: 300
+  });
+  const image =
+    'data:image/jpeg;base64,' +
+    (await readFile(new URL('../../public/images/coroa-night.jpg', import.meta.url))).toString(
+      'base64'
+    );
+  await request('/api/maps', 'POST', {
+    title: 'A cidade sob o eclipse',
+    image,
+    width: 1800,
+    height: 900,
+    player_access: true
+  });
+  await request('/api/maps', 'POST', {
+    title: 'Os segredos da corte',
+    image,
+    width: 1800,
+    height: 900,
+    player_access: false
+  });
+  const player = await service.request('/auth/login', {
+    method: 'POST',
+    data: { username: 'qa-jogador', password: 'senha-ficticia-123' }
+  });
+  await service.request('/api/network/nodes', {
+    method: 'POST',
+    token: player.token,
+    data: {
+      character_id: 234567,
+      name: 'Isadora',
+      role: 'Uma aliada de intenções incertas',
+      theories: 'Sabe mais sobre o livro do que admite.'
+    }
+  });
+  const campaign_id = store.root.active_campaign_id;
+  return {
+    root: await store.workspace(),
+    identities: { admin: { ...admin, campaign_id }, player: { ...player, campaign_id } }
+  };
+}

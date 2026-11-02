@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: theveiledcrown-api
+    runtime: node
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: false
+    envVars:
+      - key: NODE_VERSION
+        value: 24
+      - key: NODE_ENV
+        value: production
+      - key: BOOTSTRAP_TOKEN
+        generateValue: true
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: SUPABASE_IMAGE_BUCKET
+        value: coroa-imagens
+      - key: ALLOWED_ORIGINS
+        value: ""
+      - key: TRUST_PROXY
+        value: 1

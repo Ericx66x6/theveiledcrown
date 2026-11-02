@@ -1,0 +1,34 @@
+import { initialize, session, saveSession, clearSession } from './api.js';
+import { showLogin } from './login.js';
+import { startPortal, stopPortal } from './portal.js';
+import { initializeFiles } from './files.js';
+import { esc } from '../shared/ui.js';
+export async function startApp({ identity } = {}) {
+  async function enter() {
+    document.body.classList.remove('login-page');
+    await startPortal();
+  }
+  async function leave() {
+    stopPortal();
+    clearSession();
+    document.querySelector('#modal')?.close();
+    try {
+      history.replaceState(null, '', location.pathname + location.search);
+    } catch {
+      location.hash = '';
+    }
+    await showLogin(enter);
+  }
+  window.addEventListener('portal:signout', leave);
+  window.addEventListener('session:expired', leave);
+  try {
+    await initialize();
+    await initializeFiles();
+    if (identity) saveSession(identity);
+    if (session()) await enter();
+    else await showLogin(enter);
+  } catch (error) {
+    document.querySelector('#app').innerHTML =
+      `<main class="loading-screen"><h1>Não foi possível abrir o livro.</h1><p>${esc(error.message)}</p><p>Confira sua conexão com a campanha e tente novamente.</p></main>`;
+  }
+}

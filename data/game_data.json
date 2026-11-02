@@ -1,0 +1,1637 @@
+{
+    "xp_cost": {
+        "bloodpotency": 5,
+        "atributes": 5,
+        "talents": 2,
+        "knowledges": 3,
+        "expertises": 2,
+        "precedents": 3,
+        "disciplines": 5
+    },
+    "disciplines": [
+        {
+            "id": 0,
+            "name": "AUSPÍCIOS",
+            "description": "Amplia os sentidos do vampiro a níveis extrasensoriais, permitindo perceber auras, emoções e pensamentos, além de revelar ilusões e se conectar ao sobrenatural.",
+            "nivels": [
+                {
+                    "subname": "SENTIDOS AGUÇADOS",
+                    "nivel": 1,
+                    "description": "[ Rouse Check: Não || Teste: Nenhum ] O vampiro tem seus sentidos ampliados de forma sobrenatural, permitindo perceber detalhes e pistas invisíveis para humanos comuns, além de possíveis presságios e intuições involuntárias. Esses sentidos podem ser ativados e mantidos conforme a vontade, mas tornam o usuário vulnerável a estímulos intensos, que podem prejudicar temporariamente sua percepção."
+                },
+                {
+                    "subname": "PERCEPÇÃO DA AURA",
+                    "nivel": 2,
+                    "description": "[ Rouse Check: Não || Teste: Raciocínio + Empatia ] Esse poder permite ler a aura de alguém através de uma rolagem de Raciocínio + Empatia. Cada sucesso revela um nível maior de detalhe: de uma simples sensação emocional até a compreensão de cores e padrões complexos que indicam emoções profundas e até a natureza sobrenatural do alvo. Falhas podem gerar interpretações erradas."
+                },
+                {
+                    "subname": "TOQUE DO ESPÍRITO",
+                    "nivel": 3,
+                    "description": "[ Rouse Check: Sim || Teste: Determinação + Investigação ] O vampiro entra em leve transe ao segurar um objeto e, com uma rolagem de Determinação + Investigação, pode ler “rastros psíquicos” deixados por quem o manipulou. A dificuldade varia conforme a idade e intensidade das emoções ligadas ao objeto, e cada sucesso revela mais informações, indo de impressões vagas até identidade e uso detalhado do item."
+                },
+                {
+                    "subname": "TELEPATIA",
+                    "nivel": 4,
+                    "description": "[ Rouse Check: Não || Teste: Inteligência + Persuasão ] O vampiro pode acessar e ler a mente de um mortal próximo ou se comunicar mentalmente, projetando sua consciência no alvo. A rolagem é Inteligência + Persuação contra a Força de Vontade do alvo, e cada sucesso permite avançar na leitura da mente ou transmitir uma ideia. Pensamentos mais profundos e segredos exigem mais sucessos, enquanto emoções superficiais são mais fáceis de captar."
+                },
+                {
+                    "subname": "PROJEÇÃO PSÍQUICA",
+                    "nivel": 5,
+                    "description": "[ Rouse Check: Sim || Teste: Determinação + Ocultismo ] O vampiro separa sua consciência do corpo e viaja em forma astral, ficando imune a dano físico enquanto seu corpo entra em torpor. A ativação consome Força de Vontade e exige uma rolagem de Determinação + Ocultismo, com dificuldade variando conforme a distância e complexidade da viagem. Cada sucesso melhora a precisão da jornada, enquanto falhas podem impedir a saída, desorientar o trajeto ou até romper o cordão que liga a mente ao corpo, prendendo o vampiro no plano astral."
+                },
+                {
+                    "subname": "sexto nivel",
+                    "nivel": 6,
+                    "description": "description"
+                }
+            ]
+        },
+        {
+            "id": 1,
+            "name": "RAPIDEZ",
+            "description": "Aumenta drasticamente a velocidade do vampiro, permitindo múltiplas ações e reações físicas em um mesmo turno.",
+            "nivels": [
+                {
+                    "subname": "NÍVEL 1",
+                    "nivel": 1,
+                    "description": "[ Rouse Check: Sim || Teste: Nenhum ] O vampiro acelera seus reflexos e movimentos, ganhando ações e reações adicionais no turno igual ao seu nível em Rapidez."
+                },
+                {
+                    "subname": "NÍVEL 2",
+                    "nivel": 2,
+                    "description": "[ Rouse Check: Sim || Teste: Nenhum ] A disciplina funciona como o nível anterior, concedendo mais ações e reações físicas, conforme o nível de Rapidez."
+                },
+                {
+                    "subname": "NÍVEL 3",
+                    "nivel": 3,
+                    "description": "[ Rouse Check: Sim || Teste: Nenhum ] A disciplina funciona como o nível anterior, concedendo mais ações e reações físicas, conforme o nível de Rapidez."
+                },
+                {
+                    "subname": "NÍVEL 4",
+                    "nivel": 4,
+                    "description": "[ Rouse Check: Sim || Teste: Nenhum ] A disciplina funciona como o nível anterior, concedendo mais ações e reações físicas, conforme o nível de Rapidez."
+                },
+                {
+                    "subname": "NÍVEL 5",
+                    "nivel": 5,
+                    "description": "[ Rouse Check: Sim || Teste: Nenhum ] A disciplina funciona como o nível anterior, concedendo mais ações e reações físicas, conforme o nível de Rapidez."
+                },
+                {
+                    "subname": "NÍVEL 6",
+                    "nivel": 6,
+                    "description": "[ Rouse Check: Sim || Teste: Nenhum ] A disciplina funciona como o nível anterior, concedendo mais ações e reações físicas, conforme o nível de Rapidez."
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "name": "DOMINAÇÃO",
+            "description": "Permite ao vampiro influenciar, comandar e reescrever o comportamento mental de humanos através do contato visual, impondo sua vontade sobre a mente do alvo.",
+            "nivels": [
+                {
+                    "subname": "O COMANDO",
+                    "nivel": 1,
+                    "description": "[ Rouse Check: Não || Teste: Manipulação + Intimidação vs Força de Vontade ] O vampiro força um alvo a executar uma única ação simples e imediata através de contato visual e uma ordem verbal carregada de poder sobrenatural. A ação deve ser direta e possível de executar em poucos segundos."
+                },
+                {
+                    "subname": "HIPNOTIZAR",
+                    "nivel": 2,
+                    "description": "[ Rouse Check: Não || Teste: Manipulação + Liderança vs Força de Vontade ] O vampiro implanta uma sugestão mental no alvo, que passa a agir conforme essa ideia quando uma condição específica for ativada ou quando não houver oposição consciente imediata."
+                },
+                {
+                    "subname": "ORDENAR ESQUECIMENTOS",
+                    "nivel": 3,
+                    "description": "[ Rouse Check: Sim || Teste: Raciocínio + Persuasão vs Força de Vontade ] O vampiro acessa e manipula memórias do alvo durante um transe hipnótico, podendo apagar, alterar ou reconstruir lembranças com diferentes níveis de profundidade e consistência."
+                },
+                {
+                    "subname": "CONDICIONAMENTO",
+                    "nivel": 4,
+                    "description": "[ Rouse Check: Não || Teste: Carisma + Liderança vs Força de Vontade ] O vampiro molda a mente do alvo ao longo do tempo, reforçando obediência e reduzindo autonomia, até que o indivíduo responda quase automaticamente às suas ordens."
+                },
+                {
+                    "subname": "POSSESSÃO",
+                    "nivel": 5,
+                    "description": "[ Rouse Check: Sim || Teste: Carisma + Intimidação vs Força de Vontade ] O vampiro expulsa a consciência do alvo e assume controle total do corpo, utilizando-o como se fosse seu próprio enquanto sua forma original entra em torpor."
+                },
+                {
+                    "subname": "NÍVEL 6",
+                    "nivel": 6,
+                    "description": "[ Rouse Check: Sim || Teste: Nenhum ] Forma máxima da Dominação, permitindo controle mental absoluto mais profundo, rápido e resistente a interferências externas."
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "name": "FORTITUDE",
+            "description": "Aumenta drasticamente a resistência física do vampiro, tornando seu corpo capaz de suportar e reduzir danos que seriam letais para outros seres.",
+            "nivels": [
+                {
+                    "subname": "NÍVEL 1",
+                    "nivel": 1,
+                    "description": "[ Rouse Check: Não || Teste: Nenhum ] O vampiro endurece o próprio corpo através da Fortitude. Para absorção de dano superficial e letal, cada ponto em Fortitude concede +2 dados de Vigor. Além disso, o vampiro pode absorver dano agravado utilizando apenas sua pontuação em Fortitude."
+                },
+                {
+                    "subname": "NÍVEL 2",
+                    "nivel": 2,
+                    "description": "[ Rouse Check: Não || Teste: Nenhum ] A disciplina funciona como o nível anterior, aumentando a capacidade de absorção de dano contusivo, letal e agravado, com maior resistência conforme o nível de Fortitude."
+                },
+                {
+                    "subname": "NÍVEL 3",
+                    "nivel": 3,
+                    "description": "[ Rouse Check: Não || Teste: Nenhum ] A disciplina funciona como o nível anterior, aumentando a capacidade de absorção de dano contusivo, letal e agravado, com maior resistência conforme o nível de Fortitude."
+                },
+                {
+                    "subname": "NÍVEL 4",
+                    "nivel": 4,
+                    "description": "[ Rouse Check: Não || Teste: Nenhum ] A disciplina funciona como o nível anterior, aumentando a capacidade de absorção de dano contusivo, letal e agravado, com maior resistência conforme o nível de Fortitude."
+                },
+                {
+                    "subname": "NÍVEL 5",
+                    "nivel": 5,
+                    "description": "[ Rouse Check: Não || Teste: Nenhum ] A disciplina funciona como o nível anterior, aumentando drasticamente a resistência geral a danos físicos e sobrenaturais."
+                },
+                {
+                    "subname": "NÍVEL 6",
+                    "nivel": 6,
+                    "description": "[ Rouse Check: Não || Teste: Nenhum ] Evolução máxima da disciplina, tornando o vampiro extremamente resistente a praticamente qualquer forma de dano."
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "name": "OFUSCAÇÃO",
+            "description": "Permite ao vampiro ocultar sua presença, tornando-se imperceptível aos sentidos e apagando sua existência da percepção alheia.",
+            "nivels": [
+                {
+                    "subname": "MANTO DAS SOMBRAS",
+                    "nivel": 1,
+                    "description": "[ Rouse Check: Não || Teste: Nenhum ] O vampiro torna-se invisível enquanto estiver parado, em silêncio e sob sombra ou cobertura, desde que não realize ações ou se exponha à luz direta."
+                },
+                {
+                    "subname": "PRESENÇA INVISÍVEL",
+                    "nivel": 2,
+                    "description": "[ Rouse Check: Não || Teste: Nenhum ] O vampiro pode se mover enquanto permanece ignorado instintivamente por outros, que tendem a não registrar sua presença, desde que mantenha discrição."
+                },
+                {
+                    "subname": "MÁSCARA DAS MIL FACES",
+                    "nivel": 3,
+                    "description": "[ Rouse Check: Sim || Teste: Manipulação + Performance ] O vampiro altera a percepção dos outros, fazendo com que enxerguem uma identidade diferente da sua aparência real."
+                },
+                {
+                    "subname": "DESAPARECIMENTO DO OLHO DA MENTE",
+                    "nivel": 4,
+                    "description": "[ Rouse Check: Sim || Teste: Carisma + Furtividade vs Raciocínio ] O vampiro apaga sua presença da percepção dos outros, podendo se tornar totalmente esquecido ou imperceptível mesmo estando à vista."
+                },
+                {
+                    "subname": "COBRINDO O GRUPO",
+                    "nivel": 5,
+                    "description": "[ Rouse Check: Sim || Teste: Nenhum ] O vampiro estende sua Ofuscação a outras pessoas próximas, permitindo ocultar um grupo inteiro enquanto mantiver o efeito ativo."
+                },
+                {
+                    "subname": "NÍVEL 6",
+                    "nivel": 6,
+                    "description": "[ Rouse Check: Sim || Teste: Nenhum ] Evolução máxima da Ofuscação, permitindo ocultação mais profunda, estável e resistente a detecção sobrenatural."
+                }
+            ]
+        },
+        {
+            "id": 5,
+            "name": "POTÊNCIA",
+            "description": "Aumenta drasticamente a força física do vampiro, somando seu nível de Potência à Força do vampiro, permitindo feitos acima dos limites mortais.",
+            "nivels": [
+                {
+                    "subname": "NÍVEL 1",
+                    "nivel": 1,
+                    "description": "[ Rouse Check: Não || Teste: Nenhum ] O vampiro aumenta sua força física sobrenaturalmente, somando Potência à Força para ações como golpes corpo a corpo, arremessos e levantamento de peso."
+                },
+                {
+                    "subname": "NÍVEL 2",
+                    "nivel": 2,
+                    "description": "[ Rouse Check: Não || Teste: Nenhum ] A disciplina funciona como o nível anterior, aumentando a força bruta e o impacto físico conforme o nível de Potência."
+                },
+                {
+                    "subname": "NÍVEL 3",
+                    "nivel": 3,
+                    "description": "[ Rouse Check: Não || Teste: Nenhum ] A disciplina funciona como o nível anterior, aumentando a força bruta e o impacto físico conforme o nível de Potência."
+                },
+                {
+                    "subname": "NÍVEL 4",
+                    "nivel": 4,
+                    "description": "[ Rouse Check: Não || Teste: Nenhum ] A disciplina funciona como o nível anterior, aumentando a força bruta e o impacto físico conforme o nível de Potência."
+                },
+                {
+                    "subname": "NÍVEL 5",
+                    "nivel": 5,
+                    "description": "[ Rouse Check: Não || Teste: Nenhum ] A disciplina funciona como o nível anterior, aumentando drasticamente a capacidade de destruição física do vampiro."
+                },
+                {
+                    "subname": "NÍVEL 6",
+                    "nivel": 6,
+                    "description": "[ Rouse Check: Não || Teste: Nenhum ] Evolução máxima da Potência, tornando o vampiro capaz de feitos de força absurdamente sobre-humanos."
+                }
+            ]
+        },
+        {
+            "id": 6,
+            "name": "MORTIS",
+            "description": "Poder de manipular os aspectos da morte, desde a degradação do corpo até o controle sobre a própria morte e não-morte.",
+            "nivels": [
+                {
+                    "subname": "MÁSCARA DA MORTE",
+                    "nivel": 1,
+                    "description": "[ Rouse Check: Não || Teste: Vigor + Medicina vs Vigor do alvo ] O vampiro murcha um corpo ao toque, alterando sua aparência para um estado cadavérico, reduzindo atributos físicos em 1 e criando aparência de morte."
+                },
+                {
+                    "subname": "MURCHAR",
+                    "nivel": 2,
+                    "description": "[ Rouse Check: Sim || Teste: Manipulação + Medicina vs Força de Vontade ] O vampiro acelera o envelhecimento do alvo, enfraquecendo seu corpo e reduzindo drasticamente seus atributos físicos em 3, até um limite de 1."
+                },
+                {
+                    "subname": "DESPERTAR",
+                    "nivel": 3,
+                    "description": "[ Rouse Check: Sim || Teste: Força de Vontade ] O vampiro pode despertar um vampiro em torpor ou si mesmo, superando o estado de torpor da morte vampírica."
+                },
+                {
+                    "subname": "SUSSURROS DA MORTE",
+                    "nivel": 4,
+                    "description": "[ Rouse Check: Não || Teste: Nenhum ] O vampiro gasta um ponto de Força de Vontade e entra em estado de morte simulada, tornando-se imune a todas as fraquezas vampíricas (exceto a fome) enquanto permanece completamente inativo e inconsciente."
+                },
+                {
+                    "subname": "MORTE NEGRA",
+                    "nivel": 5,
+                    "description": "[ Rouse Check: Sim || Teste: Vigor + Ocultismo vs Força de Vontade ] O vampiro gasta dois pontos de Força de Vontade e induz o alvo um estado de morte ou torpor através do toque, levando à falência total do corpo, ou ao torpor em Vampiros."
+                },
+                {
+                    "subname": "VIGOR MORTIS",
+                    "nivel": 6,
+                    "description": "[ Rouse Check: Sim || Teste: Inteligência + Religião ] O vampiro pode animar um cadáver recente como um servo vampírico, criando um servo a partir da morte."
+                }
+            ]
+        },
+        {
+            "id": 7,
+            "name": "PRESENÇA",
+            "description": "Permite ao vampiro influenciar emoções e reações de pessoas ao redor, gerando fascínio, medo ou devoção sobrenatural.",
+            "nivels": [
+                {
+                    "subname": "FASCÍNIO",
+                    "nivel": 1,
+                    "description": "[ Rouse Check: Não || Teste: Carisma + Performance ] O vampiro emite um magnetismo sobrenatural que torna sua presença altamente atraente e persuasiva, facilitando aceitação, atenção e influência social."
+                },
+                {
+                    "subname": "OLHAR ATERRORIZANTE",
+                    "nivel": 2,
+                    "description": "[ Rouse Check: Não || Teste: Carisma + Intimidação vs Determinação ] O vampiro projeta um terror sobrenatural no alvo, podendo causar hesitação, fuga ou paralisia emocional imediata."
+                },
+                {
+                    "subname": "TRANSE",
+                    "nivel": 3,
+                    "description": "[ Rouse Check: Sim || Teste: Aparência + Empatia vs Força de Vontade ] O vampiro cria devoção emocional no alvo, que passa a agir de forma cooperativa e inclinada a ajudá-lo, sem perder completamente sua identidade."
+                },
+                {
+                    "subname": "CONVOCAÇÃO",
+                    "nivel": 4,
+                    "description": "[ Rouse Check: Não || Teste: Carisma + Persuasão ] O vampiro chama mentalmente alguém conhecido, que sente uma compulsão irresistível de se aproximar dele, priorizando o deslocamento até o alvo."
+                },
+                {
+                    "subname": "MAJESTADE",
+                    "nivel": 5,
+                    "description": "[ Rouse Check: Sim || Teste: Determinação + Carisma vs Coragem ] O vampiro impõe uma presença sobrenatural avassaladora que dificulta qualquer ato de hostilidade, desobediência ou oposição direta contra ele."
+                },
+                {
+                    "subname": "NÍVEL 6",
+                    "nivel": 6,
+                    "description": "[ Rouse Check: Sim || Teste: Nenhum ] Evolução máxima da Presença, ampliando drasticamente o alcance e intensidade da influência emocional do vampiro."
+                }
+            ]
+        },
+        {
+            "id": 8,
+            "name": "TAUMATURGIA",
+            "description": "A arte da magia do sangue, permitindo ao vampiro manipular sua vitae para produzir efeitos sobrenaturais através de linhas e rituais.",
+            "nivels": [
+                {
+                    "subname": "NÍVEL 1",
+                    "nivel": 1,
+                    "description": "[ Rouse Check: Sim || Teste: Força de Vontade (dificuldade = nível da linha + 1) ] Taumaturgia permite ao vampiro ativar poderes de linhas de magia do sangue, onde cada nível define o poder máximo que pode ser utilizado."
+                },
+                {
+                    "subname": "NÍVEL 2",
+                    "nivel": 2,
+                    "description": "[ Rouse Check: Sim || Teste: Nenhum ] A Taumaturgia não concede novos efeitos diretos, apenas amplia o domínio geral sobre a magia do sangue e o potencial das linhas aprendidas."
+                },
+                {
+                    "subname": "NÍVEL 3",
+                    "nivel": 3,
+                    "description": "[ Rouse Check: Sim || Teste: Nenhum ] A Taumaturgia não concede novos efeitos diretos, apenas amplia o domínio geral sobre a magia do sangue e o potencial das linhas aprendidas."
+                },
+                {
+                    "subname": "NÍVEL 4",
+                    "nivel": 4,
+                    "description": "[ Rouse Check: Sim || Teste: Nenhum ] A Taumaturgia não concede novos efeitos diretos, apenas amplia o domínio geral sobre a magia do sangue e o potencial das linhas aprendidas."
+                },
+                {
+                    "subname": "NÍVEL 5",
+                    "nivel": 5,
+                    "description": "[ Rouse Check: Sim || Teste: Nenhum ] A Taumaturgia não concede novos efeitos diretos, apenas amplia o domínio geral sobre a magia do sangue e o potencial das linhas aprendidas."
+                },
+                {
+                    "subname": "NÍVEL 6",
+                    "nivel": 6,
+                    "description": "[ Rouse Check: Sim || Teste: Nenhum ] Evolução máxima da Taumaturgia, permitindo acesso ao limite mais alto das linhas de magia do sangue."
+                }
+            ]
+        },
+        {
+            "id": 9,
+            "name": "SEDUÇÃO DAS CHAMAS",
+            "description": "[ Linha Taumatúrgica ] Permite ao vampiro conjurar e controlar fogo místico através do sangue, com intensidade crescente conforme o domínio da linha.",
+            "nivels": [
+                {
+                    "subname": "VELA",
+                    "nivel": 1,
+                    "description": "[ Rouse Check: Sim || Teste: Taumaturgia ] O vampiro cria pequenas chamas frágeis, usadas para iluminação ou dano leve."
+                },
+                {
+                    "subname": "LABAREDAS",
+                    "nivel": 2,
+                    "description": "[ Rouse Check: Sim || Teste: Taumaturgia ] As chamas se tornam mais intensas e ofensivas, capazes de causar dano consistente."
+                },
+                {
+                    "subname": "FOGUEIRA DE ACAMPAMENTO",
+                    "nivel": 3,
+                    "description": "[ Rouse Check: Sim || Teste: Taumaturgia ] O fogo se torna estável e perigoso, causando dano contínuo e afetando múltiplos alvos próximos."
+                },
+                {
+                    "subname": "FOGUEIRA",
+                    "nivel": 4,
+                    "description": "[ Rouse Check: Sim || Teste: Taumaturgia ] O vampiro cria chamas de grande intensidade e alcance, causando destruição severa no ambiente."
+                },
+                {
+                    "subname": "INFERNO",
+                    "nivel": 5,
+                    "description": "[ Rouse Check: Sim || Teste: Taumaturgia ] O vampiro invoca uma conflagração massiva que domina o campo de batalha e consome grandes áreas."
+                },
+                {
+                    "subname": "APOCALIPSE",
+                    "nivel": 6,
+                    "description": "[ Rouse Check: Sim || Teste: Taumaturgia ] O vampiro invoca uma catástrofe elemental em escala extrema, onde o fogo se torna uma força quase viva de destruição total."
+                }
+            ]
+        },
+        {
+            "id": 10,
+            "name": "MOVIMENTO DA MENTE",
+            "description": "[ Linha Taumatúrgica ] Permite ao vampiro manipular objetos à distância através de telecinese do sangue, com força crescente conforme o nível.",
+            "nivels": [
+                {
+                    "subname": "NÍVEL 1",
+                    "nivel": 1,
+                    "description": "[ Rouse Check: Sim || Teste: Taumaturgia ] O vampiro pode mover objetos leves de até 500g com telecinese. Usar esse poder contra criaturas, requer sucesso em um teste resistido de Força de Vontade."
+                },
+                {
+                    "subname": "NÍVEL 2",
+                    "nivel": 2,
+                    "description": "[ Rouse Check: Sim || Teste: Taumaturgia ] O vampiro pode mover objetos de até 10kg com telecinese. Usar esse poder contra criaturas, requer sucesso em um teste resistido de Força de Vontade."
+                },
+                {
+                    "subname": "NÍVEL 3",
+                    "nivel": 3,
+                    "description": "[ Rouse Check: Sim || Teste: Taumaturgia ] O vampiro pode mover objetos de até 100kg. Usar esse poder contra criaturas, requer sucesso em um teste resistido de Força de Vontade."
+                },
+                {
+                    "subname": "NÍVEL 4",
+                    "nivel": 4,
+                    "description": "[ Rouse Check: Sim || Teste: Taumaturgia ] O vampiro pode mover objetos de até 250kg com telecinese. Usar esse poder contra criaturas, requer sucesso em um teste resistido de Força de Vontade."
+                },
+                {
+                    "subname": "NÍVEL 5",
+                    "nivel": 5,
+                    "description": "[ Rouse Check: Sim || Teste: Taumaturgia ] O vampiro pode mover objetos de até 500kg com telecinese. Usar esse poder contra criaturas, requer sucesso em um teste resistido de Força de Vontade."
+                },
+                {
+                    "subname": "NÍVEL 6",
+                    "nivel": 6,
+                    "description": "[ Rouse Check: Sim || Teste: Taumaturgia ] O vampiro pode mover objetos de até 1000kg com telecinese, alcançando controle extremo da matéria. Usar esse poder contra criaturas, requer sucesso em um teste resistido de Força de Vontade."
+                }
+            ]
+        },
+        {
+            "id": 11,
+            "name": "ANIMALISMO",
+            "description": "Conexão profunda com a Besta e o instinto animal, permitindo comunicação, controle, possessão e manipulação de criaturas através de empatia primitiva e força de vontade.",
+            "nivels": [
+                {
+                    "subname": "SUSSURROS SELVAGENS",
+                    "nivel": 1,
+                    "description": "[ Rouse Check: Não || Teste: Manipulação + Empatia com Animais ] Estabelece comunicação empática com animais através de contato visual, permitindo transmitir emoções e ordens simples que influenciam o comportamento da criatura."
+                },
+                {
+                    "subname": "O CHAMADO",
+                    "nivel": 2,
+                    "description": "[ Rouse Check: Não || Teste: Carisma + Sobrevivência ] Emite um chamado sobrenatural que atrai uma espécie específica de animal em uma área, fazendo com que respondam ou se aproximem voluntariamente."
+                },
+                {
+                    "subname": "ACALMAR A BESTA",
+                    "nivel": 3,
+                    "description": "[ Rouse Check: Sim || Teste: Manipulação + Intimidação ou Empatia ] Suprime emoções e impulsos de um alvo mortal ou animal, deixando-o apático, obediente ou emocionalmente vazio, incapaz de agir com vontade própria."
+                },
+                {
+                    "subname": "DOMINAR O ESPÍRITO",
+                    "nivel": 4,
+                    "description": "[ Rouse Check: Sim || Teste: Manipulação + Empatia com Animais ] Possui o corpo de um animal, transferindo a consciência do vampiro para a criatura enquanto o corpo original entra em estado inerte."
+                },
+                {
+                    "subname": "EXPULSANDO A BESTA",
+                    "nivel": 5,
+                    "description": "[ Rouse Check: Sim || Teste: Manipulação + Autocontrole ] Transfere a própria Besta Interior para outra criatura, forçando-a a entrar em frenesi descontrolado enquanto o vampiro se liberta temporariamente de sua fúria."
+                }
+            ]
+        },
+        {
+            "id": 12,
+            "name": "METAMORFOSE",
+            "description": "Domínio sobre a própria natureza monstruosa, permitindo alterar o corpo em formas bestiais e sobrenaturais, despertando sentidos predatórios e habilidades ligadas à sobrevivência, caça e adaptação.",
+            "nivels": [
+                {
+                    "subname": "OLHOS DA BESTA",
+                    "nivel": 1,
+                    "description": "(Rouse Check: Não | Teste: Nenhum) O vampiro desperta sentidos predatórios sobrenaturais e passa a enxergar perfeitamente até na escuridão total. Seus olhos ficam vermelhos e animalescos, revelando a presença da Besta e causando desconforto ou medo em mortais."
+                },
+                {
+                    "subname": "GARRAS DA BESTA",
+                    "nivel": 2,
+                    "description": "(Rouse Check: Não | Teste: Nenhum) As unhas do vampiro se transformam em garras monstruosas capazes de cortar carne, pedra e metal. Elas aumentam o dano de ataques em +1 e causam dano agravado, tornando o vampiro extremamente perigoso até contra outros seres sobrenaturais."
+                },
+                {
+                    "subname": "FUSÃO COM A TERRA",
+                    "nivel": 3,
+                    "description": "(Rouse Check: Não | Teste: Nenhum) O vampiro literalmente afunda no solo e se mistura à terra, entrando em um estado quase espiritual. Enquanto estiver enterrado, fica protegido do sol, difícil de detectar e praticamente impossível de atingir sem arrancá-lo de lá."
+                },
+                {
+                    "subname": "FORMA DA BESTA",
+                    "nivel": 4,
+                    "description": "(Rouse Check: Sim | Teste: Nenhum) O vampiro assume a forma de um animal predatório, normalmente um lobo, morcego ou um outro animal a escolha do jogador (com permissão do Narrador). O personagem só pode se transformar em um único animal, definido durante a criação de seu personagem. O vampiro recebe bônus de acordo com as habilidades naturais do animal escolhido."
+                },
+                {
+                    "subname": "FORMA DE NÉVOA",
+                    "nivel": 5,
+                    "description": "(Rouse Check: Não | Teste: Nenhum) O corpo do vampiro se desfaz em uma névoa consciente, capaz de atravessar frestas, canos e pequenas aberturas. Nesse estado ele se torna imune à maioria dos ataques físicos, mas perde a capacidade de atacar fisicamente outras pessoas."
+                },
+                {
+                    "subname": "",
+                    "nivel": 6,
+                    "description": ""
+                }
+            ]
+        },
+        {
+            "id": 13,
+            "name": "TENEBROSIDADE",
+            "description": "Domínio sobrenatural sobre sombras e escuridão, permitindo moldar, expandir e solidificar trevas para ocultação, ataque e manipulação do ambiente.",
+            "nivels": [
+                {
+                    "subname": "JOGO DE SOMBRAS",
+                    "nivel": 1,
+                    "description": "[ Rouse Check: Não || Teste: Nenhum ] Permite manipular sombras existentes, estendendo ou moldando-as para ocultação e formas simples com tangibilidade limitada, podendo sufocar ou atrapalhar alvos."
+                },
+                {
+                    "subname": "MORTALHA DAS TREVAS",
+                    "nivel": 2,
+                    "description": "[ Rouse Check: Sim || Teste: Manipulação + Ocultismo ] Cria uma área de escuridão densa que bloqueia luz e som, desorientando completamente quem estiver dentro e enfraquecendo fisicamente criaturas vivas."
+                },
+                {
+                    "subname": "BRAÇOS DO ABISMO",
+                    "nivel": 3,
+                    "description": "[ Rouse Check: Sim || Teste: Manipulação + Ocultismo ] Conjura tentáculos de sombra sólidos capazes de agarrar, imobilizar e estrangular inimigos, com força proporcional ao poder do usuário."
+                },
+                {
+                    "subname": "METAMORFOSE SOMBRIA",
+                    "nivel": 4,
+                    "description": "[ Rouse Check: Sim || Teste: Manipulação + Coragem ] Transforma o corpo em uma forma híbrida de sombra e matéria, criando tentáculos e resistência aumentada, além de ampliar intimidação e poder de combate."
+                },
+                {
+                    "subname": "CORPO DE SOMBRAS",
+                    "nivel": 5,
+                    "description": "[ Rouse Check: Sim || Teste: Nenhum ] Permite transformar-se completamente em sombra viva, tornando-se intangível a ataques físicos e movendo-se livremente através de fendas e escuridão."
+                }
+            ]
+        },
+        {
+            "id": 14,
+            "name": "QUIMERISMO",
+            "description": "Disciplina de manipulação da percepção, criando ilusões sensoriais ou alucinações que enganam os sentidos ou a mente do alvo.",
+            "nivels": [
+                {
+                    "subname": "IGNIS FATUUS",
+                    "nivel": 1,
+                    "description": "[ Rouse Check: Não || Teste: A critério do Narrador ] Cria ilusões simples e estáticas que afetam um único sentido por vez, como cheiro, textura ou imagem. Não possui substância real e desaparece ao ser desmentida ou ignorada."
+                },
+                {
+                    "subname": "FATA MORGANA",
+                    "nivel": 2,
+                    "description": "[ Rouse Check: Sim || Teste: A critério do Narrador ] Cria ilusões completas que afetam todos os sentidos, mas permanecem estáticas. Permite alterar a percepção de ambientes inteiros sem modificar sua estrutura real."
+                },
+                {
+                    "subname": "APARIÇÃO",
+                    "nivel": 3,
+                    "description": "[ Rouse Check: Sim || Teste: A critério do Narrador ] Permite dar movimento às ilusões criadas, simulando ação, fluxo ou comportamento dinâmico. O movimento segue padrões definidos no momento da criação."
+                },
+                {
+                    "subname": "PERMANÊNCIA",
+                    "nivel": 4,
+                    "description": "[ Rouse Check: Sim || Teste: A critério do Narrador ] Faz ilusões persistirem sem concentração constante, mantendo-se ativas até serem quebradas por interferência externa ou dissipação voluntária."
+                },
+                {
+                    "subname": "CRUEL REALIDADE",
+                    "nivel": 5,
+                    "description": "[ Rouse Check: Sim || Teste: Manipulação + Lábia vs Determinação do alvo ] Projeta alucinações diretamente na mente do alvo, tornando-as totalmente reais para ele, capazes de causar dano psicológico e físico simulado com forte impacto emocional."
+                }
+            ]
+        },
+        {
+            "id": 15,
+            "name": "SERPENTIS",
+            "description": "",
+            "nivels": [
+                {
+                    "subname": "",
+                    "nivel": 1,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 2,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 3,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 4,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 5,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 6,
+                    "description": ""
+                }
+            ]
+        },
+        {
+            "id": 16,
+            "name": "QUIETUS",
+            "description": "",
+            "nivels": [
+                {
+                    "subname": "",
+                    "nivel": 1,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 2,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 3,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 4,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 5,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 6,
+                    "description": ""
+                }
+            ]
+        },
+        {
+            "id": 17,
+            "name": "DEMÊNCIA",
+            "description": "Disciplina que manipula emoções, percepção e padrões mentais, distorcendo estados psicológicos e induzindo caos sensorial ou mental no alvo.",
+            "nivels": [
+                {
+                    "subname": "INSTABILIDADE EMOCIONAL",
+                    "nivel": 1,
+                    "description": "[ Rouse Check: Não || Teste: Carisma + Empatia vs Humanidade ] Amplifica ou suprime emoções já existentes no alvo, intensificando reações como medo, raiva ou amor, sem criar sentimentos novos."
+                },
+                {
+                    "subname": "ASSOMBRAR A ALMA",
+                    "nivel": 2,
+                    "description": "[ Rouse Check: Sim || Teste: Manipulação + Lábia vs Percepção + Autocontrole ] Inunda os sentidos do alvo com visões e sensações fragmentadas, geralmente ligadas a traumas ou medos internos, gerando confusão e paranoia sensorial."
+                },
+                {
+                    "subname": "OLHOS DO CAOS",
+                    "nivel": 3,
+                    "description": "[ Rouse Check: Sim || Teste: Percepção + Ocultismo ] Permite ler padrões ocultos na mente ou no ambiente, revelando natureza emocional, intenções ou conexões simbólicas em pessoas e eventos."
+                },
+                {
+                    "subname": "VOZ DA LOUCURA",
+                    "nivel": 4,
+                    "description": "[ Rouse Check: Não || Teste: Manipulação + Empatia ] Induz frenesi ou pânico coletivo em quem ouve a voz do vampiro, desencadeando surtos emocionais violentos e perda temporária de controle racional."
+                },
+                {
+                    "subname": "INSANIDADE TOTAL",
+                    "nivel": 5,
+                    "description": "[ Rouse Check: Sim || Teste: Manipulação + Intimidação vs Força de Vontade ] Colapsa a estabilidade mental do alvo, despertando perturbações profundas que o levam a estados extremos de loucura prolongada e perda de sanidade funcional."
+                }
+            ]
+        },
+        {
+            "id": 18,
+            "name": "NECROMANCIA",
+            "description": "",
+            "nivels": [
+                {
+                    "subname": "",
+                    "nivel": 1,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 2,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 3,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 4,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 5,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 6,
+                    "description": ""
+                }
+            ]
+        },
+        {
+            "id": 19,
+            "name": "LINHA DO SEPÚLCRO",
+            "description": "",
+            "nivels": [
+                {
+                    "subname": "",
+                    "nivel": 1,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 2,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 3,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 4,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 5,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 6,
+                    "description": ""
+                }
+            ]
+        },
+        {
+            "id": 20,
+            "name": "LINHA DOS OSSOS",
+            "description": "",
+            "nivels": [
+                {
+                    "subname": "",
+                    "nivel": 1,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 2,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 3,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 4,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 5,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 6,
+                    "description": ""
+                }
+            ]
+        },
+        {
+            "id": 21,
+            "name": "LINHA DAS CINZAS",
+            "description": "",
+            "nivels": [
+                {
+                    "subname": "",
+                    "nivel": 1,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 2,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 3,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 4,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 5,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 6,
+                    "description": ""
+                }
+            ]
+        },
+        {
+            "id": 22,
+            "name": "LINHA DO SANGUE",
+            "description": "",
+            "nivels": [
+                {
+                    "subname": "",
+                    "nivel": 1,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 2,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 3,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 4,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 5,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 6,
+                    "description": ""
+                }
+            ]
+        },
+        {
+            "id": 23,
+            "name": "LINHA DA CONJURAÇÃO",
+            "description": "",
+            "nivels": [
+                {
+                    "subname": "",
+                    "nivel": 1,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 2,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 3,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 4,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 5,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 6,
+                    "description": ""
+                }
+            ]
+        },
+        {
+            "id": 24,
+            "name": "MÃOS DA DESTRUIÇÃO",
+            "description": "",
+            "nivels": [
+                {
+                    "subname": "",
+                    "nivel": 1,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 2,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 3,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 4,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 5,
+                    "description": ""
+                },
+                {
+                    "subname": "",
+                    "nivel": 6,
+                    "description": ""
+                }
+            ]
+        },
+        {
+            "id": 25,
+            "name": "VICISSITUDE",
+            "description": "Disciplina de deformação da carne e do osso, permitindo alterar corpos vivos ou mortos, remodelando estrutura física com precisão cirúrgica ou horror grotesco.",
+            "nivels": [
+                {
+                    "subname": "ASPECTO MALEÁVEL",
+                    "nivel": 1,
+                    "description": "[ Rouse Check: Não || Teste: Inteligência + Moldar o Corpo ] Permite pequenas alterações no próprio corpo, ajustando altura, traços faciais, voz e proporções dentro de limites humanos. Mudanças exigem modelagem física direta e podem ser refinadas com repetição do uso."
+                },
+                {
+                    "subname": "MOLDAR A CARNE",
+                    "nivel": 2,
+                    "description": "[ Rouse Check: Não || Teste: Destreza + Moldar o Corpo vs resistência da vítima ] Permite deformar carne de outros seres, alterando músculos, gordura e pele sem atingir ossos. Pode criar alterações estéticas, desfigurações ou reforços físicos temporários."
+                },
+                {
+                    "subname": "MOLDAR OS OSSOS",
+                    "nivel": 3,
+                    "description": "[ Rouse Check: Sim || Teste: Força + Moldar o Corpo ] Permite manipular estrutura óssea, criando lâminas, deformações ou reforços internos. Pode causar dano direto ao forçar ossos contra tecidos ou criar estruturas defensivas ou ofensivas."
+                },
+                {
+                    "subname": "FORMA HORRIPILANTE",
+                    "nivel": 4,
+                    "description": "[ Rouse Check: Não || Teste: Nenhum ] Transforma o corpo em uma forma monstruosa, aumentando drasticamente atributos físicos e capacidade de combate, ao custo de perder quase toda expressão social humana fora do estado de horror."
+                },
+                {
+                    "subname": "FORMA SANGUÍNEA",
+                    "nivel": 5,
+                    "description": "[ Rouse Check: Sim || Teste: Nenhum ] Converte total ou parcialmente o corpo em vitae viva, permitindo fluidez, regeneração e reconfiguração corporal, mas tornando o vampiro vulnerável à destruição total do sangue."
+                }
+            ]
+        }
+    ],
+    "rituals": [
+        {
+            "id": 0,
+            "name": "ECO CADAVÉRICO",
+            "nivel": 2,
+            "short_description": "Extrai fragmentos finais da morte de um cadáver.",
+            "description": "Permite acessar os últimos instantes de um cadáver, obtendo fragmentos sensoriais e emocionais da morte em forma de visões simbólicas e incompletas. Requer cadáver não-degradado e não-destruído, sal negro consagrado e cinzas de osso humano queimado, além de tempo de preparação. Teste de Raciocínio + Ocultismo determina a clareza das informações obtidas."
+        },
+        {
+            "id": 1,
+            "name": "MARCA DE FALECIMENTO",
+            "nivel": 2,
+            "short_description": "Marca espiritualmente um alvo para rastreamento ligado à morte.",
+            "description": "Aplica uma marca espiritual em um alvo vivo, tornando-o rastreável por forças ligadas à morte sem causar dano direto. Requer um item pessoal íntimo do alvo, sangue de cadáver humano recém falecido e lascas de uma lápide antiga. Teste de Manipulação + Ocultismo vs Força de Vontade. Dura por dias ou até ser dissipada por rituais equivalentes."
+        },
+        {
+            "id": 2,
+            "name": "RELÍQUIA MORTUÁRIA",
+            "nivel": 2,
+            "short_description": "Vincula a vida do vampiro a um objeto externo como âncora existencial.",
+            "description": "Vincula a existência do vampiro a um objeto específico escolhido durante o ritual, impedindo sua destruição definitiva enquanto o vínculo existir. Se o objeto for destruído, o vampiro morre imediatamente. O objeto deve ser significativo e pessoal ao vampiro (ligado a eventos marcantes de sua história). Requer sangue do próprio vampiro, exposição prolongada ao objeto e um local de forte carga de morte ou decadência para realização do ritual. Após o vínculo, o vampiro deve manter contato físico periódico com o objeto ou sofre penalidades progressivas."
+        },
+        {
+            "id": 3,
+            "name": "MORTE DA AURA",
+            "nivel": 2,
+            "short_description": "Apaga a leitura sobrenatural da aura do alvo.",
+            "description": "Suprime completamente a expressão da aura de um alvo, tornando-a vazia e ilegível para percepção sobrenatural, com intensificação em áreas ligadas à morte. Requer contato físico com o alvo, água de lavagem de ossário e restos mortais humanos. Teste de Raciocínio + Ocultismo para realizar. Dura até o fim da noite."
+        },
+        {
+            "id": 4,
+            "name": "PASSO DE VITAE",
+            "nivel": 4,
+            "short_description": "Reduz permanentemente a geração do vampiro através de sangue ancião.",
+            "description": "Reduz a geração de um vampiro em um nível, fortalecendo permanentemente sua ligação com a vitae. Só pode ser usado uma vez por indivíduo. Requer consumo direto de sangue de um vampiro de geração mais baixa (ancião) e um ritual prolongado de assimilação que dura várias horas. Após concluído, a geração do vampiro diminui permanentemente, aumentando seu poder sanguíneo."
+        },
+        {
+            "id": 5,
+            "name": "MIRAGEM DA SEPULTURA",
+            "nivel": 2,
+            "short_description": "Induz visões recorrentes da própria morte no alvo.",
+            "description": "Revela ao alvo premonições de sua própria morte, gerando visões fragmentadas e aterrorizantes ao longo de vários dias. O ritual dura duas horas e consome um item pessoal do alvo (imagem, objeto íntimo ou vestígio corporal), queimado durante a execução. Durante uma semana, o alvo sofre visões recorrentes de sua morte futura, variando em clareza e consistência."
+        },
+        {
+            "id": 6,
+            "name": "PROTEÇÃO CONTRA O MAL DA MADEIRA",
+            "nivel": 2,
+            "short_description": "Anula a primeira estaca destinada ao coração do vampiro.",
+            "description": "Cria uma proteção automática contra estacas, fazendo com que a primeira tentativa de perfurar o coração do vampiro falhe e destrua o objeto no processo. Só funciona contra a primeira estaca bem-sucedida; ataques posteriores funcionam normalmente enquanto o efeito não for renovado."
+        },
+        {
+            "id": 7,
+            "name": "PROTEÇÃO CONTRA CARNIÇAIS",
+            "nivel": 2,
+            "short_description": "Amaldiçoa objetos com dor letal contra carniçais.",
+            "description": "Inscreve uma marca ritual em um objeto, causando dor intensa a qualquer carniçal que se aproximar dele. Carniçais que entram em contato com o item são levados à morte final. O efeito é restrito ao objeto marcado ou parte específica dele."
+        },
+        {
+            "id": 8,
+            "name": "MIRAGEM DA SEPULTURA",
+            "nivel": 2,
+            "short_description": "Provoca premonições repetidas e instáveis de morte no alvo.",
+            "description": "Revela ao alvo premonições de sua própria morte, gerando visões fragmentadas e aterrorizantes ao longo de vários dias. O ritual dura duas horas e consome um item pessoal do alvo, queimado durante a execução. Durante uma semana, o alvo sofre visões recorrentes de sua morte futura, variando em clareza e consistência."
+        },
+        {
+            "id": 9,
+            "name": "DEFESA DO REFÚGIO SAGRADO",
+            "nivel": 3,
+            "short_description": "Impede a entrada de luz solar em uma área ao redor do local ritualizado.",
+            "description": "Cria uma zona de 6 metros onde a luz solar não consegue atravessar portas, janelas ou aberturas, sendo bloqueada por uma escuridão mística. Requer símbolos astrológicos desenhados com sangue em todas as entradas e 1 ponto de sangue. O efeito dura enquanto o vampiro permanecer dentro da área."
+        },
+        {
+            "id": 10,
+            "name": "DESPERTAR COM O FRESCOR DO ANOITECER",
+            "nivel": 3,
+            "short_description": "Permite que o vampiro desperte automaticamente diante de perigo, mesmo durante o dia.",
+            "description": "O vampiro acorda imediatamente ao detectar perigo real, ignorando limitações de sono diurno nos primeiros momentos de ação. Requer cinzas de pena queimada espalhadas no local de descanso. Deve ser realizado antes do repouso e não pode ser interrompido."
+        },
+        {
+            "id": 11,
+            "name": "COMUNICAR-SE COM O SENHOR",
+            "nivel": 3,
+            "short_description": "Cria comunicação telepática com o senhor do vampiro à qualquer distância.",
+            "description": "Permite comunicação mental direta com o senhor do vampiro por meio de conexão psíquica temporária. Requer objeto previamente pertencente ao senhor e meditação de 30 minutos. A duração depende dos sucessos no teste de ativação, permitindo diálogo limitado no plano mental."
+        },
+        {
+            "id": 12,
+            "name": "TOQUE DO DEMÔNIO",
+            "nivel": 3,
+            "short_description": "Marca um mortal com rejeição social sobrenatural temporária.",
+            "description": "Impõe uma marca invisível que faz com que qualquer interação social com o alvo seja hostil ou degradante. Requer 1 moeda simples colocada na vítima durante o ritual. Dura uma noite inteira e só afeta mortais."
+        },
+        {
+            "id": 13,
+            "name": "FOCO PRINCIPAL DA INFUSÃO DE VITAE",
+            "nivel": 3,
+            "short_description": "Armazena sangue em um objeto que pode ser liberado sob comando.",
+            "description": "Encanta um objeto pequeno para armazenar 1 ponto de sangue do vampiro. O objeto pode ser quebrado por comando mental, liberando o sangue em forma líquida. Requer 1 ponto de sangue e presença do objeto durante a criação. O sangue pode ser usado normalmente após liberado."
+        },
+        {
+            "id": 14,
+            "name": "TRAVESSIA INCORPÓREA",
+            "nivel": 3,
+            "short_description": "Torna o vampiro intangível por um período limitado.",
+            "description": "Permite atravessar objetos sólidos e ignorar ataques físicos enquanto estiver ativo. O vampiro deve se mover em linha reta durante o efeito. Requer fragmento de espelho quebrado. Duração baseada em sucessos em Raciocínio + Sobrevivência."
+        },
+        {
+            "id": 15,
+            "name": "ESCUDO DA PRESENÇA PÚTRIDA",
+            "nivel": 3,
+            "short_description": "Reverte efeitos de Presença contra o usuário.",
+            "description": "Faz com que qualquer uso de Presença contra o alvo seja refletido no agressor. Requer pano de seda azul ao redor do pescoço do protegido. Dura até o amanhecer e só ativa após sucesso do poder original."
+        },
+        {
+            "id": 16,
+            "name": "O OSSO DA MENTIRA",
+            "nivel": 4,
+            "short_description": "Força qualquer portador a dizer a verdade.",
+            "description": "Um osso encantado obriga o portador a falar a verdade ao tentar mentir, consumindo cargas espirituais do objeto. Requer osso com mais de 200 anos e 10 pontos de sangue na criação. Cada mentira consome uma carga até esgotamento."
+        },
+        {
+            "id": 17,
+            "name": "CONTRATO DE SANGUE",
+            "nivel": 5,
+            "short_description": "Cria um contrato mágico impossível de quebrar sem consequências.",
+            "description": "Liga duas partes a um contrato sobrenatural escrito e selado com sangue. Requer 3 noites de preparação e assinatura com sangue das partes envolvidas. O contrato só pode ser quebrado ao ser cumprido ou destruído fisicamente."
+        }
+    ],
+    "maxvalue_generation": {
+        "13": 5,
+        "12": 5,
+        "11": 5,
+        "10": 5,
+        "9": 5,
+        "8": 5,
+        "7": 6,
+        "6": 6,
+        "5": 6,
+        "4": 6
+    },
+    "bloodpotency_generation": {
+        "4": {
+            "min": 5,
+            "max": 10
+        },
+        "5": {
+            "min": 4,
+            "max": 9
+        },
+        "6": {
+            "min": 3,
+            "max": 8
+        },
+        "7": {
+            "min": 3,
+            "max": 7
+        },
+        "8": {
+            "min": 2,
+            "max": 6
+        },
+        "9": {
+            "min": 2,
+            "max": 5
+        },
+        "10": {
+            "min": 2,
+            "max": 5
+        },
+        "11": {
+            "min": 1,
+            "max": 4
+        },
+        "12": {
+            "min": 1,
+            "max": 3
+        },
+        "13": {
+            "min": 1,
+            "max": 3
+        }
+    },
+    "precedents": [
+        {
+            "id": 0,
+            "name": "ALIADOS",
+            "description": "Indivíduos que possuem relação de confiança com você e podem oferecer suporte direto ou indireto em momentos críticos."
+        },
+        {
+            "id": 1,
+            "name": "CONTATOS",
+            "description": "Fontes de informação e influência que você pode acessar para obter dados, favores ou oportunidades."
+        },
+        {
+            "id": 2,
+            "name": "FAMA",
+            "description": "Seu nível de reconhecimento público, afetando como estranhos reagem à sua presença."
+        },
+        {
+            "id": 3,
+            "name": "GERAÇÃO",
+            "description": "Sua geração na linhagem vampírica, determinando o limite potencial de poder do seu sangue."
+        },
+        {
+            "id": 4,
+            "name": "INFLUÊNCIA",
+            "description": "Seu poder de manipular eventos sociais, políticos ou criminais dentro de sua esfera de atuação."
+        },
+        {
+            "id": 5,
+            "name": "LACAIOS",
+            "description": "Indivíduos subordinados que executam ordens e expandem sua presença no mundo mortal."
+        },
+        {
+            "id": 6,
+            "name": "MENTOR",
+            "description": "Uma figura mais experiente que guia seu desenvolvimento e pode desbloquear conhecimentos ocultos."
+        },
+        {
+            "id": 7,
+            "name": "REBANHO",
+            "description": "Fontes regulares de sustento e influência social, essenciais para sua sobrevivência discreta."
+        },
+        {
+            "id": 8,
+            "name": "RECURSOS",
+            "description": "Sua capacidade financeira e material para sustentar estilo de vida, operações e influência."
+        },
+        {
+            "id": 9,
+            "name": "STATUS",
+            "description": "Seu prestígio dentro da sociedade vampírica ou mortal, afetando respeito e hierarquia social."
+        }
+    ],
+    "bloodpotency": [
+        {
+            "description": "Define o quão poderoso é o seu sangue vampírico. Aumenta seus poderes e cura, mas torna sua fome mais exigente e difícil de saciar."
+        },
+        {
+            "nivel": 1,
+            "bloodsurge": 1,
+            "sheal": 1,
+            "aheal": 1,
+            "hungerdices": 1,
+            "consumablebloods": "Animal, Bolsa, Humano, Cadáver, Sobrenatural"
+        },
+        {
+            "nivel": 2,
+            "bloodsurge": 2,
+            "sheal": 2,
+            "aheal": 1,
+            "hungerdices": 1,
+            "consumablebloods": "Animal, Bolsa, Humano, Sobrenatural"
+        },
+        {
+            "nivel": 3,
+            "bloodsurge": 3,
+            "sheal": 3,
+            "aheal": 2,
+            "hungerdices": 2,
+            "consumablebloods": "Animal, Humano, Sobrenatural"
+        },
+        {
+            "nivel": 4,
+            "bloodsurge": 3,
+            "sheal": 4,
+            "aheal": 3,
+            "hungerdices": 2,
+            "consumablebloods": "Humanos, Sobrenatural"
+        },
+        {
+            "nivel": 5,
+            "bloodsurge": 4,
+            "sheal": 5,
+            "aheal": 3,
+            "hungerdices": 2,
+            "consumablebloods": "Humanos, Sobrenatural"
+        },
+        {
+            "nivel": 6,
+            "bloodsurge": 4,
+            "sheal": 6,
+            "aheal": 4,
+            "hungerdices": 2,
+            "consumablebloods": "Humanos, Sobrenatural"
+        },
+        {
+            "nivel": 7,
+            "bloodsurge": 5,
+            "sheal": 7,
+            "aheal": 4,
+            "hungerdices": 3,
+            "consumablebloods": "Humanos, Sobrenatural"
+        },
+        {
+            "nivel": 8,
+            "bloodsurge": 6,
+            "sheal": 8,
+            "aheal": 4,
+            "hungerdices": 3,
+            "consumablebloods": "Sobrenatural"
+        },
+        {
+            "nivel": 9,
+            "bloodsurge": 7,
+            "sheal": 9,
+            "aheal": 5,
+            "hungerdices": 3,
+            "consumablebloods": "Sobrenatural"
+        },
+        {
+            "nivel": 10,
+            "bloodsurge": 8,
+            "sheal": 10,
+            "aheal": 5,
+            "hungerdices": 4,
+            "consumablebloods": "Sobrenatural"
+        }
+    ],
+    "knowledges": [
+        {
+            "id": 0,
+            "name": "CIÊNCIA",
+            "description": "Conhecimento aplicado de fenômenos físicos, químicos e biológicos, permitindo analisar e compreender o funcionamento do mundo material e suas anomalias."
+        },
+        {
+            "id": 1,
+            "name": "DIREITO",
+            "description": "Compreensão de leis, normas e sistemas jurídicos. Permite interpretar, explorar e manipular estruturas legais e burocráticas."
+        },
+        {
+            "id": 2,
+            "name": "ERUDIÇÃO",
+            "description": "Conhecimento amplo de história, culturas e teorias acadêmicas. Reflete estudo profundo de informações antigas e contemporâneas."
+        },
+        {
+            "id": 3,
+            "name": "ESTRATÉGIA",
+            "description": "Capacidade de planejar ações de forma antecipada e eficiente. Envolve leitura de cenários, previsão de movimentos e otimização de recursos em conflito ou objetivos."
+        },
+        {
+            "id": 4,
+            "name": "FINANÇAS",
+            "description": "Controle e entendimento de recursos econômicos, investimentos e fluxo de dinheiro em pequena ou grande escala."
+        },
+        {
+            "id": 5,
+            "name": "INVESTIGAÇÃO",
+            "description": "Habilidade de encontrar, interpretar e conectar pistas. Permite reconstruir eventos ocultos e identificar padrões em informações fragmentadas."
+        },
+        {
+            "id": 6,
+            "name": "MEDICINA",
+            "description": "Conhecimento do corpo humano, doenças e tratamentos. Aplicável tanto à cura quanto à compreensão de condições físicas e anomalias."
+        },
+        {
+            "id": 7,
+            "name": "OCULTISMO",
+            "description": "Estudo de forças sobrenaturais, rituais e entidades além da ciência convencional. Envolve interpretação de fenômenos místicos e simbólicos."
+        },
+        {
+            "id": 8,
+            "name": "PERCEPÇÃO",
+            "description": "Capacidade de notar detalhes sutis no ambiente, identificar inconsistências, mentiras e ameaças ocultas."
+        },
+        {
+            "id": 9,
+            "name": "RELIGIÃO",
+            "description": "Conhecimento de crenças, doutrinas e estruturas espirituais. Permite entender sistemas de fé e sua influência social e mística."
+        },
+        {
+            "id": 10,
+            "name": "SUBMUNDO",
+            "description": "Conhecimento de redes criminosas, atividades ilegais e hierarquias ocultas dentro da sociedade."
+        },
+        {
+            "id": 11,
+            "name": "TECNOLOGIA",
+            "description": "Domínio de sistemas digitais, dispositivos e infraestrutura tecnológica moderna, incluindo uso e compreensão de redes e máquinas."
+        }
+    ],
+    "expertises": [
+        {
+            "id": 0,
+            "name": "ATUAÇÃO",
+            "description": "Habilidade de interpretar emoções e personagens de forma convincente. Permite disfarçar intenções, enganar observadores ou performar papéis sociais com naturalidade."
+        },
+        {
+            "id": 1,
+            "name": "AUTOCONTROLE",
+            "description": "Força mental para resistir a impulsos, instintos e pressões emocionais. Determina a capacidade de manter disciplina diante de medo, raiva ou fome."
+        },
+        {
+            "id": 2,
+            "name": "CORAGEM",
+            "description": "Resistência psicológica diante de perigo, terror ou situações extremas. Permite agir mesmo sob ameaça direta ou pressão de morte."
+        },
+        {
+            "id": 3,
+            "name": "PERSUASÃO",
+            "description": "Capacidade de influenciar decisões e opiniões através da fala, lógica e presença social. Foca em convencimento direto e argumentação."
+        },
+        {
+            "id": 4,
+            "name": "EMPATIA",
+            "description": "Leitura emocional de pessoas, permitindo identificar sentimentos, intenções e estados mentais através de comportamento e expressão."
+        },
+        {
+            "id": 5,
+            "name": "EMP. C/ANIMAIS",
+            "description": "Capacidade de entender, acalmar e influenciar animais através de comportamento e instinto, reduzindo agressividade e aumentando cooperação."
+        },
+        {
+            "id": 6,
+            "name": "ENGANAÇÃO",
+            "description": "Habilidade de mentir, manipular informações e criar falsas percepções. Inclui blefes, disfarces verbais e distorção da verdade."
+        },
+        {
+            "id": 7,
+            "name": "ETIQUETA",
+            "description": "Conhecimento de normas sociais, hierarquias e comportamento adequado em diferentes ambientes, facilitando aceitação e circulação social."
+        },
+        {
+            "id": 8,
+            "name": "INTIMIDAÇÃO",
+            "description": "Capacidade de impor medo, pressão ou submissão através de presença, ameaça ou demonstração de força."
+        },
+        {
+            "id": 9,
+            "name": "LIDERANÇA",
+            "description": "Habilidade de coordenar e influenciar grupos, inspirando confiança e direcionando ações de forma eficiente."
+        },
+        {
+            "id": 10,
+            "name": "MANHA",
+            "description": "Intuição de sobrevivência no submundo, permitindo leitura de ambientes perigosos, negociação com criminosos e adaptação a contextos ilegais."
+        },
+        {
+            "id": 11,
+            "name": "PERFORMANCE",
+            "description": "Capacidade de execução expressiva em público, incluindo música, discurso ou atuação sob pressão social."
+        }
+    ],
+    "talents": [
+        {
+            "id": 0,
+            "name": "ARMAS BRANCAS",
+            "description": "Proficiência no uso de armas corpo a corpo, incluindo lâminas, espadas e objetos improvisados. Envolve técnica de ataque, defesa, controle de distância curta e eficiência em confronto direto."
+        },
+        {
+            "id": 1,
+            "name": "ARMAS DE FOGO",
+            "description": "Habilidade no manuseio de armas de fogo em situações de combate. Inclui precisão, controle de recuo, tempo de reação e adaptação a diferentes tipos de armamento."
+        },
+        {
+            "id": 2,
+            "name": "ARREMESSO",
+            "description": "Precisão e força ao lançar objetos ou armas à distância. Abrange cálculo de trajetória, controle de impacto e adaptação a diferentes pesos e formatos."
+        },
+        {
+            "id": 3,
+            "name": "ATLETISMO",
+            "description": "Capacidade física geral ligada a corrida, salto, escalada e resistência corporal. Representa desempenho em deslocamento e esforço físico contínuo."
+        },
+        {
+            "id": 4,
+            "name": "BRIGA",
+            "description": "Combate desarmado baseado em força, técnica e instinto. Envolve golpes, agarrões, resistência e adaptação em lutas corpo a corpo sem armas."
+        },
+        {
+            "id": 5,
+            "name": "CONDUÇÃO",
+            "description": "Habilidade de operar veículos terrestres com controle e precisão. Inclui manobras, reação em alta velocidade e adaptação a condições adversas."
+        },
+        {
+            "id": 6,
+            "name": "ESQUIVA",
+            "description": "Capacidade de evitar ataques físicos ou perigos imediatos. Envolve reflexos, leitura de movimento e deslocamento defensivo eficiente."
+        },
+        {
+            "id": 7,
+            "name": "FURTIVIDADE",
+            "description": "Habilidade de se mover e agir sem ser detectado. Inclui controle de ruído, visibilidade, comportamento discreto e leitura de ambientes."
+        },
+        {
+            "id": 8,
+            "name": "LADROAGEM",
+            "description": "Capacidade de furtar, invadir e manipular objetos, fechaduras ou sistemas discretamente. Envolve precisão, timing e técnica de infiltração."
+        },
+        {
+            "id": 9,
+            "name": "OFÍCIOS",
+            "description": "Conhecimento prático de trabalhos manuais e técnicos. Inclui reparos, construção, manutenção e uso funcional de ferramentas."
+        },
+        {
+            "id": 10,
+            "name": "PRONTIDÃO",
+            "description": "Reflexos e percepção imediata de ameaças. Representa tempo de reação reduzido e capacidade de resposta instintiva a situações perigosas."
+        },
+        {
+            "id": 11,
+            "name": "SOBREVIVÊNCIA",
+            "description": "Capacidade de se manter vivo em ambientes hostis. Inclui orientação, caça, coleta, adaptação e uso eficiente de recursos limitados."
+        }
+    ],
+    "atributes": [
+        {
+            "id": 0,
+            "name": "FORÇA",
+            "description": "Potência física bruta aplicada em impactos, golpes e levantamento de peso. Representa a capacidade de exercer força direta sobre objetos e oponentes, tanto em combate corpo a corpo quanto em feitos de esforço extremo."
+        },
+        {
+            "id": 1,
+            "name": "DESTREZA",
+            "description": "Coordenação motora fina, agilidade e precisão em movimentos rápidos. Influencia reflexos, equilíbrio, furtividade em movimento e execução de ações técnicas que exigem controle corporal refinado."
+        },
+        {
+            "id": 2,
+            "name": "VIGOR",
+            "description": "Resistência física geral do corpo, incluindo tolerância à dor, fadiga e ferimentos. Determina quanto esforço prolongado o personagem suporta antes de sucumbir ao desgaste físico."
+        },
+        {
+            "id": 3,
+            "name": "CARISMA",
+            "description": "Presença pessoal natural que influencia emoções e reações sociais. Afeta a forma como outros se sentem na presença do personagem, facilitando aceitação, confiança e liderança espontânea."
+        },
+        {
+            "id": 4,
+            "name": "MANIPULAÇÃO",
+            "description": "Capacidade de influenciar, persuadir ou enganar outros de forma consciente. Envolve leitura social, discurso estratégico e controle indireto de decisões e comportamentos."
+        },
+        {
+            "id": 5,
+            "name": "APARÊNCIA",
+            "description": "Impacto visual imediato causado pela estética e presença física. Afeta atração, repulsa e julgamento inicial dos outros, independentemente de interação verbal."
+        },
+        {
+            "id": 6,
+            "name": "INTELIGÊNCIA",
+            "description": "Capacidade de análise lógica, aprendizado e resolução de problemas complexos. Representa o entendimento estrutural de informações e a capacidade de conectar ideias de forma coerente."
+        },
+        {
+            "id": 7,
+            "name": "RACIOCÍNIO",
+            "description": "Velocidade mental para interpretar situações, reagir sob pressão e identificar padrões rapidamente. Representa a clareza de pensamento em momentos críticos."
+        },
+        {
+            "id": 8,
+            "name": "DETERMINAÇÃO",
+            "description": "Força mental para resistir a medo, coerção e influências externas. Define estabilidade psicológica, autocontrole e capacidade de manter ações sob pressão extrema."
+        }
+    ],
+    "caracteristics": [
+        {
+            "id": 0,
+            "name": "VISÃO AGUÇADA",
+            "type": "QUALIDADE",
+            "description": "Sua percepção visual é excepcionalmente refinada. Reduz em 1 a dificuldade de testes de Percepção baseados em visão, como notar detalhes, movimentos, rastros ou objetos ocultos.",
+            "value": 1
+        },
+        {
+            "id": 1,
+            "name": "AUDIÇÃO AGUÇADA",
+            "type": "QUALIDADE",
+            "description": "Sua audição é extremamente sensível. Reduz em 1 a dificuldade de testes de Percepção baseados em som, permitindo identificar ruídos sutis, conversas distantes ou movimentos leves.",
+            "value": 1
+        },
+        {
+            "id": 2,
+            "name": "VULNERABILIDADE À PRATA",
+            "type": "DEFEITO",
+            "description": "Seu corpo reage negativamente ao contato com prata. Qualquer dano causado por armas ou objetos de prata é aumentado.",
+            "value": 2
+        },
+        {
+            "id": 3,
+            "name": "VINGANÇA",
+            "type": "DEFEITO",
+            "description": "Alguém ou algo possui um forte desejo de vingança contra você. Esse inimigo pode surgir no futuro em momentos oportunos, complicando sua vida ou interferindo diretamente nas suas ações.",
+            "value": 2
+        },
+        {
+            "id": 4,
+            "name": "FOBIA (ARANHAS)",
+            "type": "DEFEITO",
+            "description": "Você possui um medo intenso de aranhas. Ao se deparar com elas, sofre penalidades em testes de coragem ou ações sob pressão.",
+            "value": 2
+        },
+        {
+            "id": 5,
+            "name": "PRECOCE",
+            "type": "QUALIDADE",
+            "description": "Você aprende mais rapido que o normal. Além disso, sempre recebe +2 XP adicional ao final de cada narração.",
+            "value": 3
+        },
+        {
+            "id": 6,
+            "name": "FRIEZA LÓGICA",
+            "type": "QUALIDADE",
+            "description": "Você consegue separar bem fatos de emoção e percebe quando alguém está distorcendo a realidade por sentimentos. Reduz em 1 a dificuldade de testes para detectar dissimulação e intenções ocultas.",
+            "value": 1
+        },
+        {
+            "id": 7,
+            "name": "RUBOR DE SAÚDE",
+            "type": "QUALIDADE",
+            "description": "A sua aparência é mais natural e saudável do que a dos outros vampiros, o que lhe permite misturar-se aos humanos com mais facilidade. Você ainda conserva a cor de um mortal vivo e sua pele é apenas um pouco mais fria ao contato.",
+            "value": 2
+        },
+        {
+            "id": 8,
+            "name": "VICIO (ÁLCOOL)",
+            "type": "DEFEITO",
+            "description": "Você é viciado em alguma substância que agora precisa estar presente no sangue que você bebe. tanto pode ser álcool, nicotina, drogas pesadas ou simplesmente adrenalina. Esta substância sempre o enfraquece de alguma maneira",
+            "value": 3
+        },
+        {
+            "id": 9,
+            "name": "FOBIA (ALTURA)",
+            "type": "DEFEITO",
+            "description": "Você sente um medo irracional de alguma coisa. Aranhas, cobras, multidões e alturas são exemplos de fobias comuns. Você deve fazer um teste de Coragem sempre que se deparar com o objeto de sua fobia. A dificuldade do teste é determinada pelo Narrador e se você fracassar, deverá afastar-se daquele objeto.",
+            "value": 2
+        },
+        {
+            "id": 10,
+            "name": "NOÇÃO EXATA DE TEMPO",
+            "type": "QUALIDADE",
+            "description": "Você tem uma noção de tempo inata e é capaz de estimar a passagem do tempo com exatidão, sem usar relógios ou outros instrumentos mecânicos.",
+            "value": 1
+        },
+        {
+            "id": 11,
+            "name": "CONCENTRAÇÃO",
+            "type": "QUALIDADE",
+            "description": "Você tem a habilidade de focalizar a sua mente e desligar-se de qualquer distração ou perturbação. Os personagens que têm esta Qualidade não são afetados por nenhuma das penalidades provenientes de circunstâncias que provocam distrações (como ruídos altos, luzes estroboscópicas, pendurar-se de ponta-cabeça etc)",
+            "value": 1
+        },
+        {
+            "id": 12,
+            "name": "INGERIR COMIDA",
+            "type": "QUALIDADE",
+            "description": "Você tem a capacidade de ingerir comida e até saboreá-la. Embora você não seja capaz de extrair nenhum nutriente ao comer alimentos normais, esta habilidade lhe será útil para manter a Máscara. Naturalmente, você é incapaz de digerir o que come e chegará um momento durante a noite no qual você terá que devolver o que ingeriu.",
+            "value": 1
+        },
+        {
+            "id": 13,
+            "name": "TIQUE NERVOSO",
+            "type": "DEFEITO",
+            "description": "Você executa alguma espécie de movimento repetitivo que faz quando está tenso e que inevitavelmente denuncia sua identidade. Alguns exemplos incluem uma tosse crônica, apertar as mãos constantemente, estalar os dedos e assim por diante. Você sempre pode usar um ponto de Força de Vontade para reprimir esta mania.",
+            "value": 1
+        },
+        {
+            "id": 14,
+            "name": "TOQUE DE CONVELAMENTO",
+            "type": "DEFEITO",
+            "description": "As plantas murcham à sua aproximação e morrem a seu toque que retira calor dos seres vivos como se você fosse feito de gelo.",
+            "value": 1
+        },
+        {
+            "id": 15,
+            "name": "PERFECCIONISMO",
+            "type": "PERTURBAÇÃO",
+            "description": "O personagem possui uma necessidade obsessiva de controle, ordem e precisão. Pequenos erros, improvisos ou imperfeições causam irritação intensa e ansiedade. Ele tende a revisar tudo repetidamente, corrigir os outros constantemente e insistir que as coisas sejam feitas da maneira certa. Costuma ser rígido consigo mesmo e com os demais, tendo dificuldade em aceitar falhas, desorganização ou perda de controle.",
+            "value": 5
+        },
+        {
+            "id": 16,
+            "name": "VOZ ENCANTADORA",
+            "type": "QUALIDADE",
+            "description": "O personagem possui uma necessidade obsessiva de controle, ordem e precisão. Pequenos erros, improvisos ou imperfeições causam irritação intensa e ansiedade. Ele tende a revisar tudo repetidamente, corrigir os outros constantemente e insistir que as coisas sejam feitas da maneira certa. Costuma ser rígido consigo mesmo e com os demais, tendo dificuldade em aceitar falhas, desorganização ou perda de controle.",
+            "value": 2
+        },
+        {
+            "id": 17,
+            "name": "CODIGO DE HONRA",
+            "type": "QUALIDADE",
+            "description": "Você tem um código de ética pessoal do qual é adepto. Esse código deve ser elaborado em conjunto com o Narrador, e o personagem deve seguí-lo à risca. Os personagens com esta Qualidade ganham dois dados adicionais em todos os testes físicos e de Força de Vontade quando estiverem agindo de acordo com seu código.",
+            "value": 2
+        },
+        {
+            "id": 18,
+            "name": "EXCLUSÃO DE PRESA",
+            "type": "DEFEITO",
+            "description": "Você se recusa a caçar certo tipo de presa. Você pode recusar-se a alimentar-se de traficantes de drogas, policiais, contadores, pessoas ricas etc. Se você se alimentar acidentalmente de um desses indivíduos, entrará automaticamente em frenesi e poderá perder Humanidade. Presenciar outro vampiro alimentando-se do objeto de sua exclusão também pode levá-lo a frenesi, a critério do Narrador.",
+            "value": 1
+        }
+    ]
+}

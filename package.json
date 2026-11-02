@@ -1,0 +1,28 @@
+{
+  "name": "theveiledcrown",
+  "version": "6.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --env-file-if-exists=.env tools/dev.mjs",
+    "start": "node --env-file-if-exists=.env server/index.mjs",
+    "build": "node tools/build.mjs",
+    "check": "node tools/check.mjs",
+    "test": "node --test tests/rules.test.mjs tests/domain/*.test.mjs tests/server/*.test.mjs",
+    "test:all": "npm run build && npm test && npm run check",
+    "format": "prettier --write \"client/*.{js,css}\" \"core/*.js\" \"server/*.mjs\" \"tests/**/*.mjs\" \"tools/*.mjs\"",
+    "qa:prepare": "node tools/prepare-preview.mjs"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.14",
+    "esbuild": "^0.28.2",
+    "prettier": "3.6.2"
+  },
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "dependencies": {
+    "@noble/hashes": "^2.4.0",
+    "fflate": "^0.8.3"
+  }
+}
