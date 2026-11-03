@@ -1,3 +1,5 @@
+import { socialPage, communityAction, bindCommunity } from './community.js';
+import { lifecycleAction } from './lifecycle.js';
 import { xpDistribution } from './xp.js';
 import { SheetEditor } from './editor.js';
 import { storageView, fileAction, exportPlayer, compactSyncLabel } from './files.js';
@@ -119,6 +121,7 @@ const nav = [
   ['notes', 'Anotações'],
   ['quests', 'Missões'],
   ['map', 'Mapa da campanha'],
+  ['social', 'Salão da campanha'],
   ['network', 'Círculos de relações'],
   ['chronicle', 'Objetivos e histórico'],
   ['dice', 'Rolagem de dados']
@@ -191,12 +194,14 @@ const sectionHead = (title, description, action = '') =>
 function renderNavigation() {
   const p = player(),
     campaignViews = nav.filter(([k]) => !sheetViews.includes(k));
-  const personal = admin()
-    ? [['dashboard', 'Conselho do narrador']]
-    : [
-        ['my-characters', 'Meus personagens'],
-        ['submissions', 'Minhas propostas']
-      ];
+  const personal = !state.campaigns?.length
+    ? []
+    : admin()
+      ? [['dashboard', 'Conselho do narrador']]
+      : [
+          ['my-characters', 'Meus personagens'],
+          ['submissions', 'Minhas propostas']
+        ];
   const navButtons = (items) =>
     items
       .map(
@@ -205,7 +210,7 @@ function renderNavigation() {
       )
       .join('');
   $('[data-nav-root]').innerHTML =
-    `<nav class="portal-navigation" aria-label="Portal">${navButtons([...personal, ['campaigns', 'Minhas campanhas'], ['profile', 'Meu perfil']])}</nav>${admin() && !p ? '<div class="narrator-sidebar-note">Abra uma ficha em Personagens para consultar os dados do jogador.</div>' : `<div class="sidebar-caption">${admin() ? 'FICHA DE JOGADOR ABERTA' : 'SEU PERSONAGEM'}</div><div class="character-select"><select id="character-select" aria-label="Selecionar personagem"></select>${admin() ? button('Fechar ficha', 'close-character', '', 'text-button') : ''}</div>`}${p ? `<div class="sidebar-caption">FICHA DE ${esc(p.char)}</div><nav aria-label="Ficha do personagem">${navButtons(nav.filter(([k]) => sheetViews.includes(k) && (k !== 'network' || !admin())))}</nav>` : ''}<div class="sidebar-caption">A CAMPANHA</div><nav aria-label="Ferramentas da campanha">${navButtons(campaignViews)}</nav>${admin() ? `<div class="sidebar-caption admin-caption">ADMINISTRAÇÃO</div><nav aria-label="Administração">${navButtons(adminNav.filter(([k]) => k !== 'dashboard'))}</nav>` : ''}`;
+    `<nav class="portal-navigation" aria-label="Portal">${navButtons([...personal, ['campaigns', 'Minhas campanhas']])}</nav>${admin() && !p ? '<div class="narrator-sidebar-note">Abra uma ficha em Personagens para consultar os dados do jogador.</div>' : `<div class="sidebar-caption">${admin() ? 'FICHA DE JOGADOR ABERTA' : 'SEU PERSONAGEM'}</div><div class="character-select"><select id="character-select" aria-label="Selecionar personagem"></select>${admin() ? button('Fechar ficha', 'close-character', '', 'text-button') : ''}</div>`}${p ? `<div class="sidebar-caption">FICHA DE ${esc(p.char)}</div><nav aria-label="Ficha do personagem">${navButtons(nav.filter(([k]) => sheetViews.includes(k) && (k !== 'network' || !admin())))}</nav>` : ''}${state.campaigns?.length ? `<div class="sidebar-caption">A CAMPANHA</div><nav aria-label="Ferramentas da campanha">${navButtons(campaignViews)}</nav>` : ''}${admin() ? `<div class="sidebar-caption admin-caption">ADMINISTRAÇÃO</div><nav aria-label="Administração">${navButtons(adminNav.filter(([k]) => k !== 'dashboard' && (state.campaigns?.length || ['storage', 'trash'].includes(k))))}</nav>` : ''}`;
   updateSelect();
   const select = $('#character-select');
   if (select)
@@ -253,9 +258,17 @@ function initShell() {
   document.body.classList.remove('login-page');
   document.querySelector('.skip-link')?.setAttribute('href', '#main-content');
   $('#app').innerHTML =
-    `<aside id="sidebar" class="sidebar"><a href="#campaigns" class="brand"><span class="brand-crest">${crown}</span><span>A COROA VELADA<small>ONDE AS HISTÓRIAS VIVEM</small></span></a><button type="button" data-action="close-menu" class="icon-button drawer-close" aria-label="Fechar navegação">${icon('close')}</button><div data-nav-root></div><div class="sidebar-footer"><p>O sangue lembra.<br><span>A noite nunca esquece.</span></p><span class="version">PORTAL ONLINE · V6</span></div></aside><div class="workspace"><header class="topbar"><div class="breadcrumb"><button data-action="menu" class="icon-button mobile-menu" aria-label="Abrir navegação">${icon('menu')}</button><span class="campaign-breadcrumb"></span><i>/</i><strong id="breadcrumb-current"></strong></div><div class="topbar-right">${button(icon('download') + ' <span>Salvar JSON</span>', 'backup-table', 'aria-label="Salvar JSONs do portal"', 'button ghost top-export')}<button type="button" class="icon-button notification-button" data-action="nav-notifications" aria-label="Notificações">${icon('notes')}<span data-notification-count hidden></span></button><button class="user-button" data-action="nav-profile"><span class="avatar small" data-user-avatar></span><span data-user-name></span></button><button class="icon-button" data-action="logout" aria-label="Sair">${icon('logout')}</button></div></header><div class="connection-banner"><span>${icon('save')} <span data-sync-label></span></span><span>Atualização automática da campanha</span></div><main id="main-content" tabindex="-1"></main><footer class="app-footer"><span>A COROA VELADA</span><span>Suas histórias, além do véu.</span><span>◇</span></footer></div><button type="button" class="drawer-backdrop" data-action="close-menu" aria-label="Fechar menu"></button><nav class="mobile-bottom" aria-label="Navegação principal"></nav>`;
+    `<aside id="sidebar" class="sidebar"><a href="#campaigns" class="brand"><span class="brand-crest">${crown}</span><span>A COROA VELADA<small>ONDE AS HISTÓRIAS VIVEM</small></span></a><button type="button" data-action="close-menu" class="icon-button drawer-close" aria-label="Fechar navegação">${icon('close')}</button><div data-nav-root></div><div class="sidebar-footer"><p>O sangue lembra.<br><span>A noite nunca esquece.</span></p><span class="version">PORTAL ONLINE · V7</span></div></aside><div class="workspace"><header class="topbar"><div class="breadcrumb"><button data-action="menu" class="icon-button mobile-menu" aria-label="Abrir navegação">${icon('menu')}</button><span class="campaign-breadcrumb"></span><i>/</i><strong id="breadcrumb-current"></strong></div><div class="topbar-right">${button(icon('download') + ' <span>Salvar JSON</span>', 'backup-table', 'aria-label="Salvar JSONs do portal"', 'button ghost top-export')}<button type="button" class="icon-button notification-button" data-action="nav-notifications" aria-label="Notificações">${icon('notes')}<span data-notification-count hidden></span></button><button type="button" class="user-button" data-action="nav-profile" aria-label="Abrir meu perfil" title="Meu perfil"><span class="avatar small" data-user-avatar></span><span data-user-name></span></button><button class="icon-button" data-action="logout" aria-label="Sair">${icon('logout')}</button></div></header><div class="connection-banner"><span>${icon('save')} <span data-sync-label></span></span><span>Atualização automática da campanha</span></div><main id="main-content" tabindex="-1"></main><footer class="app-footer"><span>A COROA VELADA</span><span>Suas histórias, além do véu.</span><span>◇</span></footer></div><button type="button" class="drawer-backdrop" data-action="close-menu" aria-label="Fechar menu"></button><nav class="mobile-bottom" aria-label="Navegação principal"></nav>`;
   document.addEventListener('click', handleClick, { signal: events.signal });
   document.addEventListener('submit', handleSubmit, { signal: events.signal });
+  document.addEventListener(
+    'input',
+    (event) => {
+      const form = event.target.closest('form');
+      if (form) form.dataset.dirty = 'true';
+    },
+    { signal: events.signal }
+  );
 }
 let events = new AbortController();
 function updateSelect() {
@@ -323,18 +336,22 @@ function context() {
     editProposal
   };
 }
-async function refreshAll() {
-  const identity = await api('/auth/me');
-  state.account = identity.account;
-  state.game = await api('/api/game');
-  await loadPlayers();
-  const chosen =
-    state.players.find((p) => p.id === player()?.id) || (!admin() ? state.players[0] : null);
-  state.player = chosen ? await api(`/api/characters/${chosen.id}`) : null;
-  await loadFeatureState(state);
-  if (state.view === 'accounts') state.accounts = await api('/api/admin/accounts');
+async function refreshAll({ silent = false } = {}) {
+  const mapVersion = state.campaign?.maps?.map((m) => m.id + ':' + m._revision).join('|');
+  await loadFeatureState(state, { silent });
+  if (
+    silent &&
+    state.view === 'map' &&
+    mapVersion === state.campaign?.maps?.map((m) => m.id + ':' + m._revision).join('|')
+  ) {
+    const counter = $('[data-notification-count]');
+    const count = state.notifications.filter((n) => !n.read_by.includes(state.account.id)).length;
+    counter.textContent = count;
+    counter.hidden = !count;
+    return;
+  }
   if (state.view === 'storage') state.storageMarkup = await storageView();
-  if (state.view === 'trash') state.trash = await api('/api/admin/trash');
+  if (state.view === 'trash') state.trash = await api('/api/admin/trash', { silent });
   updateSelect();
   render();
 }
@@ -344,9 +361,22 @@ async function reloadCampaign() {
   state.editor = null;
   state.archived = false;
   await refreshAll();
-  await go(admin() ? 'dashboard' : player() ? 'overview' : 'my-characters');
+  await go(
+    !state.campaigns.length
+      ? 'campaigns'
+      : admin()
+        ? 'dashboard'
+        : player()
+          ? 'overview'
+          : 'my-characters'
+  );
 }
 function render() {
+  if (
+    !state.campaigns?.length &&
+    !['campaigns', 'profile', 'storage', 'trash', 'notifications'].includes(state.view)
+  )
+    state.view = 'campaigns';
   if (admin() && state.view === 'network') state.view = 'dashboard';
   const allowed = [...sharedNav, ...nav, ...internalNav, ...(admin() ? adminNav : [])];
   if (admin() && !player() && sheetViews.includes(state.view)) state.view = 'dashboard';
@@ -386,6 +416,7 @@ function render() {
   const ctx = context(),
     featureViews = {
       campaigns: campaignHub,
+      social: socialPage,
       notes: notesPage,
       quests: questsPage,
       profile: profilePage,
@@ -455,6 +486,7 @@ function render() {
   bindEvolution(ctx);
   bindRulebook(ctx);
   bindFeatureViews(ctx);
+  bindCommunity(ctx);
   bindCanvas(ctx);
   document.title = `${state.campaign?.title || 'Portal'} · A Coroa Velada`;
 }
@@ -572,17 +604,17 @@ function recordCard(key, row) {
 }
 function possessions() {
   const p = player();
-  return `<section class="panel money-panel"><div><span class="eyebrow">RECURSOS FINANCEIROS</span><h2 data-money-balance>${currency(p.money)}</h2><p>Ganhos, gastos e pequenas fortunas.</p></div>${button(icon('plus') + ' Movimentar saldo', 'money', '', 'button primary')}</section>${sectionHead('Pertences e relíquias', 'Tudo o que você carrega para dentro da noite.', button(icon('plus') + ' Adicionar item', 'edit-record', 'data-key="items"', 'button primary'))}<div class="card-grid">${p.items.length ? p.items.map((x) => recordCard('items', x)).join('') : empty('Seu inventário está vazio.', 'Adicione seus equipamentos, relíquias e outros pertences.')}</div>${sectionHead('Movimentações', 'Cada ganho e gasto, com o seu motivo.')}<section class="panel transaction-list">${(p.transactions || []).map((t) => `<article><span class="transaction-sign ${t.amount > 0 ? 'income' : 'expense'}">${t.amount > 0 ? '+' : '−'}</span><div><strong>${esc(t.reason)}</strong><small>${date(t.at)}</small></div><strong class="${t.amount > 0 ? 'income' : 'expense'}">${t.amount > 0 ? '+' : ''}${currency(t.amount)}</strong></article>`).join('') || '<p class="muted">Nenhum lançamento. Experimente −133 ou +2500.</p>'}</section>`;
+  return `<section class="panel money-panel"><div><span class="eyebrow">RECURSOS FINANCEIROS</span><h2 data-money-balance>${currency(p.money)}</h2><p>Ganhos, gastos e pequenas fortunas.</p></div>${button(icon('plus') + ' Movimentar saldo', 'money', '', 'button primary')}</section>${sectionHead('Pertences e relíquias', 'Tudo o que você carrega para dentro da noite.', button(icon('plus') + ' Adicionar item', 'edit-record', 'data-key="items"', 'button primary'))}<div class="card-grid">${p.items.length ? p.items.map((x) => recordCard('items', x)).join('') : empty('Seu inventário está vazio.', 'Adicione seus equipamentos, relíquias e outros pertences.')}</div>${sectionHead('Movimentações', 'Cada ganho e gasto, com o seu motivo.', admin() ? button('Limpar registros', 'delete-log', 'data-key="transactions" data-index="all"', 'text-button danger') : '')}<section class="panel transaction-list">${(p.transactions || []).map((t, index) => `<article><span class="transaction-sign ${t.amount > 0 ? 'income' : 'expense'}">${t.amount > 0 ? '+' : '−'}</span><div><strong>${esc(t.reason)}</strong><small>${date(t.at)}</small></div><strong class="${t.amount > 0 ? 'income' : 'expense'}">${t.amount > 0 ? '+' : ''}${currency(t.amount)}</strong>${admin() ? button('Apagar', 'delete-log', `data-key="transactions" data-index="${index}"`, 'text-button danger') : ''}</article>`).join('') || '<p class="muted">Nenhum lançamento. Experimente −133 ou +2500.</p>'}</section>`;
 }
 function chronicle() {
   const p = player();
-  return `${sectionHead('Ambições e desejos', 'Aquilo que faz uma eternidade valer a pena.', button(icon('plus') + ' Novo objetivo', 'edit-record', 'data-key="goals"', 'button ghost'))}<div class="goals-grid">${p.goals.map((row, i) => `<article class="goal-card"><span class="eyebrow">${i === 0 ? 'AMBIÇÃO' : i === 1 ? 'DESEJO' : 'OBJETIVO'} ${row.completed ? '· CONCLUÍDO' : ''}</span><h3>${esc(row.description)}</h3><div>${button(row.completed ? 'Reabrir' : 'Concluir', 'goal-complete', `data-record="${esc(row.id)}"`, 'text-button')}${button(icon('edit'), 'edit-record', `data-key="goals" data-record="${esc(row.id)}" aria-label="Editar objetivo"`, 'icon-button')}${button('Remover', 'remove-record', `data-key="goals" data-record="${esc(row.id)}"`, 'text-button danger')}</div></article>`).join('') || empty('Qual é a sua ambição?', 'Crie um objetivo para o personagem.')}</div>${sectionHead('Anotações da crônica', 'Pistas, personagens e encontros que merecem ser lembrados.', button(icon('plus') + ' Nova anotação', 'edit-record', 'data-key="notes"', 'button primary'))}<div class="card-grid">${p.notes.map((row) => recordCard('notes', row)).join('') || empty('Uma página em branco.', 'Registre a primeira descoberta da sua crônica.')}</div>${sectionHead('Princípios e convicções', 'As linhas que você ainda se recusa a atravessar.', admin() ? button(icon('edit') + ' Editar', 'morality', '', 'button ghost') : '')}<section class="panel morality-list">${p.moralityes.map((x, i) => `<div><span class="gold">${String(i + 1).padStart(2, '0')}</span><p>${esc(x.description)}</p></div>`).join('') || '<p class="muted">O narrador ainda não registrou convicções.</p>'}</section>${sectionHead('Rastros na noite', 'Últimas alterações registradas nesta ficha.')}<section class="panel history">${
+  return `${sectionHead('Ambições e desejos', 'Aquilo que faz uma eternidade valer a pena.', button(icon('plus') + ' Novo objetivo', 'edit-record', 'data-key="goals"', 'button ghost'))}<div class="goals-grid">${p.goals.map((row, i) => `<article class="goal-card"><span class="eyebrow">${i === 0 ? 'AMBIÇÃO' : i === 1 ? 'DESEJO' : 'OBJETIVO'} ${row.completed ? '· CONCLUÍDO' : ''}</span><h3>${esc(row.description)}</h3><div>${button(row.completed ? 'Reabrir' : 'Concluir', 'goal-complete', `data-record="${esc(row.id)}"`, 'text-button')}${button(icon('edit'), 'edit-record', `data-key="goals" data-record="${esc(row.id)}" aria-label="Editar objetivo"`, 'icon-button')}${button('Remover', 'remove-record', `data-key="goals" data-record="${esc(row.id)}"`, 'text-button danger')}</div></article>`).join('') || empty('Qual é a sua ambição?', 'Crie um objetivo para o personagem.')}</div>${sectionHead('Anotações da crônica', 'Pistas, personagens e encontros que merecem ser lembrados.', button(icon('plus') + ' Nova anotação', 'edit-record', 'data-key="notes"', 'button primary'))}<div class="card-grid">${p.notes.map((row) => recordCard('notes', row)).join('') || empty('Uma página em branco.', 'Registre a primeira descoberta da sua crônica.')}</div>${sectionHead('Princípios e convicções', 'As linhas que você ainda se recusa a atravessar.', admin() ? button(icon('edit') + ' Editar', 'morality', '', 'button ghost') : '')}<section class="panel morality-list">${p.moralityes.map((x, i) => `<div><span class="gold">${String(i + 1).padStart(2, '0')}</span><p>${esc(x.description)}</p></div>`).join('') || '<p class="muted">O narrador ainda não registrou convicções.</p>'}</section>${sectionHead('Rastros na noite', 'Últimas alterações registradas nesta ficha.', admin() ? button('Limpar histórico', 'delete-log', 'data-key="history" data-index="all"', 'text-button danger') : '')}<section class="panel history">${
     [...(p.history || [])]
       .reverse()
       .slice(0, 20)
       .map(
-        (x) =>
-          `<div><span class="timeline-dot"></span><div><strong>${esc(x.action)}</strong><p>${esc(x.details)}</p><small>${esc(x.actor)} · ${date(x.at)}</small></div></div>`
+        (x, index) =>
+          `<div><span class="timeline-dot"></span><div><strong>${esc(x.action)}</strong><p>${esc(x.details)}</p><small>${esc(x.actor)} · ${date(x.at)}</small>${admin() ? button('Apagar', 'delete-log', `data-key="history" data-index="${p.history.length - 1 - index}"`, 'text-button danger') : ''}</div></div>`
       )
       .join('') || '<p class="muted">As próximas alterações serão registradas aqui.</p>'
   }</section>`;
@@ -594,12 +626,12 @@ function dice() {
       label: `${x.name} (${value(key, x.id)})`
     }))
   );
-  return `<div class="dice-layout"><section class="panel dice-builder"><span class="eyebrow">ORÁCULO DA NOITE</span><h2>Monte sua parada.</h2><p class="muted">D${state.game.dice.sides} com dificuldade configurável. Cada dado que alcança a dificuldade conta um sucesso; não há regras adicionais de crítico ou falha automática.</p><form id="dice-form" class="form-grid">${select('attribute', 'Atributo', [{ value: 'none', label: 'Sem atributo' }, ...state.game.atributes.map((x) => ({ value: x.id, label: `${x.name} (${value('atributes', x.id)})` }))])}${select('skill', 'Habilidade', [{ value: 'none', label: 'Sem habilidade' }, ...options])}${field('modifier', 'Modificador', 0, 'number', 'min="-20" max="20" step="1" required')}${field('difficulty', 'Dificuldade por dado', state.game.dice.success_on, 'number', `min="1" max="${state.game.dice.sides}" step="1" required`)}<label class="checkbox full"><input type="checkbox" name="hunger" checked> Destacar dados de fome (máximo: ${player().status.hunger})</label><button class="button primary full" type="submit">${icon('dice')} Rolar os dados</button></form><p class="hint">Até 30 rolagens acompanham o JSON da ficha. Som opcional no seu perfil.</p></section><section class="dice-results" aria-live="polite">${
+  return `<div class="list-toolbar">${button('Limpar rolagens', 'delete-log', 'data-key="rolls" data-index="all"', 'text-button danger')}</div><div class="dice-layout"><section class="panel dice-builder"><span class="eyebrow">ORÁCULO DA NOITE</span><h2>Monte sua parada.</h2><p class="muted">D${state.game.dice.sides} com dificuldade configurável. Cada dado que alcança a dificuldade conta um sucesso; não há regras adicionais de crítico ou falha automática.</p><form id="dice-form" class="form-grid">${select('attribute', 'Atributo', [{ value: 'none', label: 'Sem atributo' }, ...state.game.atributes.map((x) => ({ value: x.id, label: `${x.name} (${value('atributes', x.id)})` }))])}${select('skill', 'Habilidade', [{ value: 'none', label: 'Sem habilidade' }, ...options])}${field('modifier', 'Modificador', 0, 'number', 'min="-20" max="20" step="1" required')}${field('difficulty', 'Dificuldade por dado', state.game.dice.success_on, 'number', `min="1" max="${state.game.dice.sides}" step="1" required`)}<label class="checkbox full"><input type="checkbox" name="hunger" checked> Destacar dados de fome (máximo: ${player().status.hunger})</label><button class="button primary full" type="submit">${icon('dice')} Rolar os dados</button></form><p class="hint">Até 30 rolagens acompanham o JSON da ficha. Som opcional no seu perfil.</p></section><section class="dice-results" aria-live="polite">${
     player().rolls?.length
       ? player()
           .rolls.map(
             (r, i) =>
-              `<article class="panel roll-result ${i === 0 ? 'latest' : ''}"><div class="roll-result-heading"><span class="eyebrow">${esc(r.label)}</span><span>${date(r.at)}</span></div><h2>${r.successes} <span>${r.successes === 1 ? 'sucesso' : 'sucessos'}</span></h2><div class="dice-faces">${r.dice.map((d) => `<span class="die ${d.hunger ? 'hunger' : ''} ${d.value >= r.threshold ? 'success' : ''}" aria-label="${d.hunger ? 'Dado de fome' : 'Dado comum'}: ${d.value}">${d.value}</span>`).join('')}</div><p>${r.dice.length} D${r.sides || 10} · Dificuldade ${r.threshold} · Vermelho indica fome</p></article>`
+              `<article class="panel roll-result ${i === 0 ? 'latest' : ''}"><div class="roll-result-heading"><span class="eyebrow">${esc(r.label)}</span><span>${date(r.at)}</span></div><h2>${r.successes} <span>${r.successes === 1 ? 'sucesso' : 'sucessos'}</span></h2><div class="dice-faces">${r.dice.map((d) => `<span class="die ${d.hunger ? 'hunger' : ''} ${d.value >= r.threshold ? 'success' : ''}" aria-label="${d.hunger ? 'Dado de fome' : 'Dado comum'}: ${d.value}">${d.value}</span>`).join('')}</div><p>${r.dice.length} D${r.sides || 10} · Dificuldade ${r.threshold} · Vermelho indica fome</p>${button('Apagar rolagem', 'delete-log', `data-key="rolls" data-index="${i}"`, 'text-button danger')}</article>`
           )
           .join('')
       : empty('A noite espera sua decisão.', 'Escolha seus traços e faça a primeira rolagem.')
@@ -640,7 +672,7 @@ function bindSearch() {
     });
 }
 function accountsView() {
-  return `${sectionHead('Quem tem as chaves da mesa.', 'Cada jogador pode ter vários personagens. A conta do narrador administra a campanha.', button(icon('plus') + ' Criar acesso', 'create-account', '', 'button primary'))}<div class="account-grid">${state.accounts.map((a) => `<article class="panel account-card"><div class="account-card-header"><span class="avatar small">${a.avatar ? `<img src="${esc(a.avatar)}" alt="">` : esc(a.display_name.slice(0, 1))}</span><div><h3>${esc(a.display_name)}</h3><p>@${esc(a.username)}</p></div><span class="tag ${a.active ? 'red' : ''}">${a.active ? 'ATIVO' : 'INATIVO'}</span></div><p class="account-role">${a.role === 'admin' ? 'Narrador · administra sem personagem' : a.campaign_access ? 'Jogador com acesso à campanha' : 'Sem acesso a esta campanha'}</p><div class="account-linked">${a.role === 'admin' ? '<span class="muted">Pode administrar todas as fichas.</span>' : a.character_ids.map((id) => `<span class="tag">${esc(state.players.find((p) => p.id === id)?.char || '#' + id)}</span>`).join('') || '<span class="muted">Pode criar propostas quando tiver acesso à campanha.</span>'}</div>${button('Gerenciar acesso e personagens', 'edit-account', `data-id="${a.id}"`, 'button ghost')}${a.role === 'player' && a.campaign_access ? button(icon('download') + ' Pacote de acesso do jogador', 'export-account', `data-id="${a.id}"`, 'button ghost') : ''}${a.role === 'player' ? button('Remover jogador', 'delete-account', `data-id="${a.id}"`, 'text-button danger') : ''}</article>`).join('')}</div>`;
+  return `${sectionHead('Quem tem as chaves da mesa.', 'Cada jogador pode ter vários personagens. A conta do narrador administra a campanha.', button(icon('plus') + ' Criar acesso', 'create-account', '', 'button primary'))}<div class="account-grid">${state.accounts.map((a) => `<article class="panel account-card"><div class="account-card-header"><span class="avatar small">${a.avatar ? `<img src="${esc(a.avatar)}" alt="">` : esc(a.display_name.slice(0, 1))}</span><div><h3>${esc(a.display_name)}</h3><p>@${esc(a.username)}</p></div><span class="tag ${a.active ? 'red' : ''}">${a.active ? 'ATIVO' : 'INATIVO'}</span></div><p class="account-role">${a.role === 'admin' ? 'Narrador · administra sem personagem' : a.campaign_access ? 'Jogador com acesso à campanha' : 'Sem acesso a esta campanha'}</p><div class="account-linked">${a.role === 'admin' ? '<span class="muted">Pode administrar todas as fichas.</span>' : a.character_ids.map((id) => `<span class="tag">${esc(state.players.find((p) => p.id === id)?.char || '#' + id)}</span>`).join('') || '<span class="muted">Pode criar propostas quando tiver acesso à campanha.</span>'}</div>${button('Gerenciar acesso e personagens', 'edit-account', `data-id="${a.id}"`, 'button ghost')}${a.role === 'player' && a.campaign_access ? button(icon('download') + ' Pacote de acesso do jogador', 'export-account', `data-id="${a.id}"`, 'button ghost') : ''}${a.id !== state.account.id ? button(a.role === 'admin' ? 'Remover narrador' : 'Remover jogador', 'delete-account', `data-id="${a.id}"`, 'text-button danger') : ''}</article>`).join('')}</div>`;
 }
 function rulesView() {
   return rulebookPage(context());
@@ -781,7 +813,7 @@ function accountModal(account) {
         { value: 'admin', label: 'Narrador' }
       ],
       account.role
-    )}${field('password', existing ? 'Redefinir senha (opcional)' : 'Senha inicial', '', 'password', `${existing ? '' : 'required'} minlength="6" maxlength="128" autocomplete="new-password" placeholder="No mínimo 6 caracteres"`)}<label class="checkbox full"><input name="campaign_access" type="checkbox" ${account.campaign_access ? 'checked' : ''}> Acesso a esta campanha, mesmo sem ficha aprovada</label>${existing ? `<label class="checkbox full"><input name="active" type="checkbox" ${account.active ? 'checked' : ''}> Conta ativa</label>` : ''}${options}</div>`,
+    )}${field('password', existing ? 'Redefinir senha (opcional)' : 'Senha inicial', '', 'password', `${existing ? '' : 'required'} minlength="10" maxlength="128" autocomplete="new-password" placeholder="No mínimo 10 caracteres"`)}<label class="checkbox full"><input name="campaign_access" type="checkbox" ${account.campaign_access ? 'checked' : ''}> Acesso a esta campanha, mesmo sem ficha aprovada</label>${existing ? `<label class="checkbox full"><input name="active" type="checkbox" ${account.active ? 'checked' : ''}> Conta ativa</label>` : ''}${options}</div>`,
     async (data) => {
       const payload = {
         display_name: data.get('display_name'),
@@ -820,9 +852,12 @@ async function handleClick(event) {
   const { action, key, id, record } = control.dataset;
   await run(async () => {
     if (action.startsWith('nav-')) {
+      closeModal();
       await go(action.slice(4));
       return;
     }
+    if (await lifecycleAction(action, control.dataset, context())) return;
+    if (await communityAction(action, control.dataset, context())) return;
     if (await evolutionAction(action, control.dataset, context())) return;
     if (await administrationAction(action, control.dataset, context())) return;
     if (await rulebookAction(action, control.dataset, context())) return;
@@ -848,7 +883,7 @@ async function handleClick(event) {
       case 'logout':
         modal(
           'Encerrar sua sessão?',
-          '<p>Se houver alterações pendentes, salve os JSONs antes de sair. Você pode entrar de novo enquanto esta aba estiver aberta.</p>',
+          '<p>As alterações concluídas já estão salvas. Ao sair, este acesso será encerrado nos seus dispositivos; você poderá entrar novamente com login e senha.</p>',
           async () => {
             await api('/auth/logout', { method: 'POST', data: {} });
             clearSession();
@@ -872,7 +907,7 @@ async function handleClick(event) {
               'Nova senha',
               '',
               'password',
-              'required minlength="6" maxlength="128" autocomplete="new-password"'
+              'required minlength="10" maxlength="128" autocomplete="new-password"'
             ),
           async (data) => {
             const response = await api('/auth/password', {
@@ -928,9 +963,11 @@ async function handleClick(event) {
           revision = p._revision;
         modal(
           'Um rosto para a noite',
-          '<label class="field"><span>Imagem local (PNG, JPEG ou WebP, até 5 MB)</span><input type="file" name="file" accept="image/png,image/jpeg,image/webp" required></label><p class="hint">A imagem fica no JSON. Não usa links nem precisa de conexão.</p>',
+          '<label class="field"><span>Imagem local (PNG, JPEG ou WebP, até 5 MB)</span><input type="file" name="file" accept="image/png,image/jpeg,image/webp"></label><label class="checkbox"><input type="checkbox" name="remove"> Apagar o retrato atual</label><p class="hint">O retrato é salvo no Storage privado da campanha.</p>',
           async (data) => {
-            const image = (await readImage(data.get('file'))).image;
+            if (!data.has('remove') && !data.get('file')?.size)
+              throw new Error('Selecione um retrato ou marque Apagar.');
+            const image = data.has('remove') ? '' : (await readImage(data.get('file'))).image;
             await patch({ profilepicture: image }, revision);
           }
         );
@@ -1313,11 +1350,17 @@ async function editFull(p) {
   await go('new-player');
 }
 async function go(view, fromHash = false) {
+  if (
+    !state.campaigns?.length &&
+    !['campaigns', 'profile', 'storage', 'trash', 'notifications'].includes(view)
+  )
+    view = 'campaigns';
   if (view !== state.view) clearPending();
   if (adminNav.some(([key]) => key === view) && !admin() && view !== 'submissions')
     view = 'my-characters';
   state.view = view;
   if (view === 'accounts') state.accounts = await api('/api/admin/accounts');
+  if (view === 'social') state.social = await api('/api/social');
   if (view === 'storage') state.storageMarkup = await storageView();
   if (view === 'trash') state.trash = await api('/api/admin/trash');
   if (view === 'new-player' && !state.editor) await makeEditor();
@@ -1338,25 +1381,18 @@ export function stopPortal() {
   state.players = [];
   state.accounts = [];
   state.rolls = [];
+  state.socialDraft = {};
+  state.socialRecipient = '';
 }
 export async function startPortal() {
   events.abort();
   events = new AbortController();
   state.editor = null;
-  state.account = (await api('/auth/me')).account;
-  state.campaigns = await api('/api/campaigns');
-  if (!state.campaigns.length) throw new Error('Nenhuma campanha vinculada a este acesso.');
-  const current = (await api('/api/campaign')).id;
-  if (!state.campaigns.some((c) => c.id === current))
-    await api(`/api/campaigns/${state.campaigns[0].id}/select`, { method: 'POST' });
-  state.game = await api('/api/game');
-  await loadPlayers();
-  state.player =
-    !admin() && state.players[0] ? await api(`/api/characters/${state.players[0].id}`) : null;
+  state.player = null;
+  await loadFeatureState(state);
   state.evolution = null;
   state.reviewId = null;
   state.mapId = null;
-  await loadFeatureState(state);
   state.view =
     location.hash.slice(1) ||
     (admin()
@@ -1377,23 +1413,25 @@ export async function startPortal() {
     let seen = store.remoteRevision,
       checking = false;
     const synchronize = async () => {
-      if (
-        checking ||
-        document.hidden ||
-        busy ||
-        state.editor ||
-        pendingStatus ||
-        state.view === 'evolution' ||
-        document.querySelector('#modal[open]') ||
-        document.activeElement?.matches('input,textarea,select')
-      )
-        return;
+      if (checking || document.hidden) return;
       checking = true;
       try {
-        const status = await api('/api/sync');
+        const status = await api('/api/sync', { silent: true });
+        const editing =
+          busy ||
+          state.editor ||
+          pendingStatus ||
+          state.view === 'evolution' ||
+          document.querySelector('#modal[open]') ||
+          document.activeElement?.matches('input,textarea,select') ||
+          document.querySelector('form[data-dirty="true"]');
+        if (editing) return;
         if (status.revision !== seen) {
-          await refreshAll();
+          await refreshAll({ silent: true });
           seen = store.remoteRevision;
+        } else if (state.view === 'social') {
+          state.social = await api('/api/social', { silent: true });
+          render();
         }
       } catch (error) {
         if (error.status !== 401)

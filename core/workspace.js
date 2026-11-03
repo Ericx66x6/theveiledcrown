@@ -47,12 +47,32 @@ function visibility(item) {
   if (!['campaign', 'private', 'gm'].includes(item.visibility ?? 'campaign'))
     fail('Visibilidade inválida.');
 }
-function validatePin(pin) {
+export function validatePin(pin) {
   coordinate(pin.x);
   coordinate(pin.y);
   text(pin.title, 'Marcador', 200, true);
   for (const key of ['description', 'domain', 'type'])
     text(pin[key] ?? '', key, key === 'description' ? 30000 : 500);
+  if (pin.lat !== undefined && (!Number.isFinite(pin.lat) || pin.lat < -85.05 || pin.lat > 85.05))
+    fail('Latitude inválida.');
+  if (pin.lng !== undefined && (!Number.isFinite(pin.lng) || pin.lng < -180 || pin.lng > 180))
+    fail('Longitude inválida.');
+  for (const key of ['address', 'atmosphere', 'danger']) text(pin[key] || '', key, 500);
+  if (!Array.isArray(pin.images || []) || (pin.images || []).length > 6)
+    fail('Imagens do local inválidas.');
+  for (const image of pin.images || []) imageData(image);
+  if (!Array.isArray(pin.npcs || []) || (pin.npcs || []).length > 12)
+    fail('NPCs do local inválidos.');
+  const npcIds = new Set();
+  for (const npc of pin.npcs || []) {
+    identifier(npc.id, 'ID de NPC');
+    if (npcIds.has(npc.id)) fail('NPC repetido.');
+    npcIds.add(npc.id);
+    text(npc.name, 'NPC', 150, true);
+    text(npc.role || '', 'Papel', 500);
+    text(npc.description || '', 'Descrição', 10000);
+    imageData(npc.image || '');
+  }
   visibility(pin);
   if (pin.color && !/^#[a-f\d]{6}$/i.test(pin.color)) fail('Cor de marcador inválida.');
 }
@@ -109,7 +129,6 @@ export function validateWorkspace(source) {
   if (
     input?.format !== 'coroa-hub-v2' ||
     !Array.isArray(input.campaigns) ||
-    !input.campaigns.length ||
     input.campaigns.length > 100 ||
     !Array.isArray(input.accounts) ||
     !input.accounts.length
@@ -119,6 +138,7 @@ export function validateWorkspace(source) {
     campaignIds = new Set(),
     userIds = new Set(),
     usernames = new Set();
+  root.default_game = validateSettings(gameSettings(validateGame(root.default_game)));
   for (const c of root.campaigns) {
     identifier(c.id, 'ID da campanha');
     if (!/^[A-Za-z0-9_-]+$/.test(c.id) || campaignIds.has(c.id))
@@ -147,12 +167,32 @@ export function validateWorkspace(source) {
       text(m.title, 'Nome do mapa', 150, true);
       text(m.description ?? '', 'Descrição', 5000);
       if (typeof m.player_access !== 'boolean') fail('Permissão de mapa inválida.');
+      if (!['image', 'geographic'].includes(m.mode || 'image')) fail('Tipo de mapa inválido.');
+      if (m.mode === 'geographic') {
+        const { lat, lng, zoom } = m.center || {};
+        if (
+          !Number.isFinite(lat) ||
+          lat < -85.05 ||
+          lat > 85.05 ||
+          !Number.isFinite(lng) ||
+          lng < -180 ||
+          lng > 180 ||
+          !Number.isInteger(zoom) ||
+          zoom < 2 ||
+          zoom > 19
+        )
+          fail('Centro geográfico inválido.');
+      }
       imageData(m.image || '', 45000000);
       if (m.image) {
         number(m.width, 'Largura do mapa', 1, 20000);
         number(m.height, 'Altura do mapa', 1, 20000);
       }
-      for (const pin of list(m.pins, 'marcadores')) validatePin(pin);
+      for (const pin of list(m.pins, 'marcadores')) {
+        validatePin(pin);
+        if (m.mode === 'geographic' && (pin.lat === undefined || pin.lng === undefined))
+          fail('Coordenadas geográficas ausentes.');
+      }
     }
     for (const node of list(c.network.nodes, 'NPCs')) {
       coordinate(node.x);
@@ -193,6 +233,22 @@ export function validateWorkspace(source) {
       )
         fail('Recompensa financeira inválida.');
       if (!Array.isArray(q.items) || q.items.length > 20) fail('Itens de missão inválidos.');
+      if (q.delivered_rewards) {
+        const reward = q.delivered_rewards;
+        number(reward.xp_reward, 'XP entregue', 0, c.game.quests.max_xp_reward);
+        if (
+          typeof reward.money_reward !== 'number' ||
+          reward.money_reward < 0 ||
+          reward.money_reward > c.game.quests.max_money_reward
+        )
+          fail('Dinheiro entregue inválido.');
+        if (!Array.isArray(reward.items) || reward.items.length > 20)
+          fail('Itens entregues inválidos.');
+        for (const item of reward.items) {
+          text(item.name, 'Item entregue', 150, true);
+          number(item.quantity, 'Quantidade', 1, 9999);
+        }
+      }
       for (const i of q.items) {
         text(i.name, 'Item', 150, true);
         number(i.quantity, 'Quantidade', 1, 9999);
@@ -201,6 +257,13 @@ export function validateWorkspace(source) {
       text(q.description ?? '', 'Descrição', 30000);
       if (!['active', 'review', 'completed', 'cancelled'].includes(q.status))
         fail('Estado de missão inválido.');
+    }
+    for (const post of list(c.social || [], 'recados', 500)) {
+      text(post.content, 'Recado', 5000, true);
+      if (!['message', 'reminder', 'poke'].includes(post.kind)) fail('Recado inválido.');
+      identifier(post.created_by, 'Autor');
+      if (post.to) identifier(post.to, 'Destinatário');
+      if (post.due_at && !Number.isFinite(Date.parse(post.due_at))) fail('Lembrete inválido.');
     }
     for (const s of list(c.submissions, 'solicitações')) {
       identifier(s.created_by, 'Autor');
@@ -264,7 +327,7 @@ export function validateWorkspace(source) {
   root.revision = number(root.revision ?? 0, 'Revisão');
   root.active_campaign_id = root.campaigns.some((c) => c.id === root.active_campaign_id)
     ? root.active_campaign_id
-    : root.campaigns[0].id;
+    : root.campaigns[0]?.id || null;
   return root;
 }
 export function visible(item, account) {
@@ -275,7 +338,17 @@ export function visible(item, account) {
       : true;
 }
 export function notificationVisible(n, a) {
+  if (n.hidden_by?.includes(a.id)) return false;
   return n.audience === 'gm' ? a.role === 'admin' : n.recipient_id === a.id;
+}
+export function publicNote(note, doc) {
+  const account = doc.accounts?.find((a) => a.id === note.created_by);
+  return {
+    ...clone(note),
+    author: account
+      ? { id: account.id, display_name: account.display_name, avatar: '', role: account.role }
+      : note.author || { id: note.created_by, display_name: 'Acesso removido', avatar: '' }
+  };
 }
 export function publicCampaign(c, a) {
   const result = clone(c);
@@ -283,7 +356,10 @@ export function publicCampaign(c, a) {
     ...c.characters.map((p) => ({ id: p.id, char: p.char })),
     ...(c.retired_roster || [])
   ];
-  result.notes = result.notes.filter((n) => visible(n, a));
+  result.notes = result.notes.filter((n) => visible(n, a)).map((n) => publicNote(n, c));
+  result.social = (result.social || []).filter(
+    (p) => !p.hidden_by?.includes(a.id) && (!p.to || p.to === a.id || p.created_by === a.id)
+  );
   result.maps = result.maps
     .filter((m) => a.role === 'admin' || m.player_access)
     .map((m) => ({ ...m, pins: m.pins.filter((p) => visible(p, a)) }));
@@ -295,6 +371,9 @@ export function publicCampaign(c, a) {
   );
   result.notifications = result.notifications.filter((n) => notificationVisible(n, a));
   for (const key of [
+    'accounts',
+    'sessions',
+    'format',
     'snapshots',
     'characters',
     'game',
@@ -336,9 +415,10 @@ export function playerExport(root, account) {
   own.memberships = Object.fromEntries(campaigns.map((c) => [c.id, memberships[c.id]]));
   return {
     format: 'coroa-hub-v2',
-    schema_version: 6,
+    schema_version: 7,
     revision: root.revision,
     updated_at: timestamp(),
+    default_game: clone(root.default_game),
     active_campaign_id: campaigns.some((c) => c.id === root.active_campaign_id)
       ? root.active_campaign_id
       : campaigns[0]?.id,

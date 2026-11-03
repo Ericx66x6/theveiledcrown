@@ -413,7 +413,7 @@ test('outro jogador não edita anotação alheia', async () => {
     403
   );
 });
-test('jogador solicita conclusão mas não cria missão nem entrega recompensas', async () => {
+test('jogador consulta a previsão mas não solicita conclusão nem entrega recompensas', async () => {
   const f = await fixture();
   await enroll(f);
   const a = await login(f);
@@ -423,14 +423,18 @@ test('jogador solicita conclusão mas não cria missão nem entrega recompensas'
     () => f.request('/api/quests/' + q.id + '/complete', 'POST', { revision: 1 }, a.token),
     403
   );
-  await f.request(
-    '/api/quests/' + q.id + '/request-completion',
-    'POST',
-    { revision: 1, completion_note: 'Objetivo alcançado.' },
-    a.token
+  await rejects(
+    () =>
+      f.request(
+        '/api/quests/' + q.id + '/request-completion',
+        'POST',
+        { revision: q._revision },
+        a.token
+      ),
+    403
   );
   assert.equal((await f.request('/api/characters/234567')).xp, 65);
-  assert.equal((await f.request('/api/quests'))[0].status, 'review');
+  assert.equal((await f.request('/api/quests'))[0].status, 'active');
 });
 test('concluir missão entrega XP, dinheiro e itens exatamente uma vez', async () => {
   const f = await fixture();
@@ -517,7 +521,7 @@ test('marcadores privados não aparecem para outros jogadores', async () => {
   assert.equal((await f.request('/api/map', 'GET', {}, b.token)).pins.length, 0);
   await rejects(
     () => f.request('/api/map/pins/' + pin.id, 'PATCH', { revision: 1, title: 'Roubo' }, b.token),
-    403
+    404
   );
 });
 test('mural pessoal conecta NPCs e remove vínculos órfãos', async () => {

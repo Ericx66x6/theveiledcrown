@@ -8,6 +8,7 @@ import { publicAccount } from '../core/model.js';
 const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
+  '.mjs': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
   '.jpg': 'image/jpeg',
@@ -20,8 +21,15 @@ const routes = [
   [/^\/auth\/me$/, ['GET']],
   [/^\/api\/campaigns$/, ['GET', 'POST']],
   [/^\/api\/campaigns\/[^/]+\/select$/, ['POST']],
-  [/^\/api\/campaigns\/[^/]+$/, ['PATCH']],
+  [/^\/api\/campaigns\/[^/]+$/, ['PATCH', 'DELETE']],
   [/^\/api\/campaign$/, ['GET']],
+  [/^\/api\/portal-state$/, ['GET']],
+  [/^\/api\/members\/[^/]+$/, ['GET']],
+  [/^\/api\/social$/, ['GET', 'POST']],
+  [/^\/api\/social\/[^/]+$/, ['DELETE']],
+  [/^\/api\/admin\/reset$/, ['POST']],
+  [/^\/api\/admin\/trash\/purge$/, ['DELETE']],
+  [/^\/api\/characters\/\d+\/logs\/(history|transactions|rolls)$/, ['DELETE']],
   [/^\/api\/game$/, ['GET', 'PUT']],
   [/^\/api\/profile$/, ['GET', 'PATCH']],
   [/^\/api\/characters$/, ['GET']],
@@ -35,16 +43,18 @@ const routes = [
   [/^\/api\/admin\/trash$/, ['GET']],
   [/^\/api\/admin\/trash\/[^/]+\/[^/]+\/restore$/, ['POST']],
   [/^\/api\/notes(?:\/[^/]+)?$/, ['GET', 'POST', 'PATCH', 'DELETE']],
-  [/^\/api\/quests(?:\/[^/]+)?$/, ['GET', 'POST', 'PATCH']],
-  [/^\/api\/quests\/[^/]+\/(complete|approve|request-completion)$/, ['POST']],
+  [/^\/api\/quests(?:\/[^/]+)?$/, ['GET', 'POST', 'PATCH', 'DELETE']],
+  [/^\/api\/quests\/[^/]+\/(complete)$/, ['POST']],
   [/^\/api\/maps$/, ['GET', 'POST']],
   [/^\/api\/maps\/[^/]+$/, ['GET', 'PATCH', 'DELETE']],
   [/^\/api\/maps\/[^/]+\/pins(?:\/[^/]+)?$/, ['POST', 'PATCH', 'DELETE']],
   [/^\/api\/network(?:\/(nodes|links)(?:\/[^/]+)?)?$/, ['GET', 'POST', 'PATCH', 'DELETE']],
-  [/^\/api\/submissions(?:\/[^/]+)?$/, ['GET', 'POST', 'PATCH']],
+  [/^\/api\/submissions(?:\/[^/]+)?$/, ['GET', 'POST', 'PATCH', 'DELETE']],
   [/^\/api\/submissions\/[^/]+\/(approve|review)$/, ['POST']],
-  [/^\/api\/notifications$/, ['GET']],
+  [/^\/api\/notifications$/, ['GET', 'DELETE']],
   [/^\/api\/notifications\/[^/]+\/read$/, ['POST']],
+  [/^\/api\/notifications\/read-all$/, ['POST']],
+  [/^\/api\/notifications\/[^/]+$/, ['DELETE']],
   [/^\/api\/rulebook\/catalog\/[^/]+\/\d+$/, ['DELETE']],
   [/^\/api\/json\/(workspace|player)$/, ['GET']],
   [/^\/api\/json\/replace$/, ['POST']],
@@ -52,7 +62,7 @@ const routes = [
   [/^\/api\/exchange\/import$/, ['POST']],
   [/^\/api\/characters\/new-id$/, ['GET']],
   [/^\/api\/admin\/characters$/, ['POST']],
-  [/^\/api\/admin\/snapshots$/, ['GET']],
+  [/^\/api\/admin\/snapshots$/, ['GET', 'DELETE']],
   [/^\/api\/admin\/snapshots\/restore$/, ['POST']]
 ];
 function error(message, status = 400) {
@@ -95,6 +105,7 @@ export function createPortalServer({
   if (!bootstrapToken || bootstrapToken.length < 32)
     throw new Error('BOOTSTRAP_TOKEN precisa ter pelo menos 32 caracteres.');
   const directory = staticDir && resolve(staticDir);
+  const presence = new Map();
   const attempts = new Map(),
     limits = new Map();
   let queue = Promise.resolve();
@@ -106,7 +117,7 @@ export function createPortalServer({
   const server = createServer(async (req, res) => {
     const origin = req.headers.origin;
     res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('Referrer-Policy', 'same-origin');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     res.setHeader('X-Frame-Options', allowSameOriginFrames ? 'SAMEORIGIN' : 'DENY');
     const url = new URL(req.url, 'http://local.invalid');
     const api = url.pathname.startsWith('/api/') || url.pathname.startsWith('/auth/');
@@ -130,7 +141,10 @@ export function createPortalServer({
           throw error('Origem não autorizada.', 403);
         res.setHeader('Access-Control-Allow-Origin', origin);
         res.setHeader('Vary', 'Origin');
-        res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type, X-Campaign-ID');
+        res.setHeader(
+          'Access-Control-Allow-Headers',
+          'Authorization, Content-Type, X-Campaign-ID, X-Portal-Session'
+        );
         res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
         res.setHeader('Access-Control-Expose-Headers', 'X-Portal-Revision');
       }
@@ -158,13 +172,13 @@ export function createPortalServer({
         res.writeHead(200, {
           'Content-Type': MIME[extname(file)],
           'Cache-Control': 'no-cache',
-          'Content-Security-Policy': `default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; media-src blob:; frame-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors ${allowSameOriginFrames ? "'self'" : "'none'"}; form-action 'self'`
+          'Content-Security-Policy': `default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://tiles.openfreemap.org; font-src 'self'; connect-src 'self' https://tiles.openfreemap.org; worker-src 'self'; media-src blob:; frame-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors ${allowSameOriginFrames ? "'self'" : "'none'"}; form-action 'self'`
         });
         res.end(req.method === 'HEAD' ? undefined : data);
         return;
       }
       if (url.pathname === '/api/health') {
-        respond(200, { status: 'ok', version: '6.0.0' });
+        respond(200, { status: 'ok', version: '7.0.0' });
         return;
       }
       const ip = trustProxy
@@ -211,9 +225,19 @@ export function createPortalServer({
         data.password.length < 10
       )
         throw error('Use uma senha com pelo menos 10 caracteres.');
-      const bearer = String(req.headers.authorization || '').match(
+      const bearerHeader = String(req.headers.authorization || '').match(
         /^Bearer ([A-Za-z0-9_-]+)$/
       )?.[1];
+      const cookieToken = String(req.headers.cookie || '')
+        .split(';')
+        .map((part) => part.trim())
+        .find((part) => part.startsWith('coroa_session='))
+        ?.slice('coroa_session='.length);
+      const bearer =
+        bearerHeader ||
+        (/^[A-Za-z0-9_-]{20,200}$/.test(cookieToken || '') ? cookieToken : undefined);
+      if (!bearerHeader && cookieToken && !['GET', 'HEAD'].includes(req.method) && !origin)
+        throw error('Origem obrigatória para alterações autenticadas.', 403);
       const result = await run(async () => {
         const loaded = await repository.load();
         if (url.pathname === '/auth/status')
@@ -226,9 +250,10 @@ export function createPortalServer({
           service = new PortalService(store);
         service.attempts = attempts;
         service.maxSessions = 2000;
+        service.factoryGame = repository.seed?.default_game || loaded.root.default_game;
         const originalCampaign = store.root.active_campaign_id;
         const active = store.root.sessions.find(
-          (s) => s.token === bearer && s.expires > Date.now()
+          (s) => s.token === bearer && (s.expires === null || s.expires > Date.now())
         );
         const user =
           active &&
@@ -273,20 +298,64 @@ export function createPortalServer({
             response.account = publicAccount(service.auth(await store.get(), response.token));
           }
         }
+        if (url.pathname === '/auth/me')
+          response.campaign_id =
+            user && store.root.campaigns.some((c) => c.id === store.root.active_campaign_id)
+              ? store.root.active_campaign_id
+              : null;
         if (url.pathname.endsWith('/select') && active) {
           const s = store.root.sessions.find((s) => s.token === bearer);
           if (s) s.campaign_id = store.root.active_campaign_id;
         }
         if (store.root.campaigns.some((c) => c.id === originalCampaign))
           store.root.active_campaign_id = originalCampaign;
+        const presentUser =
+          user ||
+          (response?.account && store.root.accounts.find((a) => a.id === response.account.id));
+        const currentCampaign = store.root.campaigns.find(
+          (c) => c.id === store.root.active_campaign_id
+        );
+        if (presentUser && currentCampaign && url.pathname !== '/auth/logout')
+          presence.set(currentCampaign.id + '|' + presentUser.id, Date.now());
+        if (url.pathname === '/auth/logout' && presentUser)
+          for (const key of presence.keys())
+            if (key.endsWith('|' + presentUser.id)) presence.delete(key);
+        const members =
+          response?.social?.members || (url.pathname === '/api/social' ? response?.members : null);
+        if (members && currentCampaign)
+          for (const member of members) {
+            const at = presence.get(currentCampaign.id + '|' + member.id);
+            member.online = !!at && Date.now() - at < 90000;
+            member.last_seen = at ? new Date(at).toISOString() : null;
+          }
+        if (presence.size > 10000)
+          for (const [key, at] of presence) if (Date.now() - at > 3600000) presence.delete(key);
         let revision = loaded.revision;
         if (JSON.stringify(store.root) !== baseline)
           revision = await repository.save(store.root, loaded.revision);
         return { response, revision };
       });
+      const forwardedSecure =
+        trustProxy &&
+        String(req.headers['x-forwarded-proto'] || '')
+          .split(',')
+          .at(-1)
+          .trim() === 'https';
+      const cookie = (value, maxAge) =>
+        `coroa_session=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${forwardedSecure || req.socket.encrypted || process.env.NODE_ENV === 'production' ? '; Secure' : ''}`;
+      if (['/auth/logout', '/api/admin/reset'].includes(url.pathname))
+        res.setHeader('Set-Cookie', cookie('', 0));
+      else if (result.response?.token)
+        res.setHeader('Set-Cookie', cookie(result.response.token, 34560000));
+      else if (url.pathname === '/auth/me' && bearer)
+        res.setHeader('Set-Cookie', cookie(bearer, 34560000));
+      if (req.headers['x-portal-session'] === 'cookie' && result.response?.token)
+        delete result.response.token;
       res.setHeader('X-Portal-Revision', String(result.revision));
       respond(200, result.response);
     } catch (e) {
+      if (e.status === 401)
+        res.setHeader('Set-Cookie', 'coroa_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0');
       if (!res.headersSent)
         respond(e.status || 500, {
           error: e.status ? e.message : 'Não foi possível concluir a operação.'

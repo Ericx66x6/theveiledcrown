@@ -23,7 +23,7 @@ async function fixture(t, repository) {
   await once(server, 'listening');
   t.after(() => new Promise((resolve) => server.close(resolve)));
   const base = 'http://127.0.0.1:' + server.address().port;
-  const request = async (path, { method = 'GET', data, token, campaign, origin } = {}) => {
+  const request = async (path, { method = 'GET', data, token, campaign, origin, cookie } = {}) => {
     const url = new URL(base + path);
     if (method === 'GET' && data) url.searchParams.set('data', JSON.stringify(data));
     const r = await fetch(url, {
@@ -32,7 +32,8 @@ async function fixture(t, repository) {
         'Content-Type': 'application/json',
         ...(token ? { Authorization: 'Bearer ' + token } : {}),
         ...(campaign ? { 'X-Campaign-ID': campaign } : {}),
-        ...(origin ? { Origin: origin } : {})
+        ...(origin ? { Origin: origin } : {}),
+        ...(cookie ? { Cookie: cookie } : {})
       },
       body: method === 'GET' ? undefined : JSON.stringify(data || {})
     });
@@ -78,7 +79,7 @@ async function fixture(t, repository) {
       data: { username: user, password: 'senha-teste-123' }
     });
   };
-  return { request, call, bootstrap, create, repo };
+  return { request, call, bootstrap, create, repo, base };
 }
 test('HTTP: instalação protegida, autenticação e acesso revogado', async (t) => {
   const f = await fixture(t);
@@ -149,7 +150,7 @@ test('HTTP: missões só chegam aos participantes e narrador conclui diretamente
     409
   );
 });
-test('HTTP: pedido de conclusão notifica narrador e não premia sozinho', async (t) => {
+test('HTTP: jogador não dispõe de pedido de conclusão', async (t) => {
   const f = await fixture(t),
     admin = await f.bootstrap(),
     player = await f.create(admin, 234567, 'jogador');
@@ -158,13 +159,17 @@ test('HTTP: pedido de conclusão notifica narrador e não premia sozinho', async
     token: admin.token,
     data: { title: 'Uma pista', assignees: [234567], xp_reward: 8 }
   });
-  await f.call('/api/quests/' + q.id + '/request-completion', {
-    method: 'POST',
-    token: player.token,
-    data: { revision: 1, completion_note: 'Encontramos.' }
-  });
+  assert.equal(
+    (
+      await f.request('/api/quests/' + q.id + '/request-completion', {
+        method: 'POST',
+        token: player.token,
+        data: { revision: q._revision }
+      })
+    ).status,
+    404
+  );
   assert.equal((await f.call('/api/characters/234567', { token: player.token })).xp, 20);
-  assert.equal((await f.call('/api/notifications', { token: admin.token }))[0].kind, 'quest');
 });
 test('HTTP: relações privadas por personagem; narrador e outro jogador são recusados', async (t) => {
   const f = await fixture(t),
@@ -261,7 +266,7 @@ test('HTTP: arquivos privados, origem indevida e controle de tempo são recusado
     404
   );
 });
-test('HTTP: frontend compilado é a versão 6 online', async (t) => {
+test('HTTP: frontend compilado é a versão 7 online', async (t) => {
   const f = await fixture(t),
     r = await f.request('/');
   assert.equal(r.status, 200);
@@ -310,4 +315,84 @@ test('cliente online usa API real para login, consulta e evolução', async (t) 
     }
   });
   assert.equal((await client.request('/api/characters/234567', { token: login.token })).xp, 15);
+  const campaign = await client.request('/api/campaign', { token: admin.token });
+  await client.request('/api/campaigns/' + client.campaignId, {
+    method: 'DELETE',
+    token: admin.token,
+    data: { confirmation: campaign.title }
+  });
+  assert.equal(client.campaignId, null);
+  const hub = await client.request('/api/portal-state', { token: admin.token });
+  assert.equal(hub.campaign.id, 'no-campaign');
+  assert.deepEqual(hub.campaigns, []);
+});
+
+test('HTTP: cookie persistente restaura acesso e logout o revoga', async (t) => {
+  const f = await fixture(t),
+    admin = await f.bootstrap();
+  const login = await f.request('/auth/login', {
+    method: 'POST',
+    data: { username: 'narrador', password: 'senha-teste-123' }
+  });
+  const set = login.headers.get('set-cookie');
+  assert.match(set, /HttpOnly/);
+  assert.match(set, /SameSite=Lax/);
+  assert.match(set, /Max-Age=34560000/);
+  const cookie = set.split(';')[0];
+  assert.equal((await f.call('/auth/me', { cookie })).account.id, admin.account.id);
+  const saved = await f.repo.load();
+  assert.equal(saved.root.sessions.find((s) => s.token === login.body.token).expires, null);
+  assert.equal((await f.request('/auth/logout', { method: 'POST', cookie })).status, 403);
+  const logout = await f.request('/auth/logout', { method: 'POST', cookie, origin: f.base });
+  assert.equal(logout.status, 200);
+  assert.match(logout.headers.get('set-cookie'), /Max-Age=0/);
+  assert.equal((await f.request('/auth/me', { cookie })).status, 401);
+});
+test('HTTP: snapshot de jogador não traz credenciais nem registros de outros acessos', async (t) => {
+  const f = await fixture(t),
+    admin = await f.bootstrap(),
+    player = await f.create(admin, 234567, 'jogador');
+  const payload = await f.call('/api/portal-state', { token: player.token });
+  const encoded = JSON.stringify(payload);
+  assert.doesNotMatch(encoded, /"password_hash"|"sessions"|"token"|"session_version"/);
+  assert.deepEqual(payload.accounts, []);
+  assert.equal(payload.players.length, 1);
+  const campaign = await f.call('/api/campaign', { token: player.token });
+  assert.equal(campaign.accounts, undefined);
+  assert.equal(campaign.sessions, undefined);
+});
+
+test('HTTP: cookie continua autorizado depois de recriar o servidor', async (t) => {
+  const f = await fixture(t);
+  const first = await f.request('/auth/bootstrap', {
+    method: 'POST',
+    data: { bootstrap_token: secret, username: 'narrador', password: 'senha-teste-123' }
+  });
+  const cookie = first.headers.get('set-cookie').split(';')[0];
+  const replacement = createPortalServer({ repository: f.repo, bootstrapToken: secret });
+  replacement.listen(0, '127.0.0.1');
+  await once(replacement, 'listening');
+  t.after(() => new Promise((resolve) => replacement.close(resolve)));
+  const response = await fetch('http://127.0.0.1:' + replacement.address().port + '/auth/me', {
+    headers: { Cookie: cookie }
+  });
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).account.id, first.body.account.id);
+});
+test('HTTP: presença informa só participantes da campanha', async (t) => {
+  const f = await fixture(t),
+    admin = await f.bootstrap(),
+    player = await f.create(admin, 234567, 'jogador');
+  const presence = await f.call('/api/social', { token: player.token });
+  const me = presence.members.find((a) => a.id === player.account.id);
+  assert.equal(me.online, true);
+  assert.ok(Number.isFinite(Date.parse(me.last_seen)));
+  const next = await f.call('/api/campaigns', {
+    method: 'POST',
+    token: admin.token,
+    data: { title: 'Outra mesa' }
+  });
+  const isolated = await f.call('/api/social', { token: admin.token, campaign: next.id });
+  assert.equal(isolated.members.length, 1);
+  assert.equal(isolated.members[0].id, admin.account.id);
 });

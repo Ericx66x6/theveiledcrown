@@ -25,6 +25,7 @@ export function normalizeCampaign(source) {
   delete c.map;
   c.maps = c.maps.map((m) => ({
     description: '',
+    mode: 'image',
     player_access: false,
     _revision: 0,
     pins: [],
@@ -32,6 +33,7 @@ export function normalizeCampaign(source) {
   }));
   for (const key of [
     'notes',
+    'social',
     'quests',
     'submissions',
     'notifications',
@@ -41,14 +43,17 @@ export function normalizeCampaign(source) {
     'snapshots'
   ])
     c[key] ??= [];
+  c.quests = c.quests.map((q) => (q.status === 'review' ? { ...q, status: 'active' } : q));
   c.network ??= { nodes: [], links: [] };
   c.characters ??= [];
   return c;
 }
 export function normalizeRoot(source) {
   const root = clone(source);
-  root.schema_version = 6;
+  root.schema_version = 7;
   root.deleted_accounts ??= [];
+  root.default_game ??= clone(root.campaigns[0]?.game);
+  root.active_campaign_id ??= root.campaigns[0]?.id || null;
   root.campaigns = root.campaigns.map(normalizeCampaign);
   for (const a of root.accounts) {
     a.preferences = { sound: false, ui_sound: true, animations: true, ...a.preferences };

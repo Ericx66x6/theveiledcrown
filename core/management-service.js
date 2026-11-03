@@ -5,7 +5,15 @@ export const requireAdmin = (a) => {
 };
 export function notification(
   doc,
-  { audience = 'gm', recipient_id = null, title, message = '', target = '', kind = 'submission' }
+  {
+    audience = 'gm',
+    recipient_id = null,
+    title,
+    message = '',
+    target = '',
+    kind = 'submission',
+    created_by = null
+  }
 ) {
   const n = {
     id: newId(),
@@ -15,6 +23,8 @@ export function notification(
     message,
     target,
     kind,
+    created_by,
+    hidden_by: [],
     created_at: timestamp(),
     read_by: []
   };
@@ -97,7 +107,12 @@ export async function deleteAccount(service, id, data, token) {
     requireAdmin(actor);
     const target = root.accounts.find((a) => a.id === id);
     if (!target) fail('Jogador não encontrado.', 404);
-    if (target.role !== 'player') fail('Este comando remove somente contas de jogadores.');
+    if (target.id === actor.id) fail('Use o reset do portal para remover seu próprio acesso.');
+    if (
+      target.role === 'admin' &&
+      !root.accounts.some((a) => a.id !== id && a.role === 'admin' && a.active)
+    )
+      fail('Mantenha ao menos um narrador ativo.');
     if (data.confirmation?.trim() !== target.username)
       fail('Digite o login do jogador para remover.');
     root.deleted_accounts.push({

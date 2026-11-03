@@ -1,3 +1,4 @@
+import { authorByline } from './community.js';
 import {
   $,
   esc,
@@ -17,29 +18,40 @@ import {
 import { api, session, saveSession } from './api.js';
 import { heroImage, readImage, currency } from './media.js';
 import { clone } from '../core/model.js';
-export async function loadFeatureState(state) {
-  state.campaign = await api('/api/campaign');
-  state.notes = await api('/api/notes');
-  state.quests = await api('/api/quests');
-  if (state.account.role === 'player' && state.player)
-    state.campaign.network = await api('/api/network?character_id=' + state.player.id);
-  state.campaigns = await api('/api/campaigns');
-  state.submissions = await api('/api/submissions');
-  state.notifications = await api('/api/notifications');
-  if (state.account.role === 'admin') state.accounts = await api('/api/admin/accounts');
+export async function loadFeatureState(state, { silent = false } = {}) {
+  const payload = await api('/api/portal-state', {
+    data: { character_id: state.player?.id, archived: state.archived === true },
+    silent
+  });
+  const previousId = state.player?.id;
+  state.account = payload.account;
+  state.campaign = payload.campaign;
+  state.game = payload.game;
+  state.players = payload.players;
+  state.player =
+    state.players.find((p) => p.id === previousId) ||
+    (state.account.role === 'player' ? state.players[0] || null : null);
+  state.campaigns = payload.campaigns;
+  state.notes = payload.campaign.notes;
+  state.quests = payload.campaign.quests;
+  state.submissions = payload.campaign.submissions;
+  state.notifications = payload.campaign.notifications;
+  state.accounts = payload.accounts;
+  state.social = payload.social;
 }
 export function campaignHub(ctx) {
   const { state, admin } = ctx;
-  return `<div class="page-intro hub-heading"><span class="eyebrow">A COROA VELADA · PORTAL DE RPG</span><h1>Toda mesa é um novo universo.</h1><p>Entre em uma crônica, continue sua história ou abra espaço para a próxima aventura.</p>${admin() ? button(icon('plus') + ' Criar campanha', 'create-campaign', '', 'button primary') : ''}</div><div class="campaign-grid">${state.campaigns.map((c) => `<article class="campaign-card ${c.status === 'closed' ? 'closed' : ''}" style="--campaign-accent:${esc(c.accent)}"><div class="campaign-card-art" style="background-image:linear-gradient(0deg,#11080efa,transparent),url('${heroImage()}')"><span class="tag ${c.status === 'active' ? 'red' : ''}">${c.status === 'active' ? 'MESA ABERTA' : 'ENCERRADA'}</span><div class="campaign-seal">${crown}</div><span class="eyebrow">${esc(c.system)}</span><h2>${esc(c.title)}</h2></div><div class="campaign-card-body"><p>${esc(c.description)}</p><div class="campaign-stats"><span>${icon('characters')} ${c.characters} personagens</span><span>${icon('quests')} ${c.quests} missões abertas</span></div><div class="campaign-actions">${button('Entrar na campanha ' + icon('arrow'), 'select-campaign', `data-id="${esc(c.id)}"`, 'button primary')}${admin() ? button(icon('edit'), 'edit-campaign', `data-id="${esc(c.id)}" aria-label="Editar mesa"`, 'icon-button') : ''}</div></div></article>`).join('') || empty('Seu lugar na mesa está reservado.', 'O narrador precisa vincular você a uma campanha.')}</div><section class="panel hub-guidance"><span class="eyebrow">SEUS ARQUIVOS. SUAS HISTÓRIAS.</span><h2>Uma crônica não precisa apagar a outra.</h2><p>Fichas, anotações, missões, mapa e relacionamentos ficam separados em cada mesa. Suas alterações são salvas na campanha. Exporte um backup quando quiser.</p>${button(icon('download') + ' Salvar meus JSONs', 'backup-table', '', 'button ghost')}</section>`;
+  return `<div class="page-intro hub-heading"><span class="eyebrow">A COROA VELADA · PORTAL DE RPG</span><h1>Toda mesa é um novo universo.</h1><p>Entre em uma crônica, continue sua história ou abra espaço para a próxima aventura.</p>${admin() ? button(icon('plus') + ' Criar campanha', 'create-campaign', '', 'button primary') : ''}</div><div class="campaign-grid">${state.campaigns.map((c) => `<article class="campaign-card ${c.status === 'closed' ? 'closed' : ''}" style="--campaign-accent:${esc(c.accent)}"><div class="campaign-card-art" style="background-image:linear-gradient(0deg,#11080efa,transparent),url('${heroImage()}')"><span class="tag ${c.status === 'active' ? 'red' : ''}">${c.status === 'active' ? 'MESA ABERTA' : 'ENCERRADA'}</span><div class="campaign-seal">${crown}</div><span class="eyebrow">${esc(c.system)}</span><h2>${esc(c.title)}</h2></div><div class="campaign-card-body"><p>${esc(c.description)}</p><div class="campaign-stats"><span>${icon('characters')} ${c.characters} personagens</span><span>${icon('quests')} ${c.quests} missões abertas</span></div><div class="campaign-actions">${button('Entrar na campanha ' + icon('arrow'), 'select-campaign', `data-id="${esc(c.id)}"`, 'button primary')}${admin() ? button(icon('edit'), 'edit-campaign', `data-id="${esc(c.id)}" aria-label="Editar mesa"`, 'icon-button') + button('Apagar', 'delete-campaign', `data-id="${esc(c.id)}"`, 'text-button danger') : ''}</div></div></article>`).join('') || empty('Seu lugar na mesa está reservado.', 'O narrador precisa vincular você a uma campanha.')}</div><section class="panel hub-guidance"><span class="eyebrow">SEUS ARQUIVOS. SUAS HISTÓRIAS.</span><h2>Uma crônica não precisa apagar a outra.</h2><p>Fichas, anotações, missões, mapa e relacionamentos ficam separados em cada mesa. Suas alterações são salvas na campanha. Exporte um backup quando quiser.</p>${button(icon('download') + ' Salvar meus JSONs', 'backup-table', '', 'button ghost')}</section>`;
 }
 export function notesPage(ctx) {
   const { state, player, admin } = ctx;
-  const notes = state.notes || [];
-  return `<div class="page-intro"><span class="eyebrow">FRAGMENTOS DA CRÔNICA</span><h1>Nem todo segredo deve ser esquecido.</h1><p>Diário compartilhado, anotações pessoais e os detalhes que podem mudar tudo.</p></div><div class="list-toolbar"><label class="search-field">${icon('search')}<input type="search" data-note-search placeholder="Buscar por título, texto ou marcador" aria-label="Buscar anotações"></label>${button(icon('plus') + ' Nova anotação', 'create-note', '', 'button primary')}</div><div class="notes-grid">${
+  const filter = state.noteFilter || 'campaign';
+  const notes = (state.notes || []).filter((n) => n.visibility === filter);
+  return `<div class="page-intro"><span class="eyebrow">FRAGMENTOS DA CRÔNICA</span><h1>Nem todo segredo deve ser esquecido.</h1><p>Diário compartilhado, anotações pessoais e os detalhes que podem mudar tudo.</p></div><div class="list-toolbar"><label class="search-field">${icon('search')}<input type="search" data-note-search placeholder="Buscar por título, texto ou marcador" aria-label="Buscar anotações"></label>${button(icon('plus') + ' Nova anotação', 'create-note', '', 'button primary')}</div><div class="note-filters" role="tablist" aria-label="Tipos de anotações">${[['campaign', 'Diário da mesa'], ['private', 'Só minhas'], ...(admin() ? [['gm', 'Narradores']] : [])].map(([key, label]) => `<button type="button" class="button ${key === filter ? 'primary' : 'ghost'}" role="tab" aria-selected="${key === filter}" data-action="note-filter" data-key="${key}">${label}<span>${(state.notes || []).filter((n) => n.visibility === key).length}</span></button>`).join('')}</div><div class="notes-grid">${
     notes
       .map(
         (n) =>
-          `<article class="note-card" data-note-text="${esc((n.title + ' ' + n.content + ' ' + n.tags).toLowerCase())}"><div class="note-card-top"><span class="tag ${n.visibility === 'gm' ? 'red' : ''}">${n.visibility === 'private' ? 'SÓ VOCÊ' : n.visibility === 'gm' ? 'NARRADORES' : 'DIÁRIO DA MESA'}</span><span>${date(n.updated_at)}</span></div><h3>${esc(n.title)}</h3><p class="prose">${esc(n.content)}</p><div class="note-tags">${(
+          `<article class="note-card" data-note-text="${esc((n.title + ' ' + n.content + ' ' + n.tags).toLowerCase())}"><div class="note-card-top"><span class="tag ${n.visibility === 'gm' ? 'red' : ''}">${n.visibility === 'private' ? 'SÓ VOCÊ' : n.visibility === 'gm' ? 'NARRADORES' : 'DIÁRIO DA MESA'}</span><span>${n.updated_at !== n.created_at ? 'Editada ' + date(n.updated_at) : ''}</span></div>${authorByline({ ...n.author, avatar: state.social?.members?.find((a) => a.id === n.created_by)?.avatar || '' }, n.created_at)}<h3>${esc(n.title)}</h3><p class="prose">${esc(n.content)}</p><div class="note-tags">${(
             n.tags || ''
           )
             .split(',')
@@ -56,7 +68,7 @@ export function notesPage(ctx) {
       button('Escrever primeira anotação', 'create-note', '', 'button ghost')
     )
   }</div>${
-    player()
+    player() && !admin() && filter === 'private'
       ? `<div class="section-heading"><div><h2>Anotações da ficha</h2><p>Os registros pessoais de ${esc(player().char)}.</p></div>${button(icon('plus') + ' Anotar na ficha', 'edit-record', 'data-key="notes"', 'button ghost')}</div><div class="card-grid">${
           player()
             .notes.map((n) => ctx.recordCard('notes', n))
@@ -69,14 +81,28 @@ export function notesPage(ctx) {
 export function questsPage(ctx) {
   const { state, admin, player } = ctx;
   const quests = (state.quests || []).filter(
-      (q) => admin() || !player() || q.assignees.includes(player().id)
-    ),
-    active = quests.filter((q) => q.status !== 'completed' && q.status !== 'cancelled');
-  return `<div class="page-intro"><span class="eyebrow">O CHAMADO DA AVENTURA</span><h1>Há destinos que precisam ser conquistados.</h1><p>Objetivos da crônica, tarefas inesperadas e recompensas que fazem a noite valer a pena.</p></div><div class="quest-overview"><div><strong>${active.length}</strong><span>MISSÕES EM ABERTO</span></div><div><strong>${quests.filter((q) => q.status === 'completed').length}</strong><span>HISTÓRIAS CONCLUÍDAS</span></div><div><strong>${active.reduce((sum, q) => sum + q.xp_reward, 0)}</strong><span>XP EM RECOMPENSAS</span></div>${admin() ? button(icon('plus') + ' Nova missão', 'create-quest', '', 'button primary') : ''}</div><div class="quest-grid">${quests.map((q) => `<article class="quest-card ${q.status}"><div class="quest-card-ornament">${icon(q.status === 'completed' ? 'test' : 'quests')}</div><div class="quest-card-header"><span class="eyebrow">${esc(q.category)}</span><span class="tag ${q.status === 'review' ? 'red' : ''}">${{ active: 'EM ANDAMENTO', review: 'AGUARDA CONCLUSÃO', completed: 'CONCLUÍDA', cancelled: 'CANCELADA' }[q.status]}</span></div><h2>${esc(q.title)}</h2><p class="quest-description prose">${esc(q.description)}</p><div class="quest-participants">${q.assignees.map((id) => `<span>${esc(state.players.find((p) => p.id === id)?.char || state.campaign.roster?.find((p) => p.id === id)?.char || 'Ficha #' + id)}</span>`).join('')}</div><div class="quest-rewards"><div class="xp-reward"><strong>+${q.xp_reward}</strong><span>XP POR PARTICIPANTE</span></div>${q.money_reward ? `<div><strong>${currency(q.money_reward)}</strong><span>POR PARTICIPANTE</span></div>` : ''}</div>${q.items.length ? `<p class="quest-items">${icon('possessions')} ${q.items.map((i) => `${esc(i.name)} × ${i.quantity}`).join(' · ')}</p>` : ''}${!q.approved_rewards ? '<p class="hint">Recompensas propostas. O narrador precisa aprová-las.</p>' : ''}${q.completion_note ? `<blockquote>${esc(q.completion_note)}</blockquote>` : ''}<div class="quest-footer"><span>${esc(q.difficulty)}</span>${q.status === 'completed' ? `<span class="completed-seal">${icon('test')} RECOMPENSAS ENTREGUES</span>` : `${admin() ? button('Editar', 'edit-quest', `data-id="${q.id}"`, 'text-button') : ''}${admin() && !q.approved_rewards ? button('Aprovar recompensas', 'approve-quest', `data-id="${q.id}"`, 'button ghost') : ''}${admin() ? button('Concluir e recompensar', 'complete-quest', `data-id="${q.id}"`, 'button primary') : q.assignees.some((id) => state.account.character_ids.includes(id)) ? button('Solicitar conclusão', 'request-quest', `data-id="${q.id}"`, 'button ghost') : ''}`}</div></article>`).join('') || empty('O próximo capítulo ainda não foi escrito.', admin() ? 'Envie uma missão às fichas dos participantes.' : 'As missões enviadas pelo narrador aparecerão aqui.', admin() ? button('Criar missão', 'create-quest', '', 'button primary') : '')}</div>`;
+    (q) => admin() || !player() || q.assignees.includes(player().id)
+  );
+  const active = quests.filter((q) => !['completed', 'cancelled'].includes(q.status));
+  return `<div class="page-intro"><span class="eyebrow">O CHAMADO DA AVENTURA</span><h1>Cada conquista muda a história.</h1><p>As recompensas são uma previsão. O narrador decide e confirma os valores na entrega.</p></div><div class="quest-overview"><div><strong>${active.length}</strong><span>MISSÕES EM ABERTO</span></div><div><strong>${quests.filter((q) => q.status === 'completed').length}</strong><span>HISTÓRIAS CONCLUÍDAS</span></div><div><strong>${active.reduce((sum, q) => sum + q.xp_reward, 0)}</strong><span>PREVISÃO DE XP</span></div>${admin() ? button(icon('plus') + ' Nova missão', 'create-quest', '', 'button primary') : ''}</div><div class="quest-grid">${
+    quests
+      .map((q) => {
+        const done = q.status === 'completed',
+          rewards = done ? q.delivered_rewards || q : q;
+        return `<article class="quest-card ${q.status}"><div class="quest-card-ornament">${icon(done ? 'test' : 'quests')}</div><div class="quest-card-header"><span class="eyebrow">${esc(q.category)}</span><span class="tag ${done ? '' : 'red'}">${done ? 'CONCLUÍDA' : q.status === 'cancelled' ? 'CANCELADA' : 'EM ANDAMENTO'}</span></div><h2>${esc(q.title)}</h2><p class="quest-description prose">${esc(q.description)}</p><div class="quest-participants">${q.assignees.map((id) => `<span>${esc(state.players.find((p) => p.id === id)?.char || state.campaign.roster?.find((p) => p.id === id)?.char || 'Ficha #' + id)}</span>`).join('')}</div><span class="reward-label">${done ? 'RECOMPENSA ENTREGUE' : 'RECOMPENSA PREVISTA'}</span><div class="quest-rewards"><div class="xp-reward"><strong>+${rewards.xp_reward}</strong><span>XP POR PARTICIPANTE</span></div><div><strong>${currency(rewards.money_reward)}</strong><span>POR PARTICIPANTE</span></div></div>${rewards.items?.length ? `<p class="quest-items">${icon('possessions')} ${rewards.items.map((i) => esc(i.name) + ' × ' + i.quantity).join(' · ')}</p>` : ''}${done && q.delivered_rewards ? `<p class="hint">Previsão original: ${q.xp_reward} XP · ${currency(q.money_reward)}.</p>` : ''}${q.completion_note ? `<blockquote class="prose">${esc(q.completion_note)}</blockquote>` : ''}<div class="quest-footer"><span>${esc(q.difficulty)}</span>${admin() ? `${!done ? button('Editar', 'edit-quest', `data-id="${q.id}"`, 'button ghost') : ''}${!done && q.status !== 'cancelled' ? button('Entregar recompensa', 'complete-quest', `data-id="${q.id}"`, 'button primary') : ''}${button('Apagar missão', 'delete-quest', `data-id="${q.id}"`, 'text-button danger')}` : done ? '<span class="completed-seal">' + icon('test') + ' ENTREGUE PELO NARRADOR</span>' : '<span class="hint">A entrega é feita pelo narrador.</span>'}</div></article>`;
+      })
+      .join('') ||
+    empty(
+      'O próximo capítulo ainda não foi escrito.',
+      admin()
+        ? 'Envie uma missão às fichas dos participantes.'
+        : 'As missões atribuídas pelo narrador aparecerão aqui.'
+    )
+  }</div>`;
 }
 export function profilePage(ctx) {
   const a = ctx.state.account;
-  return `<div class="page-intro"><span class="eyebrow">SEU LUGAR NA COROA</span><h1>Por trás de cada personagem, uma história.</h1><p>Organize seu perfil e os detalhes do seu acesso.</p></div><section class="panel profile-panel"><div class="profile-portrait">${a.avatar ? `<img src="${esc(a.avatar)}" alt="Foto de ${esc(a.display_name)}">` : `<span>${esc(a.display_name.slice(0, 1))}</span>`}<span class="profile-role">${a.role === 'admin' ? 'NARRADOR' : 'JOGADOR'}</span></div><form id="profile-form" class="form-grid">${field('display_name', 'Como quer ser chamado', a.display_name, 'text', 'required maxlength="100"')}<label class="field"><span>Foto de perfil</span><input type="file" name="avatar" accept="image/png,image/jpeg,image/webp"></label>${area('bio', 'Sobre você', a.bio || '', 'maxlength="2000" placeholder="Jogos favoritos, estilo de personagem, uma frase…"')}<label class="checkbox"><input type="checkbox" name="sound" ${a.preferences?.sound ? 'checked' : ''}> Efeitos sonoros nos dados</label><label class="checkbox"><input type="checkbox" name="ui_sound" ${a.preferences?.ui_sound !== false ? 'checked' : ''}> Sons da evolução e transições</label><label class="checkbox"><input type="checkbox" name="animations" ${a.preferences?.animations !== false ? 'checked' : ''}> Animações da interface</label><div class="full profile-form-actions"><button type="submit" class="button primary">${icon('save')} Salvar perfil</button>${button('Trocar senha', 'password', '', 'button ghost')}</div></form></section><p class="hint">Seu perfil e a foto acompanham os arquivos JSON exportados.</p>`;
+  return `<div class="page-intro"><span class="eyebrow">SEU LUGAR NA COROA</span><h1>Por trás de cada personagem, uma história.</h1><p>Organize seu perfil e os detalhes do seu acesso.</p></div><section class="panel profile-panel"><div class="profile-portrait">${a.avatar ? `<img src="${esc(a.avatar)}" alt="Foto de ${esc(a.display_name)}">` : `<span>${esc(a.display_name.slice(0, 1))}</span>`}<span class="profile-role">${a.role === 'admin' ? 'NARRADOR' : 'JOGADOR'}</span></div><form id="profile-form" class="form-grid">${field('display_name', 'Como quer ser chamado', a.display_name, 'text', 'required maxlength="100"')}<label class="field"><span>Foto de perfil</span><input type="file" name="avatar" accept="image/png,image/jpeg,image/webp"></label>${area('bio', 'Sobre você', a.bio || '', 'maxlength="2000" placeholder="Jogos favoritos, estilo de personagem, uma frase…"')}<label class="checkbox full"><input type="checkbox" name="remove_avatar"> Apagar minha foto de perfil</label><label class="checkbox"><input type="checkbox" name="sound" ${a.preferences?.sound ? 'checked' : ''}> Efeitos sonoros nos dados</label><label class="checkbox"><input type="checkbox" name="ui_sound" ${a.preferences?.ui_sound !== false ? 'checked' : ''}> Sons da evolução e transições</label><label class="checkbox"><input type="checkbox" name="animations" ${a.preferences?.animations !== false ? 'checked' : ''}> Animações da interface</label><div class="full profile-form-actions"><button type="submit" class="button primary">${icon('save')} Salvar perfil</button>${button('Trocar senha', 'password', '', 'button ghost')}</div></form></section><p class="hint">Seu perfil e a foto acompanham os arquivos JSON exportados.</p>`;
 }
 export function ruleConfig(ctx) {
   const g = ctx.state.game;
@@ -146,12 +172,11 @@ function questDialog(ctx, q) {
   const p = ctx.state.players;
   modal(
     q ? 'Editar missão' : 'O próximo capítulo',
-    `<div class="form-grid">${field('title', 'Título da missão', q?.title || '', 'text', 'required maxlength="200"')}${field('category', 'Categoria', q?.category || 'História principal', 'text', 'maxlength="100"')}${area('description', 'Descrição, pistas e objetivos', q?.description || '', 'maxlength="30000"')}${field('difficulty', 'Dificuldade', q?.difficulty || 'Desconhecida', 'text', 'maxlength="100"')}${field('xp_reward', 'XP para cada participante', q?.xp_reward || 0, 'number', `required min="0" max="${ctx.state.game.quests.max_xp_reward}" step="1"`)}${field('money_reward', 'Dinheiro para cada participante', q?.money_reward || 0, 'number', 'required min="0" max="1000000000" step="0.01"')}${select(
+    `<div class="form-grid">${field('title', 'Título da missão', q?.title || '', 'text', 'required maxlength="200"')}${field('category', 'Categoria', q?.category || 'História principal', 'text', 'maxlength="100"')}${area('description', 'Descrição, pistas e objetivos', q?.description || '', 'maxlength="30000"')}${field('difficulty', 'Dificuldade', q?.difficulty || 'Desconhecida', 'text', 'maxlength="100"')}${field('xp_reward', 'XP previsto por participante', q?.xp_reward || 0, 'number', `required min="0" max="${ctx.state.game.quests.max_xp_reward}" step="1"`)}${field('money_reward', 'Dinheiro previsto por participante', q?.money_reward || 0, 'number', 'required min="0" max="1000000000" step="0.01"')}${select(
       'status',
       'Estado',
       [
         { value: 'active', label: 'Em andamento' },
-        { value: 'review', label: 'Aguarda conclusão' },
         { value: 'cancelled', label: 'Cancelada' }
       ],
       q?.status || 'active'
@@ -163,7 +188,7 @@ function questDialog(ctx, q) {
             `<label class="checkbox"><input name="assignees" type="checkbox" value="${p.id}" ${q?.assignees.includes(p.id) ? 'checked' : ''}> ${esc(p.char)}</label>`
         )
         .join('') || 'Cadastre uma ficha antes de criar uma missão.'
-    }</div></div>${area('items', 'Itens de recompensa — nome | quantidade | descrição por linha', (q?.items || []).map((i) => `${i.name} | ${i.quantity} | ${i.description || ''}`).join('\n'), 'maxlength="5000"')}</div>${!ctx.admin() ? '<p class="hint">Os valores propostos precisam da aprovação do narrador. Solicitar conclusão não entrega XP automaticamente.</p>' : ''}`,
+    }</div></div>${area('items', 'Itens de recompensa — nome | quantidade | descrição por linha', (q?.items || []).map((i) => `${i.name} | ${i.quantity} | ${i.description || ''}`).join('\n'), 'maxlength="5000"')}</div>`,
     async (data) => {
       const body = Object.fromEntries(data);
       body.xp_reward = Number(body.xp_reward);
@@ -256,47 +281,57 @@ export async function featureAction(action, data, ctx) {
     );
     return true;
   }
-  if (['complete-quest', 'approve-quest', 'request-quest'].includes(action)) {
+  if (action === 'note-filter') {
+    state.noteFilter = data.key;
+    ctx.draw();
+    return true;
+  }
+  if (action === 'delete-quest') {
     const q = state.quests.find((q) => q.id === data.id);
-    if (action === 'request-quest') {
-      modal(
-        'Como essa missão foi concluída?',
-        area(
-          'completion_note',
-          'Relato para o narrador',
-          q.completion_note || '',
-          'maxlength="5000"'
-        ),
-        async (form) => {
-          await api(`/api/quests/${q.id}/request-completion`, {
-            method: 'POST',
-            data: { revision: q._revision, completion_note: form.get('completion_note') }
+    modal(
+      'Apagar esta missão?',
+      `<p>${esc(q.title)}</p><p class="hint">A missão será removida. Recompensas já entregues continuam nas fichas.</p>`,
+      async () => {
+        await api('/api/quests/' + q.id, { method: 'DELETE', data: { revision: q._revision } });
+        await ctx.refresh();
+      },
+      { saveLabel: 'Apagar missão' }
+    );
+    return true;
+  }
+  if (action === 'complete-quest') {
+    const q = state.quests.find((q) => q.id === data.id),
+      game = state.game;
+    modal(
+      'Defina a recompensa desta conquista.',
+      `<div class="reward-delivery-intro"><span class="eyebrow">${esc(q.title)}</span><h3>O desfecho pertence à sua mesa.</h3><p>Altere a previsão se o roleplay mudou a recompensa. Os valores abaixo serão entregues a cada um dos ${q.assignees.length} participantes.</p></div><div class="form-grid">${field('xp_reward', 'XP final por participante', q.xp_reward, 'number', `required min="0" max="${game.quests.max_xp_reward}" step="1"`)}${field('money_reward', 'Dinheiro final por participante', q.money_reward, 'number', `required min="0" max="${game.quests.max_money_reward}" step="0.01"`)}${area('items', 'Itens finais — nome | quantidade | descrição por linha', q.items.map((i) => i.name + ' | ' + i.quantity + ' | ' + (i.description || '')).join('\n'), 'maxlength="5000"')}${area('completion_note', 'Como esta missão terminou?', q.completion_note || '', 'maxlength="5000"')}<label class="checkbox full"><input type="checkbox" required> Conferi os participantes e confirmo a recompensa final.</label></div>`,
+      async (form) => {
+        const items = String(form.get('items') || '')
+          .split('\n')
+          .filter((line) => line.trim())
+          .map((line) => {
+            const [name, quantity, description] = line.split('|');
+            return {
+              name: name.trim(),
+              quantity: Number(quantity?.trim() || 1),
+              description: description?.trim() || ''
+            };
           });
-          await ctx.refresh();
-        },
-        { saveLabel: 'Enviar para revisão' }
-      );
-    } else {
-      modal(
-        action === 'complete-quest'
-          ? 'Concluir e entregar recompensas?'
-          : 'Aprovar estas recompensas?',
-        `<div class="reward-confirm"><span class="eyebrow">${esc(q.title)}</span><strong>+${q.xp_reward} XP</strong><p>${currency(q.money_reward)}${q.items.length ? ' + ' + q.items.length + ' item(ns)' : ''} para cada um dos ${q.assignees.length} participante(s).</p><p class="hint">${action === 'complete-quest' ? 'A entrega é registrada uma única vez no histórico de cada ficha.' : 'Os valores propostos ficam autorizados pelo narrador.'}</p></div>`,
-        async () => {
-          await api(`/api/quests/${q.id}/${action === 'complete-quest' ? 'complete' : 'approve'}`, {
-            method: 'POST',
-            data: { revision: q._revision }
-          });
-          await ctx.refresh();
-          toast(
-            action === 'complete-quest'
-              ? 'Missão concluída. Recompensas entregues!'
-              : 'Recompensas aprovadas.'
-          );
-        },
-        { saveLabel: action === 'complete-quest' ? 'Confirmar recompensas' : 'Aprovar' }
-      );
-    }
+        await api('/api/quests/' + q.id + '/complete', {
+          method: 'POST',
+          data: {
+            revision: q._revision,
+            xp_reward: Number(form.get('xp_reward')),
+            money_reward: Number(form.get('money_reward')),
+            items,
+            completion_note: form.get('completion_note')
+          }
+        });
+        await ctx.refresh();
+        toast('Conquista registrada. Recompensas entregues!');
+      },
+      { wide: true, saveLabel: 'Confirmar e entregar' }
+    );
     return true;
   }
   return false;
@@ -317,6 +352,7 @@ export function bindFeatureViews(ctx) {
               animations: f.has('animations')
             }
           };
+        if (f.has('remove_avatar')) data.avatar = '';
         const file = f.get('avatar');
         if (file?.size) data.avatar = (await readImage(file)).image;
         stateAccount(ctx, await api('/api/profile', { method: 'PATCH', data }));

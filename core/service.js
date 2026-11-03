@@ -83,7 +83,9 @@ export class CharacterService {
     this.attempts = new Map();
   }
   auth(doc, token) {
-    const session = doc.sessions?.find((s) => s.token === token && s.expires > Date.now());
+    const session = doc.sessions?.find(
+      (s) => s.token === token && (s.expires === null || s.expires > Date.now())
+    );
     const account =
       session &&
       doc.accounts.find(
@@ -95,13 +97,14 @@ export class CharacterService {
   session(doc, account) {
     const token = newId() + newId();
     doc.sessions = (doc.sessions || [])
-      .filter((s) => s.expires > Date.now())
+      .filter((s) => s.expires === null || s.expires > Date.now())
       .slice(-(this.maxSessions || 30));
     doc.sessions.push({
       token,
       account: account.id,
       version: account.session_version,
-      expires: Date.now() + 8 * 3600e3
+      expires: null,
+      created_at: timestamp()
     });
     return { token, account: publicAccount(account), mode: 'online' };
   }

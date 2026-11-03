@@ -1,4 +1,4 @@
-# Permissões · Coroa Velada 6
+# Permissões · Coroa Velada 7
 
 | Recurso | Narrador | Jogador |
 |---|---|---|
@@ -7,8 +7,8 @@
 | Personagens | Cadastra, revisa, transfere, arquiva e remove/restaura | Usa as próprias fichas; propõe novos personagens para aprovação |
 | Experiência | Concede/ajusta por ficha ou distribui para várias | Gasta o saldo individual na evolução validada |
 | Regras e criação | Edita catálogos, capítulos, limites e custos | Consulta o conteúdo usado pela ficha; não altera regras |
-| Missões | Cria, escolhe participantes e recompensas, edita e conclui | Vê as atribuídas e solicita conclusão; não cria nem altera recompensas |
-| Conclusão de missão | Pode concluir sem solicitação; entrega uma vez | Solicita e relata; não entrega recompensas |
+| Missões | Cria, escolhe participantes e recompensas, edita e conclui | Consulta as atribuídas e a previsão de recompensa; não conclui nem entrega valores |
+| Conclusão de missão | Ajusta a recompensa final e entrega uma vez | Consulta o resultado; não entrega recompensas |
 | Mapas | Envia vários, libera acesso, gerencia e remove/restaura | Abre os liberados e cria/edita seus próprios marcadores |
 | Marcador privado | Acessa se for autor | Acessa se for autor |
 | Círculo de relações | Não abre nem edita pela aplicação | Mural separado de cada personagem sob seu controle |
@@ -25,3 +25,11 @@ Uma ficha tem um responsável por vez. Transferi-la também transfere o acesso a
 Os backups administrativos completos contêm os dados integrais para recuperação, inclusive relações pessoais. O bloqueio do mural aplica-se à interface e às rotas normais; não impede o proprietário do banco ou de um backup de inspecionar seus próprios dados. Para jogadores, os pacotes filtram conteúdo e acessos alheios. O backup completo fica com o administrador.
 
 Não há relógio, calendário ou contagem de sessões do mundo. Datas reais de histórico e segurança continuam sendo metadados do sistema.
+
+## Comunidade e exclusões
+
+Perfis públicos são consultáveis somente dentro de uma campanha compartilhada. A API retorna nome, bio, foto, papel e personagens públicos, sem senhas ou dados de sessão. Recados públicos podem ser apagados pelo autor e pelo narrador. Recados privados ficam entre remetente e destinatário; o narrador não recebe essas conversas pelas rotas normais. Notificações são apagadas apenas da própria caixa.
+
+O narrador pode apagar missões, campanhas, históricos, movimentações e registros da lixeira. Apagar um registro financeiro não altera o saldo. O responsável pela ficha pode apagar suas rolagens. O autor ou narrador pode apagar propostas sem remover personagens já aprovados. O reset exige narrador e confirmação textual, remove contas e volta à instalação inicial. Backups completos continuam contendo os dados necessários à recuperação.
+
+O login persiste por cookie HttpOnly, com verificação de origem nas alterações. Sair e revogar/trocar o acesso invalidam as sessões no servidor.

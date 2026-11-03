@@ -1,4 +1,6 @@
-# A Coroa Velada 6 · instalação online
+# A Coroa Velada 7 · instalação online
+
+Para atualizar uma instalação existente, siga primeiro [ATUALIZAR.md](ATUALIZAR.md).
 
 Esta entrega usa o GitHub para o código, o Render para uma API em **Node.js 24**, o Supabase para documentos JSON e imagens e o Vercel para o site. O ZIP é o código-fonte: extraia antes de enviar ao GitHub. A versão offline foi removida.
 
@@ -44,11 +46,11 @@ Use o repositório novo **[Ericx66x6/theveiledcrown](https://github.com/Ericx66x
 2. Abra o repositório no GitHub e escolha **Add file → Upload files**. Para o repositório vazio, também pode usar o link **uploading an existing file**.
 3. Arraste os arquivos e as pastas **de dentro** de `theveiledcrown` para a área de upload. Não envie apenas o ZIP nem uma pasta extra envolvendo tudo.
 4. Clique em **Commit changes** e confirme a branch `main`.
-5. Na página inicial do repositório, confira que `package.json`, `render.yaml`, `vercel.json`, `TUTORIAL.md`, `client/`, `server/` e `supabase/` aparecem na raiz.
+5. Na página inicial do repositório, confira que `package.json`, `render.yaml`, `vercel.mjs`, `TUTORIAL.md`, `client/`, `server/` e `supabase/` aparecem na raiz.
 
 O GitHub limita o upload pelo navegador a 100 arquivos por vez e 25 MiB por arquivo. Se a seleção ultrapassar esse número, envie os arquivos da raiz primeiro e depois grupos de pastas, sempre a partir da página **raiz** do repositório, preservando a estrutura. O GitHub Desktop também pode publicar a pasta extraída inteira.
 
-Não envie `node_modules`, `.git`, `.qa`, `dist` nem um arquivo `.env` com valores reais. Eles não estão no ZIP. Os arquivos `.env.render.example` e `.env.vercel.example` são apenas modelos sem credenciais; podem ficar no repositório. Caso o seletor de arquivos esconda arquivos iniciados por ponto, ao menos confira `package.json`, `render.yaml` e `vercel.json`: eles já definem a instalação principal. Para preservar todo o código e o CI, use o GitHub Desktop se necessário.
+Não envie `node_modules`, `.git`, `.qa`, `dist` nem um arquivo `.env` com valores reais. Eles não estão no ZIP. Os arquivos `.env.render.example` e `.env.vercel.example` são apenas modelos sem credenciais; podem ficar no repositório. Caso o seletor de arquivos esconda arquivos iniciados por ponto, ao menos confira `package.json`, `render.yaml` e `vercel.mjs`: eles já definem a instalação principal. Para preservar todo o código e o CI, use o GitHub Desktop se necessário.
 
 ## 3. Criar a API no Render
 
@@ -98,7 +100,7 @@ Clique em **Deploy Web Service**. Ao ficar **Live**, copie o endereço HTTPS que
 Abra `URL-DO-RENDER/api/health`. A resposta esperada contém:
 
 ```json
-{"status":"ok","version":"6.0.0"}
+{"status":"ok","version":"7.0.0"}
 ```
 
 Depois abra somente `URL-DO-RENDER`. Clique em **Entrar** para chegar ao formulário do primeiro acesso. Preencha nome, login, senha com pelo menos dez caracteres e a `BOOTSTRAP_TOKEN` configurada no Render. Clique em **Criar portal e entrar**.
@@ -120,7 +122,7 @@ No [Vercel](https://vercel.com/new), escolha **Add New → Project**, importe `E
 | Output Directory | `dist` |
 | Node.js Version | `24.x` |
 
-`vercel.json` já declara os comandos e a pasta de saída. Em **Environment Variables**, adicione **antes de publicar**:
+`vercel.mjs` já declara os comandos, a pasta de saída e os encaminhamentos da API. Apague um eventual `vercel.json` antigo; mantenha apenas `vercel.mjs`. Em **Environment Variables**, adicione **antes de publicar**:
 
 | Nome | Valor |
 | --- | --- |
@@ -159,13 +161,13 @@ Faça esta primeira conferência com uma ficha de teste:
 1. Em **Cadastrar ficha**, digite nome, jogador, clã e níveis, como Força 3 e Destreza 2. O ID é gerado automaticamente. Pode criar o acesso junto da ficha ou vincular um acesso existente depois.
 2. Em **Jogadores e acesso**, crie os participantes, ative/desative acessos e vincule personagens. Uma conta pode controlar várias fichas.
 3. Em **Personagens → Distribuir XP**, marque os destinatários, preencha valor e motivo e confirme a recompensa.
-4. Em **Missões**, atribua uma missão à ficha. O jogador pode solicitar a conclusão; o narrador também pode concluí-la diretamente. A recompensa só é entregue uma vez.
+4. Em **Missões**, atribua uma missão à ficha. Os números são uma previsão. Na entrega, o narrador pode ajustar XP, dinheiro e itens antes de confirmar. A recompensa é entregue uma vez e o jogador apenas consulta o andamento.
 5. Envie um retrato e um mapa. Em **Storage → coroa-imagens**, devem aparecer objetos em `portal-v6/media/…`. Os nomes usam o conteúdo da imagem, não o nome do personagem.
 6. Crie um mapa liberado aos jogadores e outro privado. Entre como participante em uma janela separada e confira que só o mapa autorizado aparece.
 7. Confira as notas, a evolução com confirmação e o círculo de relações do personagem. O narrador não abre esse mural pelas rotas normais do portal.
 8. Atualize a página, entre de novo e confira os dados. Os salvamentos concluídos devem continuar lá. Reiniciar o serviço Render também não deve apagá-los.
 
-O login dura até oito horas, com token apenas na memória da aba. Recarregar ou fechar a aba exige entrar novamente. Isso não apaga os dados salvos e evita guardar credenciais no armazenamento do navegador.
+O login usa cookie persistente HttpOnly e volta automaticamente ao recarregar ou reabrir a aba. O navegador não grava o acesso em localStorage. O novo `vercel.mjs` encaminha `/auth` e `/api` ao Render mantendo a origem do site. Clique em Sair para encerrar o acesso; troca de senha, revogação da conta e limpeza dos cookies também encerram o login.
 
 Outros clientes verificam mudanças a cada 20 segundos e ao recuperar o foco. Um formulário em edição não é substituído automaticamente. Se duas pessoas alterarem a mesma versão de uma ficha, a API pode pedir atualização antes de repetir a ação; confira os valores atuais para evitar duplicar uma recompensa ou compra.
 
@@ -200,7 +202,7 @@ Se trocar o endereço da API, atualize `COROA_API_BASE` no Vercel e refaça o de
 | Falha ao enviar imagem | Use JPG/PNG/WebP, confira o limite global do Storage e tente uma imagem menor |
 | Funciona no Render, falha no Vercel | Confira `COROA_API_BASE` no build e `ALLOWED_ORIGINS` com a origem exata do domínio aberto |
 | Login inicial não aceita a chave | Use a `BOOTSTRAP_TOKEN` do Render, não a secret key do Supabase; a instalação só fica disponível antes da primeira conta |
-| A página pede login após atualizar | Comportamento esperado: o acesso fica na memória da aba; os dados salvos continuam no banco |
+| A página pede login após atualizar | Faça um login após a atualização; confira `vercel.mjs`, o encaminhamento da API e a permissão de cookies do próprio site |
 | Conflito de revisão | Atualize a ficha e confira o resultado da última operação antes de repetir |
 
 Ao compartilhar um erro, envie a mensagem e o trecho relevante do log, ocultando chaves, senhas e tokens. Não publique o conteúdo do Environment.
@@ -216,3 +218,5 @@ Ao compartilhar um erro, envie a mensagem e o trecho relevante do log, ocultando
 - [Render: versão do Node](https://render.com/docs/node-version)
 - [Vercel: configurar a compilação](https://vercel.com/docs/builds/configure-a-build)
 - [Vercel: versões do Node](https://vercel.com/docs/functions/runtimes/node-js/node-js-versions)
+
+Os mapas geográficos usam OpenFreeMap/OpenStreetMap e não precisam de outra chave. As anotações compartilhadas exibem autoria, criação e perfil. A comunidade de cada campanha permanece isolada das demais.

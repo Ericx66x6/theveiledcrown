@@ -13,10 +13,13 @@ export class RemoteClient {
     this.campaignId = null;
   }
 
-  async request(path, { method = 'GET', data, token } = {}) {
+  async request(path, { method = 'GET', data, token, signal } = {}) {
     const url = new URL(this.base + path);
     if (method === 'GET' && data) url.searchParams.set('data', JSON.stringify(data));
-    const headers = { 'Content-Type': 'application/json' };
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(globalThis.location ? { 'X-Portal-Session': 'cookie' } : {})
+    };
     if (token) headers.Authorization = 'Bearer ' + token;
     if (this.campaignId) headers['X-Campaign-ID'] = this.campaignId;
     let response;
@@ -25,9 +28,11 @@ export class RemoteClient {
         method,
         headers,
         body: method === 'GET' ? undefined : JSON.stringify(data || {}),
-        credentials: 'omit',
+        credentials: 'same-origin',
         cache: 'no-store',
-        signal: AbortSignal.timeout(90000)
+        signal: signal
+          ? AbortSignal.any([signal, AbortSignal.timeout(90000)])
+          : AbortSignal.timeout(90000)
       });
     } catch {
       throw new Error(
@@ -51,6 +56,8 @@ export class RemoteClient {
       this.token = result.token;
       this.campaignId = result.campaign_id || null;
     }
+    if (result && Object.hasOwn(result, 'campaign_id'))
+      this.campaignId = result.campaign_id || null;
     if (path.endsWith('/select') && result.campaign) this.campaignId = result.campaign;
     return result;
   }

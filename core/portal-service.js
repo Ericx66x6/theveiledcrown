@@ -1,8 +1,10 @@
+import { communityRequest, socialSnapshot } from './community-service.js';
+import { lifecycleRequest } from './lifecycle-service.js';
 import { distributeXp } from './xp-service.js';
 import { deleteCatalogEntry } from './rulebook-service.js';
 import { CampaignService } from './campaign-service.js';
-import { clone, fail, recordId } from './model.js';
-import { notificationVisible } from './workspace.js';
+import { clone, fail, recordId, publicAccount, publicPlayer } from './model.js';
+import { notificationVisible, publicCampaign } from './workspace.js';
 import {
   assignCharacter,
   deleteCharacter,
@@ -16,6 +18,13 @@ export class PortalService extends CampaignService {
   async request(path, options = {}) {
     const { method = 'GET', data = {}, token } = options;
     const special =
+      path === '/api/portal-state' ||
+      path.startsWith('/api/social') ||
+      path.startsWith('/api/members/') ||
+      path === '/api/admin/reset' ||
+      path === '/api/admin/trash/purge' ||
+      (path === '/api/admin/snapshots' && method === 'DELETE') ||
+      /\/logs\/(history|transactions|rolls)$/.test(path) ||
       path === '/api/admin/xp/distribute' ||
       path.startsWith('/api/rulebook/catalog/') ||
       path.startsWith('/api/submissions') ||
@@ -30,8 +39,80 @@ export class PortalService extends CampaignService {
     const doc = await this.store.get(),
       a = this.auth(doc, token),
       root = await this.store.workspace();
+    if (path === '/api/portal-state' && a.role !== 'admin' && !a._campaign_member)
+      return {
+        account: publicAccount(a),
+        campaign: {
+          id: 'no-campaign',
+          title: 'Suas campanhas',
+          notes: [],
+          quests: [],
+          maps: [],
+          network: { nodes: [], links: [] },
+          submissions: [],
+          notifications: [],
+          roster: []
+        },
+        game: clone(root.default_game),
+        players: [],
+        campaigns: [],
+        accounts: [],
+        social: { members: [], posts: [] }
+      };
     if (a.role !== 'admin' && !a._campaign_member)
       fail('Escolha uma campanha vinculada ao seu acesso.', 403);
+    if (path === '/api/portal-state') {
+      const campaign = publicCampaign(doc, a);
+      delete campaign.social;
+      campaign.submissions = await submissionsRequest(
+        this,
+        '/api/submissions',
+        'GET',
+        {},
+        token,
+        doc,
+        a
+      );
+      const selected = Number(data.character_id);
+      if (a.role === 'player' && a.character_ids.includes(selected)) {
+        const { personalNetwork } = await import('./permissions.js');
+        campaign.network = personalNetwork(doc, a, selected);
+      }
+      return {
+        account: publicAccount(a),
+        campaign,
+        game: clone(doc.game),
+        players: doc.characters
+          .filter(
+            (p) =>
+              (a.role === 'admin' || a.character_ids.includes(p.id)) &&
+              (data.archived || !p.archived)
+          )
+          .map(publicPlayer),
+        campaigns: await super.request('/api/campaigns', { token }),
+        accounts: a.role === 'admin' ? await super.request('/api/admin/accounts', { token }) : [],
+        social: root.campaigns.some((c) => c.id === doc.id)
+          ? socialSnapshot(root, doc, a)
+          : { members: [], posts: [] }
+      };
+    }
+    if (
+      path.startsWith('/api/social') &&
+      method !== 'GET' &&
+      doc.status === 'closed' &&
+      !(a.role === 'admin' && method === 'DELETE')
+    )
+      fail('A campanha está encerrada para novas interações.', 409);
+    if (path.startsWith('/api/social') || path.startsWith('/api/members/'))
+      return communityRequest(this, path, method, data, token, doc, a, root);
+    if (
+      path === '/api/admin/reset' ||
+      path === '/api/admin/trash/purge' ||
+      (path === '/api/admin/snapshots' && method === 'DELETE') ||
+      /\/logs\/(history|transactions|rolls)$/.test(path) ||
+      (method === 'DELETE' && /^\/api\/submissions\/[^/]+$/.test(path))
+    )
+      return lifecycleRequest(this, path, method, data, token, doc, a, root);
     if (path === '/api/characters/new-id') {
       if (a.role !== 'admin' && !doc.game.character_creation.enabled)
         fail('Criação de personagem desativada.', 403);
@@ -45,8 +126,21 @@ export class PortalService extends CampaignService {
       if (method === 'GET')
         return clone(doc.notifications.filter((n) => notificationVisible(n, a)));
       return this.write(token, (d, actor) => {
-        const id = path.split('/')[3],
-          n = d.notifications.find((n) => n.id === id && notificationVisible(n, actor));
+        const id = path.split('/')[3];
+        const visible = d.notifications.filter((n) => notificationVisible(n, actor));
+        if (method === 'DELETE') {
+          const selected = id
+            ? visible.filter((n) => n.id === id)
+            : visible.filter((n) => (data.only_read ? n.read_by.includes(actor.id) : true));
+          if (id && !selected.length) fail('Notificação não encontrada.', 404);
+          for (const n of selected) n.hidden_by = [...new Set([...(n.hidden_by || []), actor.id])];
+          return { status: 'deleted', count: selected.length };
+        }
+        if (id === 'read-all') {
+          for (const n of visible) if (!n.read_by.includes(actor.id)) n.read_by.push(actor.id);
+          return { status: 'read' };
+        }
+        const n = visible.find((n) => n.id === id);
         if (!n) fail('Notificação não encontrada.', 404);
         if (!n.read_by.includes(actor.id)) n.read_by.push(actor.id);
         return clone(n);
@@ -62,7 +156,7 @@ export class PortalService extends CampaignService {
     }
     if (method === 'DELETE' && path.startsWith('/api/admin/accounts/'))
       return deleteAccount(this, path.split('/')[4], data, token);
-    if (method !== 'GET' && doc.status === 'closed')
+    if (method !== 'GET' && doc.status === 'closed' && !(a.role === 'admin' && method === 'DELETE'))
       fail('Reabra a campanha para alterar os registros.', 409);
     if (path === '/api/admin/xp/distribute') {
       if (method !== 'POST') fail('Operação inválida.', 405);

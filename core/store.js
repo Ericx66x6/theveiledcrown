@@ -1,4 +1,4 @@
-// JSON repository port: no browser database, cookies or Web Storage.
+// JSON repository port: no browser database or Web Storage.
 import { clone, newId, timestamp, fail } from './model.js';
 import { gameSettings } from './settings.js';
 import { normalizeRoot, normalizeCampaign } from './campaign-shape.js';
@@ -13,6 +13,7 @@ export function campaignRecord(game, data = {}) {
     game: gameSettings(game),
     characters: [],
     notes: [],
+    social: [],
     quests: [],
     maps: [],
     submissions: [],
@@ -37,7 +38,7 @@ export function workspaceFromLegacy(doc) {
     });
   return {
     format: 'coroa-hub-v2',
-    schema_version: 6,
+    schema_version: 7,
     revision: 0,
     updated_at: timestamp(),
     active_campaign_id: id,
@@ -66,7 +67,8 @@ export class CampaignStore {
   current() {
     return (
       this.root.campaigns.find((c) => c.id === this.root.active_campaign_id) ||
-      this.root.campaigns[0]
+      this.root.campaigns[0] ||
+      campaignRecord(this.root.default_game, { id: 'no-campaign', title: 'Escolha uma campanha' })
     );
   }
   async workspace() {
@@ -91,7 +93,10 @@ export class CampaignStore {
   async transact(change, { dirty = true } = {}) {
     return this.atomic(
       (root) => {
-        const c = root.campaigns.find((c) => c.id === root.active_campaign_id) || root.campaigns[0];
+        const c =
+          root.campaigns.find((c) => c.id === root.active_campaign_id) ||
+          root.campaigns[0] ||
+          campaignRecord(root.default_game, { id: 'no-campaign', title: 'Escolha uma campanha' });
         const doc = {
           ...clone(c),
           format: 'coroa-offline-v1',
@@ -105,18 +110,19 @@ export class CampaignStore {
         const changed = change(doc) ?? doc;
         if (changed?.then) throw new Error('A transação precisa ser síncrona.');
         const { accounts, sessions, format, ...campaign } = changed;
-        root.campaigns[root.campaigns.findIndex((x) => x.id === c.id)] = {
-          ...c,
-          ...campaign,
-          id: c.id,
-          game: gameSettings(campaign.game)
-        };
+        if (root.campaigns.some((x) => x.id === c.id))
+          root.campaigns[root.campaigns.findIndex((x) => x.id === c.id)] = {
+            ...c,
+            ...campaign,
+            id: c.id,
+            game: gameSettings(campaign.game)
+          };
         root.accounts = accounts.map((a) => {
           const previous = root.accounts.find((x) => x.id === a.id),
             memberships = clone(a.memberships || previous?.memberships || {});
           if (a._revoke_campaign) delete memberships[c.id];
           else if (a._campaign_member || a.character_ids?.length || !previous)
-            memberships[c.id] = clone(a.character_ids || []);
+            if (c.id !== 'no-campaign') memberships[c.id] = clone(a.character_ids || []);
           const result = { ...a, memberships };
           delete result.character_ids;
           delete result._campaign_member;

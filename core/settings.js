@@ -40,7 +40,7 @@ export function mechanics(description, explicit = {}) {
 }
 export function gameSettings(source) {
   const g = clone(source);
-  g.schema_version = 6;
+  g.schema_version = 7;
   g._revision ??= 0;
   g.status_rules ??= {};
   for (const [key, max] of Object.entries(statusMax))

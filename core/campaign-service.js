@@ -1,3 +1,4 @@
+import { deleteCampaign } from './lifecycle-service.js';
 import { personalNetwork, questVisible } from './permissions.js';
 import { notification } from './management-service.js';
 import { mapsRequest } from './maps-service.js';
@@ -19,6 +20,7 @@ import {
   coordinate,
   visible,
   publicCampaign,
+  publicNote,
   workspaceExport,
   playerExport,
   validateWorkspace
@@ -117,6 +119,7 @@ export class CampaignService extends CharacterService {
         return { status: 'selected', campaign: c.id };
       }
       requireAdmin(account);
+      if (method === 'DELETE') return deleteCampaign(this, c.id, data, token);
       let result;
       await this.store.atomic((r) => {
         const target = r.campaigns.find((x) => x.id === c.id);
@@ -132,7 +135,12 @@ export class CampaignService extends CharacterService {
           target.accent = data.accent;
         }
         target.updated_at = timestamp();
-        result = clone(target);
+        result = Object.fromEntries(
+          ['id', 'title', 'system', 'description', 'status', 'accent', 'updated_at'].map((key) => [
+            key,
+            clone(target[key])
+          ])
+        );
         return r;
       });
       return result;
@@ -179,10 +187,21 @@ export class CampaignService extends CharacterService {
         return publicAccount(a);
       });
     }
+    if (
+      method !== 'GET' &&
+      !root.campaigns.some((c) => c.id === doc.id) &&
+      !path.startsWith('/api/admin/accounts')
+    )
+      fail('Crie ou selecione uma campanha antes de alterar seus registros.', 409);
     if (account.role !== 'admin' && !Object.hasOwn(global.memberships, doc.id))
       fail('Escolha uma campanha vinculada à sua conta.', 403);
     if (path === '/api/campaign') return publicCampaign(doc, account);
-    if (method !== 'GET' && doc.status === 'closed' && !path.startsWith('/api/admin/'))
+    if (
+      method !== 'GET' &&
+      doc.status === 'closed' &&
+      !(account.role === 'admin' && method === 'DELETE') &&
+      !path.startsWith('/api/admin/')
+    )
       fail('Esta mesa está encerrada. O narrador pode reabri-la no portal.', 409);
     const quoteMatch = path.match(/^\/api\/characters\/(\d+)\/upgrade-preview$/);
     if (quoteMatch) {
@@ -260,7 +279,8 @@ export class CampaignService extends CharacterService {
     return super.request(path, options);
   }
   async notes(path, method, data, token, doc, account) {
-    if (method === 'GET') return clone(doc.notes.filter((n) => visible(n, account)));
+    if (method === 'GET')
+      return doc.notes.filter((n) => visible(n, account)).map((n) => publicNote(n, doc));
     return this.write(token, (d, a) => {
       const id = path.split('/')[3];
       let note = id ? d.notes.find((n) => n.id === id) : null;
@@ -271,6 +291,7 @@ export class CampaignService extends CharacterService {
         checkRevision(note, data);
       }
       if (method === 'DELETE') {
+        if (!note) fail('Anotação não encontrada.', 404);
         d.notes = d.notes.filter((n) => n.id !== id);
         return { status: 'deleted' };
       }
@@ -289,7 +310,13 @@ export class CampaignService extends CharacterService {
       };
       if (note) Object.assign(note, values);
       else {
-        note = { id: newId(), created_by: a.id, created_at: timestamp(), ...values };
+        note = {
+          id: newId(),
+          created_by: a.id,
+          created_at: timestamp(),
+          author: { id: a.id, display_name: a.display_name, avatar: '', role: a.role },
+          ...values
+        };
         d.notes.push(note);
       }
       stamp(note, a);
@@ -298,30 +325,58 @@ export class CampaignService extends CharacterService {
   }
   async quests(path, method, data, token, doc, account) {
     if (method === 'GET') return clone(doc.quests.filter((q) => questVisible(q, account, doc.id)));
-    if (!['POST', 'PATCH'].includes(method)) fail('Operação de missão inválida.', 405);
+    requireAdmin(account);
+    if (!['POST', 'PATCH', 'DELETE'].includes(method)) fail('Operação de missão inválida.', 405);
+    const [, , , id, action] = path.split('/');
+    if (action && action !== 'complete') fail('Operação de missão não disponível.', 404);
     return this.write(token, (d, a) => {
-      const [, , , id, action] = path.split('/');
+      requireAdmin(a);
       let q = id ? d.quests.find((q) => q.id === id) : null;
-      if (id && (!q || !questVisible(q, a, d.id))) fail('Missão não encontrada.', 404);
+      if (id && !q) fail('Missão não encontrada.', 404);
       if (q) checkRevision(q, data);
+      if (method === 'DELETE') {
+        if (!q) fail('Escolha uma missão.', 404);
+        d.quests = d.quests.filter((item) => item.id !== q.id);
+        return { status: 'deleted' };
+      }
+      const reward = (source, fallback) => {
+        const xp = number(
+          source.xp_reward ?? fallback?.xp_reward ?? 0,
+          'XP por participante',
+          0,
+          d.game.quests.max_xp_reward
+        );
+        const money = moneyValue(source.money_reward ?? fallback?.money_reward ?? 0);
+        if (money < 0 || money > d.game.quests.max_money_reward)
+          fail('Recompensa financeira inválida.');
+        const items = clone(source.items ?? fallback?.items ?? []);
+        if (!Array.isArray(items) || items.length > 20) fail('Lista de recompensas inválida.');
+        for (const item of items) {
+          item.name = text(item.name, 'Item', 150, true);
+          item.quantity = number(item.quantity ?? 1, 'Quantidade', 1, 9999);
+          item.description = text(item.description || '', 'Descrição', 10000);
+        }
+        return { xp_reward: xp, money_reward: money, items };
+      };
       if (action === 'complete') {
-        requireAdmin(a);
-        if (q.status === 'completed' || q.rewarded_at)
-          fail('As recompensas desta missão já foram entregues.', 409);
-        if (q.status === 'cancelled') fail('Reative a missão antes de concluir.');
-        q.approved_rewards = true;
-        const changes = q.assignees.map((id) => {
+        if (!q) fail('Missão não encontrada.', 404);
+        if (q.rewarded_at || q.status === 'completed')
+          fail('As recompensas já foram entregues.', 409);
+        if (q.status === 'cancelled') fail('Reative a missão antes de entregar.');
+        const actual = reward(data, q);
+        const note = text(data.completion_note || '', 'Desfecho', 5000);
+        for (const id of q.assignees) {
           const p = find(d, id);
-          if (p.archived) fail('Restaure a ficha de ' + p.char + ' antes de entregar recompensas.');
+          if (p.archived) fail('Restaure a ficha de ' + p.char + ' antes de entregar.');
           const next = clone(p);
-          next.xp = number(next.xp + q.xp_reward, 'XP acumulado');
-          next.money = moneyValue(next.money + q.money_reward);
-          if (q.money_reward)
+          next.xp = number(next.xp + actual.xp_reward, 'XP acumulado');
+          next.money = moneyValue(next.money + actual.money_reward);
+          if (actual.money_reward)
             next.transactions = [
               {
                 id: newId(),
                 at: timestamp(),
-                amount: q.money_reward,
+                amount: actual.money_reward,
                 before: p.money,
                 after: next.money,
                 reason: q.title,
@@ -330,92 +385,60 @@ export class CampaignService extends CharacterService {
               },
               ...(p.transactions || [])
             ].slice(0, 200);
-          for (const item of q.items || [])
-            next.items.push({
-              id: newId(),
-              name: item.name,
-              description: item.description || '',
-              quantity: item.quantity || 1
-            });
+          for (const item of actual.items) next.items.push({ id: newId(), ...clone(item) });
           validatePlayer(next, d.game);
-          return [p, next];
-        });
-        for (const [p, next] of changes)
-          commit(d, p, next, a, 'Missão concluída', `${q.title} · +${q.xp_reward} XP`);
+          commit(
+            d,
+            p,
+            next,
+            a,
+            'Missão concluída',
+            q.title + ' · +' + actual.xp_reward + ' XP' + (note ? ' · ' + note : '')
+          );
+        }
+        q.delivered_rewards = { ...actual, note, at: timestamp() };
         q.status = 'completed';
         q.rewarded_at = timestamp();
         q.completed_by = a.id;
-        stamp(q, a);
-        return clone(q);
-      }
-      if (action === 'request-completion') {
-        if (a.role !== 'player' || !q.assignees.some((id) => a.character_ids.includes(id)))
-          fail('Somente um participante pode solicitar a conclusão.', 403);
-        if (['completed', 'cancelled'].includes(q.status)) fail('Esta missão já foi encerrada.');
-        q.status = 'review';
-        q.completion_note = text(data.completion_note || '', 'Relato', 5000);
-        q.requested_by = a.id;
-        notification(d, {
-          title: 'Conclusão solicitada: ' + q.title,
-          message: q.completion_note,
-          kind: 'quest',
-          target: q.id
-        });
-        stamp(q, a);
-        return clone(q);
-      }
-      if (action === 'approve') {
-        requireAdmin(a);
-        if (q.rewarded_at) fail('Missão já recompensada.', 409);
         q.approved_rewards = true;
+        q.completion_note = note;
         stamp(q, a);
+        for (const owner of d.accounts.filter(
+          (u) => u.role === 'player' && q.assignees.some((id) => u.character_ids.includes(id))
+        ))
+          notification(d, {
+            audience: 'account',
+            recipient_id: owner.id,
+            title: 'Missão concluída: ' + q.title,
+            message: '+' + actual.xp_reward + ' XP · recompensa entregue pelo narrador.',
+            kind: 'quest',
+            target: q.id,
+            created_by: a.id
+          });
         return clone(q);
       }
-      if (action) fail('Operação de missão inválida.', 404);
-      requireAdmin(a);
-      if (q) {
-        if (q.rewarded_at) fail('Uma missão recompensada não pode ser alterada.', 409);
-      }
-      let assignees = data.assignees ?? q?.assignees ?? [];
+      if (q?.rewarded_at) fail('Uma missão já entregue não pode ser alterada.', 409);
+      const wasNew = !q;
+      const prior = new Set(q?.assignees || []);
+      const assignees = clone(data.assignees ?? q?.assignees ?? []);
       if (
         !Array.isArray(assignees) ||
         !assignees.length ||
         new Set(assignees).size !== assignees.length
       )
         fail('Selecione ao menos um participante.');
-      for (const id of assignees) {
-        find(d, id);
-        scope(a, id);
-      }
-      const xp = number(
-          data.xp_reward ?? q?.xp_reward ?? 0,
-          'XP por participante',
-          0,
-          d.game.quests.max_xp_reward
-        ),
-        money = moneyValue(data.money_reward ?? q?.money_reward ?? 0);
-      if (money < 0 || money > d.game.quests.max_money_reward)
-        fail('Recompensa financeira inválida.');
-      const items = data.items ?? q?.items ?? [];
-      if (!Array.isArray(items) || items.length > 20) fail('Lista de recompensas inválida.');
-      for (const item of items) {
-        text(item.name, 'Item', 150, true);
-        number(item.quantity ?? 1, 'Quantidade', 1, 9999);
-      }
+      for (const id of assignees) find(d, id);
       const status = data.status ?? q?.status ?? 'active';
-      if (!['active', 'cancelled', 'review'].includes(status))
-        fail('Use a confirmação de conclusão para entregar recompensas.');
+      if (!['active', 'cancelled'].includes(status)) fail('Use a entrega para concluir a missão.');
       const values = {
         title: text(data.title ?? q?.title, 'Título da missão', 200, true),
         description: text(data.description ?? q?.description ?? '', 'Descrição', 30000),
         category: text(data.category ?? q?.category ?? 'História principal', 'Categoria', 100),
         difficulty: text(data.difficulty ?? q?.difficulty ?? 'Desconhecida', 'Dificuldade', 100),
-        xp_reward: xp,
-        money_reward: money,
-        items: clone(items),
-        assignees: clone(assignees),
+        ...reward(data, q),
+        assignees,
         status,
-        approved_rewards: a.role === 'admin'
+        approved_rewards: true
       };
       if (q) Object.assign(q, values);
       else {
@@ -424,14 +447,18 @@ export class CampaignService extends CharacterService {
       }
       stamp(q, a);
       for (const owner of d.accounts.filter(
-        (u) => u.role === 'player' && q.assignees.some((id) => u.character_ids.includes(id))
+        (u) =>
+          u.role === 'player' &&
+          q.assignees.some((id) => u.character_ids.includes(id) && (wasNew || !prior.has(id)))
       ))
         notification(d, {
           audience: 'account',
           recipient_id: owner.id,
           title: 'Missão atribuída: ' + q.title,
+          message: 'As recompensas exibidas são uma previsão do narrador.',
           kind: 'quest',
-          target: q.id
+          target: q.id,
+          created_by: a.id
         });
       return clone(q);
     });

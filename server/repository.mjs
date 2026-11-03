@@ -11,6 +11,7 @@ export class Conflict extends Error {
 }
 export class MemoryRepository {
   constructor(seed) {
+    this.seed = copy(seed);
     this.value = { revision: 0, root: copy(seed) };
   }
   async load() {

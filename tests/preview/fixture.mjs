@@ -64,9 +64,88 @@ export async function previewFixture() {
     height: 900,
     player_access: false
   });
+  const portrait = image;
+  await request('/api/profile', 'PATCH', {
+    avatar: portrait,
+    bio: 'Narrador da crônica. Quem guarda os segredos do véu.'
+  });
+  await request('/api/admin/accounts', 'POST', {
+    username: 'qa-segundo',
+    display_name: 'Theo · QA',
+    password: 'senha-ficticia-123',
+    role: 'player',
+    character_ids: [],
+    campaign_access: true
+  });
+  const maps = await request('/api/maps');
+  await request('/api/maps/' + maps[0].id + '/pins', 'POST', {
+    title: 'O Porto Velho',
+    description:
+      'Armazéns fechados, luzes vermelhas e acordos que nunca chegam aos ouvidos do príncipe.',
+    domain: 'Território disputado',
+    address: 'Margem norte da cidade',
+    atmosphere: 'Névoa, silêncio e cheiro de maresia',
+    danger: 'Alto depois do anoitecer',
+    x: 0.45,
+    y: 0.55,
+    type: 'domain',
+    visibility: 'campaign',
+    images: [image],
+    npcs: [
+      {
+        id: 'isadora-porto',
+        name: 'Isadora',
+        role: 'A informante do cais',
+        description: 'Conhece os barcos que chegam sem registro. Cobra favores, não moedas.',
+        image: ''
+      }
+    ]
+  });
+  const geo = await request('/api/maps', 'POST', {
+    title: 'As ruas da crônica',
+    mode: 'geographic',
+    center: { lat: -23.5505, lng: -46.6333, zoom: 13 },
+    player_access: true
+  });
+  await request('/api/maps/' + geo.id + '/pins', 'POST', {
+    title: 'O refúgio da Sé',
+    description: 'Um ponto de encontro que parece esquecido pela cidade.',
+    x: 0.37,
+    y: 0.63,
+    lat: -23.5505,
+    lng: -46.6333,
+    type: 'location',
+    visibility: 'campaign'
+  });
+  await request('/api/notes', 'POST', {
+    title: 'O silêncio da corte',
+    content:
+      'A informante do porto pode saber quem está apagando os nomes do livro. Não entreguem o original a ninguém.',
+    tags: 'porto,livro,Isadora',
+    visibility: 'campaign'
+  });
+  await request('/api/social', 'POST', {
+    title: 'Um caminho para seguir',
+    content:
+      'O porto guarda a próxima pista. Deixem por aqui as descobertas antes de visitar a corte.',
+    kind: 'message'
+  });
   const player = await service.request('/auth/login', {
     method: 'POST',
     data: { username: 'qa-jogador', password: 'senha-ficticia-123' }
+  });
+  await service.request('/api/profile', {
+    method: 'PATCH',
+    token: player.token,
+    data: { avatar: portrait, bio: 'Gosto de mistérios, personagens improváveis e boas teorias.' }
+  });
+  await service.request('/api/social', {
+    method: 'POST',
+    token: player.token,
+    data: {
+      content: 'Anotei os nomes citados por Isadora. Tem alguém da corte nessa lista.',
+      kind: 'message'
+    }
   });
   await service.request('/api/network/nodes', {
     method: 'POST',

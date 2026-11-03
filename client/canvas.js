@@ -1,88 +1,16 @@
+import { bindAtlas, atlasAction } from './atlas.js';
 import { $, esc, icon, button, field, area, select, modal, toast, empty } from '../shared/ui.js';
 import { api } from './api.js';
 import { readImage } from './media.js';
 const cameras = new Map();
 let activeCanvas;
-const markerTypes = [
-  { value: 'location', label: 'Local importante' },
-  { value: 'domain', label: 'Domínio' },
-  { value: 'character', label: 'Personagem' },
-  { value: 'clue', label: 'Pista' },
-  { value: 'danger', label: 'Perigo' }
-];
-const editable = (item, ctx) =>
-  item.character_id !== undefined && item.character_id !== null && ctx.state.view === 'network'
-    ? !ctx.admin() && item.character_id === ctx.player()?.id
-    : ctx.admin() || item.created_by === ctx.state.account.id;
-export function selectedMap(ctx) {
-  const maps = ctx.state.campaign.maps;
-  let m = maps.find((m) => m.id === ctx.state.mapId) || maps[0];
-  if (m) ctx.state.mapId = m.id;
-  return m || { id: null, title: '', image: '', width: 0, height: 0, pins: [] };
-}
-const mapBase = (ctx) => '/api/maps/' + selectedMap(ctx).id;
-export function mapPage(ctx) {
-  const maps = ctx.state.campaign.maps,
-    m = selectedMap(ctx);
-  return `<div class="page-intro"><span class="eyebrow">ATLAS DA CAMPANHA</span><h1>Um mundo. Muitos caminhos.</h1><p>${ctx.admin() ? 'Organize os mapas e escolha quais os jogadores podem explorar.' : 'Explore os mapas que o narrador liberou para a sua campanha.'}</p></div><div class="atlas-heading"><span>${maps.length} mapa(s) ${ctx.admin() ? 'na campanha' : 'disponível(is)'}</span>${ctx.admin() ? button(icon('plus') + ' Adicionar mapa', 'map-upload', '', 'button primary') : ''}</div>${maps.length ? `<div class="map-gallery" aria-label="Mapas da campanha">${maps.map((map) => `<button type="button" class="map-gallery-card ${m.id === map.id ? 'selected' : ''}" data-action="map-select" data-id="${map.id}" aria-pressed="${m.id === map.id}"><img src="${esc(map.image)}" alt="${esc(map.title)}"><span><strong>${esc(map.title)}</strong><small>${ctx.admin() ? (map.player_access ? 'LIBERADO AOS JOGADORES' : 'SOMENTE NARRADOR') : map.pins.length + ' marcadores'}</small></span>${m.id === map.id ? icon('test') : ''}</button>`).join('')}</div><section class="atlas-map-heading"><div><h2>${esc(m.title)}</h2><p>${esc(m.description)}</p></div>${ctx.admin() ? button(icon('edit') + ' Nome e acesso', 'map-edit', `data-id="${m.id}"`, 'button ghost') : ''}</section><div class="canvas-toolbar">${button(icon('pin') + ' Marcar ponto', 'map-place', '', 'button primary')}<div class="canvas-zoom">${button('−', 'canvas-zoom-out', 'aria-label="Diminuir zoom"', 'icon-button')}${button('Enquadrar', 'canvas-fit', '', 'button ghost')}${button('+', 'canvas-zoom-in', 'aria-label="Aumentar zoom"', 'icon-button')}</div></div><section class="world-canvas map-canvas" id="world-canvas" aria-label="Mapa interativo da campanha"><div class="canvas-grid"></div><div class="canvas-stage" id="canvas-stage" style="width:${m.width}px;height:${m.height}px"><img class="map-image" draggable="false" src="${esc(m.image)}" alt="${esc(m.title)}" style="width:${m.width}px;height:${m.height}px">${m.pins.map((pin) => `<button type="button" class="map-marker ${esc(pin.type || 'location')}" data-pin="${pin.id}" style="left:${pin.x * m.width}px;top:${pin.y * m.height}px;--pin-color:${/^#[a-f\d]{6}$/i.test(pin.color || '') ? pin.color : '#e52e51'}" aria-label="${esc(pin.title)}">${icon(pin.type === 'character' ? 'profile' : pin.type === 'domain' ? 'world' : 'pin')}<span>${esc(pin.title)}</span></button>`).join('')}</div><div class="canvas-help">Arraste para explorar · use dois dedos ou o zoom · toque em um marcador</div><span class="canvas-placement" hidden>Toque no mapa para posicionar · arraste para navegar</span></section><div class="pin-list">${m.pins.map((pin) => `<article><button type="button" data-action="map-focus" data-id="${pin.id}" class="pin-list-main">${icon(pin.type === 'character' ? 'profile' : 'pin')}<span><strong>${esc(pin.title)}</strong><small>${esc(markerTypes.find((t) => t.value === pin.type)?.label || 'Local')} ${pin.domain ? '· ' + esc(pin.domain) : ''}</small></span></button>${button('Detalhes', 'map-detail', `data-id="${pin.id}"`, 'button ghost compact')}</article>`).join('') || '<p class="hint">Ainda não há marcadores neste mapa.</p>'}</div>` : empty(ctx.admin() ? 'Seu atlas começa com o primeiro mapa.' : 'Nenhum mapa foi liberado ainda.', ctx.admin() ? 'Envie mapas de cidades, regiões ou interiores e controle o acesso dos jogadores.' : 'Os mapas autorizados pelo narrador aparecerão aqui.', ctx.admin() ? button('Adicionar primeiro mapa', 'map-upload', '', 'button primary') : '')}`;
-}
-function mapDialog(ctx, map) {
-  modal(
-    map ? 'Configurar mapa' : 'Um novo lugar no atlas',
-    `<div class="form-grid">${field('title', 'Nome do mapa', map?.title || '', 'text', 'required maxlength="150" placeholder="Ex.: Cidade, região ou interior"')}${area('description', 'Descrição', map?.description || '', 'maxlength="5000"')}<label class="field full"><span>${map ? 'Trocar imagem (opcional)' : 'Imagem do mapa'} · JPG, PNG ou WebP, até 30 MB</span><input type="file" name="file" accept="image/jpeg,image/png,image/webp" ${map ? '' : 'required'}></label><label class="checkbox full"><input type="checkbox" name="player_access" ${map?.player_access ? 'checked' : ''}> Permitir que jogadores abram e marquem este mapa</label></div><p class="hint">Mapas não liberados ficam disponíveis somente ao narrador. A imagem é incorporada ao JSON e ajustada para até 6000 pixels no maior lado.</p>${map ? button('Remover mapa da campanha', 'map-delete', `data-id="${map.id}"`, 'text-button danger') : ''}`,
-    async (form) => {
-      const values = {
-        title: form.get('title'),
-        description: form.get('description'),
-        player_access: form.has('player_access'),
-        revision: map?._revision
-      };
-      const file = form.get('file');
-      if (file?.size) Object.assign(values, await readImage(file, { map: true }));
-      const result = await api('/api/maps' + (map ? '/' + map.id : ''), {
-        method: map ? 'PATCH' : 'POST',
-        data: values
-      });
-      ctx.state.mapId = result.id;
-      cameras.delete(ctx.state.campaign.id + 'map' + result.id);
-      await ctx.refresh();
-      toast(map ? 'Mapa atualizado.' : 'Mapa adicionado ao atlas.');
-    },
-    { wide: true, saveLabel: map ? 'Salvar mapa' : 'Adicionar mapa' }
-  );
-}
+const editable = (item, ctx) => !ctx.admin() && item.character_id === ctx.player()?.id;
+export { mapPage } from './atlas.js';
 export function networkPage(ctx) {
   if (ctx.admin() || !ctx.player())
     return empty('Mural pessoal do personagem.', 'Escolha um personagem no seu acesso de jogador.');
   const net = ctx.state.campaign.network;
   return `<div class="page-intro"><span class="eyebrow">CÍRCULOS DE RELACIONAMENTO</span><h1>Nenhuma história vive sozinha.</h1><p>O mural pessoal de ${esc(ctx.player().char)}. Só o jogador responsável pode abrir e alterar estas relações.</p></div><div class="canvas-toolbar">${button(icon('plus') + ' Adicionar NPC', 'network-add', '', 'button primary')}${button(icon('network') + ' Ligar personagens', 'network-link', net.nodes.length < 2 ? 'disabled' : '', 'button ghost')}<div class="canvas-zoom">${button('−', 'canvas-zoom-out', 'aria-label="Diminuir zoom"', 'icon-button')}${button('Enquadrar', 'canvas-fit', '', 'button ghost')}${button('+', 'canvas-zoom-in', 'aria-label="Aumentar zoom"', 'icon-button')}</div></div><section class="world-canvas network-canvas" id="world-canvas" aria-label="Mural interativo de NPCs"><div class="canvas-grid"></div><div class="canvas-stage" id="canvas-stage" style="width:1400px;height:900px"><svg class="network-lines" id="network-lines" width="1400" height="900" aria-label="Relações entre NPCs"></svg>${net.nodes.map((n) => `<button type="button" class="npc-card" data-node="${n.id}" style="left:${n.x * 1400}px;top:${n.y * 900}px" aria-label="Abrir ${esc(n.name)}"><span class="npc-pin"></span><div class="npc-photo">${n.image ? `<img src="${esc(n.image)}" alt="${esc(n.name)}" draggable="false">` : `<span>${esc(n.name.slice(0, 1))}</span>`}</div><div class="npc-card-caption"><strong>${esc(n.name)}</strong><span>${esc(n.role || n.faction || 'Identidade a descobrir')}</span></div><span class="npc-footer">MURAL DESTE PERSONAGEM</span></button>`).join('')}</div>${!net.nodes.length ? `<div class="canvas-empty"><span>${icon('network')}</span><h2>Comece com um nome.</h2><p>Adicione os NPCs que cruzaram seu caminho. As conexões vêm a seguir.</p>${button('Criar primeiro NPC', 'network-add', '', 'button ghost')}</div>` : ''}<div class="canvas-help">Arraste os cartões para organizar · toque para ler o dossiê · clique nas ligações</div></section><div class="network-directory">${net.nodes.map((n) => button(esc(n.name), 'network-detail', `data-id="${n.id}"`, 'button ghost')).join('')}</div>`;
-}
-function pinDialog(ctx, p, position) {
-  if (p && !editable(p, ctx)) {
-    modal(
-      p.title,
-      `<span class="tag">${esc(markerTypes.find((t) => t.value === p.type)?.label || 'Local')}</span><p class="prose modal-description">${esc(p.description)}</p><p class="hint">${esc(p.domain || '')}</p>`,
-      null
-    );
-    return;
-  }
-  const point = p || position;
-  modal(
-    p ? 'Editar marcador' : 'Um novo lugar na história',
-    `<div class="form-grid">${field('title', 'Nome do ponto', p?.title || '', 'text', 'required maxlength="200"')}${select('type', 'Tipo de marcador', markerTypes, p?.type || 'location')}${select('character_id', 'Vincular a um personagem', [{ value: '', label: 'Nenhum' }, ...ctx.state.players.map((p) => ({ value: p.id, label: p.char }))], p?.character_id ?? '')}${field('domain', 'Domínio ou referência', p?.domain || '', 'text', 'maxlength="500"')}${area('description', 'O que sabemos sobre esse lugar?', p?.description || '', 'maxlength="30000"')}${select('visibility', 'Visibilidade', [{ value: 'campaign', label: 'Toda a mesa' }, { value: 'private', label: 'Somente eu' }, ...(ctx.admin() ? [{ value: 'gm', label: 'Narradores' }] : [])], p?.visibility || 'campaign')}${field('color', 'Cor do marcador', p?.color || '#e52e51', 'color')}</div>${p ? button('Remover marcador', 'map-remove', `data-id="${p.id}"`, 'text-button danger') : ''}`,
-    async (form) => {
-      const values = Object.fromEntries(form);
-      values.character_id = values.character_id === '' ? null : Number(values.character_id);
-      Object.assign(values, { x: point.x, y: point.y, revision: p?._revision });
-      await api(mapBase(ctx) + '/pins' + (p ? '/' + p.id : ''), {
-        method: p ? 'PATCH' : 'POST',
-        data: values
-      });
-      await ctx.refresh();
-      toast('Marcador salvo no JSON do mapa.');
-    },
-    { wide: true }
-  );
 }
 function npcDialog(ctx, n) {
   if (n && !editable(n, ctx)) {
@@ -149,14 +77,8 @@ class CampaignCanvas {
     this.viewport = $('#world-canvas');
     this.stage = $('#canvas-stage');
     this.kind = ctx.state.view;
-    this.scene =
-      this.kind === 'map'
-        ? { width: selectedMap(ctx).width, height: selectedMap(ctx).height }
-        : { width: 1400, height: 900 };
-    this.key =
-      ctx.state.campaign.id +
-      this.kind +
-      (this.kind === 'map' ? selectedMap(ctx).id : ctx.player()?.id || '');
+    this.scene = { width: 1400, height: 900 };
+    this.key = ctx.state.campaign.id + 'network' + (ctx.player()?.id || '');
     this.controller = new AbortController();
     this.pointers = new Map();
     this.adding = false;
@@ -215,18 +137,6 @@ class CampaignCanvas {
       y: Math.max(0, Math.min(1, (point.y - this.y) / this.scale / this.scene.height))
     };
   }
-  focus(id) {
-    const pin = selectedMap(this.ctx).pins.find((p) => p.id === id);
-    if (!pin) return;
-    const r = this.viewport.getBoundingClientRect();
-    this.scale = Math.max(
-      this.scale,
-      Math.min(r.width / this.scene.width, r.height / this.scene.height) * 1.8
-    );
-    this.x = r.width / 2 - pin.x * this.scene.width * this.scale;
-    this.y = r.height / 2 - pin.y * this.scene.height * this.scale;
-    this.update();
-  }
   edges() {
     const svg = $('#network-lines');
     if (!svg) return;
@@ -262,21 +172,16 @@ class CampaignCanvas {
         this.pointers.set(event.pointerId, point);
         this.viewport.setPointerCapture(event.pointerId);
         const node = event.target.closest('[data-node]'),
-          pin = event.target.closest('[data-pin]'),
           edge = event.target.closest('[data-edge]');
         this.target = node
           ? { kind: 'node', id: node.dataset.node }
-          : pin
-            ? { kind: 'pin', id: pin.dataset.pin }
-            : edge
-              ? { kind: 'edge', id: edge.dataset.edge }
-              : null;
+          : edge
+            ? { kind: 'edge', id: edge.dataset.edge }
+            : null;
         const item =
           this.target?.kind === 'node'
             ? this.ctx.state.campaign.network.nodes.find((n) => n.id === this.target.id)
-            : this.target?.kind === 'pin'
-              ? selectedMap(this.ctx).pins.find((p) => p.id === this.target.id)
-              : null;
+            : null;
         this.drag = {
           start: point,
           last: point,
@@ -320,9 +225,7 @@ class CampaignCanvas {
         if (this.drag.item && this.drag.distance > 5) {
           const pos = this.world(point);
           Object.assign(this.drag.item, pos);
-          const node = this.stage.querySelector(
-            `[${this.target.kind === 'node' ? 'data-node' : 'data-pin'}="${this.target.id}"]`
-          );
+          const node = this.stage.querySelector(`[data-node="${this.target.id}"]`);
           node.style.left = pos.x * this.scene.width + 'px';
           node.style.top = pos.y * this.scene.height + 'px';
           this.edges();
@@ -352,18 +255,15 @@ class CampaignCanvas {
         const item = drag.item;
         await this.ctx.safe(async () => {
           try {
-            await api(
-              `${target.kind === 'node' ? '/api/network/nodes' : mapBase(this.ctx) + '/pins'}/${item.id}`,
-              {
-                method: 'PATCH',
-                data: {
-                  x: item.x,
-                  y: item.y,
-                  revision: item._revision,
-                  ...(target.kind === 'node' ? { character_id: this.ctx.player().id } : {})
-                }
+            await api(`/api/network/nodes/${item.id}`, {
+              method: 'PATCH',
+              data: {
+                x: item.x,
+                y: item.y,
+                revision: item._revision,
+                ...(target.kind === 'node' ? { character_id: this.ctx.player().id } : {})
               }
-            );
+            });
             await this.ctx.refresh();
           } catch (error) {
             Object.assign(item, drag.original);
@@ -379,22 +279,11 @@ class CampaignCanvas {
             this.ctx,
             this.ctx.state.campaign.network.nodes.find((n) => n.id === target.id)
           );
-        else if (target?.kind === 'pin')
-          pinDialog(
-            this.ctx,
-            selectedMap(this.ctx).pins.find((p) => p.id === target.id)
-          );
         else if (target?.kind === 'edge')
           edgeDialog(
             this.ctx,
             this.ctx.state.campaign.network.links.find((e) => e.id === target.id)
           );
-        else if (this.adding) {
-          this.adding = false;
-          this.viewport.classList.remove('placing');
-          $('.canvas-placement').hidden = true;
-          pinDialog(this.ctx, null, this.world(this.position(event)));
-        }
       }
     };
     this.viewport.addEventListener('pointerup', end, opts);
@@ -405,9 +294,7 @@ class CampaignCanvas {
         if (this.drag?.item) {
           const item = this.drag.item;
           Object.assign(item, this.drag.original);
-          const element = this.stage.querySelector(
-            `[${this.target.kind === 'node' ? 'data-node' : 'data-pin'}="${item.id}"]`
-          );
+          const element = this.stage.querySelector(`[data-node="${item.id}"]`);
           if (element) {
             element.style.left = item.x * this.scene.width + 'px';
             element.style.top = item.y * this.scene.height + 'px';
@@ -427,85 +314,18 @@ class CampaignCanvas {
 }
 export function bindCanvas(ctx) {
   activeCanvas?.destroy();
-  if (['map', 'network'].includes(ctx.state.view) && $('#canvas-stage'))
-    activeCanvas = new CampaignCanvas(ctx);
+  activeCanvas = null;
+  bindAtlas(ctx);
+  if (ctx.state.view === 'network' && $('#canvas-stage')) activeCanvas = new CampaignCanvas(ctx);
 }
 export async function canvasAction(action, data, ctx) {
-  if (action === 'map-upload') {
-    mapDialog(ctx);
-    return true;
-  }
-  if (action === 'map-edit') {
-    mapDialog(
-      ctx,
-      ctx.state.campaign.maps.find((m) => m.id === data.id)
-    );
-    return true;
-  }
-  if (action === 'map-select') {
-    ctx.state.mapId = data.id;
-    ctx.draw();
-    return true;
-  }
-  if (action === 'map-delete') {
-    const map = ctx.state.campaign.maps.find((m) => m.id === data.id);
-    modal(
-      'Remover mapa?',
-      `<p>O mapa será movido para a lixeira, com seus marcadores.</p>${field('confirmation', 'Digite o nome do mapa', '', 'text', 'required maxlength="150"')}`,
-      async (form) => {
-        await api('/api/maps/' + map.id, {
-          method: 'DELETE',
-          data: { revision: map._revision, confirmation: form.get('confirmation') }
-        });
-        await ctx.refresh();
-        toast('Mapa movido para a lixeira.');
-      },
-      { saveLabel: 'Remover mapa' }
-    );
-    return true;
-  }
-  if (action === 'map-place') {
-    if (activeCanvas) {
-      activeCanvas.adding = true;
-      activeCanvas.viewport.classList.add('placing');
-      $('.canvas-placement').hidden = false;
-      toast('Toque no local onde deseja criar o marcador.');
-    }
-    return true;
-  }
+  if (await atlasAction(action, data, ctx)) return true;
   if (action === 'canvas-zoom-in' || action === 'canvas-zoom-out') {
     activeCanvas?.zoom(action === 'canvas-zoom-in' ? 1.35 : 1 / 1.35);
     return true;
   }
   if (action === 'canvas-fit') {
     activeCanvas?.fit();
-    return true;
-  }
-  if (action === 'map-focus') {
-    activeCanvas?.focus(data.id);
-    return true;
-  }
-  if (action === 'map-detail') {
-    pinDialog(
-      ctx,
-      selectedMap(ctx).pins.find((p) => p.id === data.id)
-    );
-    return true;
-  }
-  if (action === 'map-remove') {
-    const p = selectedMap(ctx).pins.find((p) => p.id === data.id);
-    modal(
-      'Remover marcador?',
-      `<p>${esc(p.title)}</p>`,
-      async () => {
-        await api(mapBase(ctx) + '/pins/' + p.id, {
-          method: 'DELETE',
-          data: { revision: p._revision }
-        });
-        await ctx.refresh();
-      },
-      { saveLabel: 'Remover' }
-    );
     return true;
   }
   if (action === 'network-add') {

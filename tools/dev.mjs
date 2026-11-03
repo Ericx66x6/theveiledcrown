@@ -25,14 +25,15 @@ if (!qa) {
   for (const role of ['admin', 'player']) {
     await build({
       stdin: {
-        contents: `import {startApp} from './client/app.js';startApp({identity:window.COROA_QA_IDENTITIES.${role}});`,
+        contents: `import {startApp} from './client/app.js';import {api} from './client/api.js';(async()=>{await startApp({identity:window.COROA_QA_IDENTITIES.${role}});await api('/auth/me');})();`,
         resolveDir: process.cwd(),
         sourcefile: 'preview-entry.js'
       },
       bundle: true,
       format: 'iife',
       outfile: resolve(out, role + '.js'),
-      target: 'es2022'
+      target: 'es2022',
+      external: ['/assets/scripts/geographic.js']
     });
     await writeFile(
       resolve(out, role + '.html'),

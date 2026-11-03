@@ -232,7 +232,7 @@ export function credentials(username, password) {
   if (!/^[a-z0-9_.-]{3,40}$/.test(login))
     fail('O login precisa ter de 3 a 40 letras, números, pontos, traços ou sublinhados.');
   if (typeof password !== 'string' || password.length < 6 || password.length > 128)
-    fail('Use uma senha de 6 a 128 caracteres nesta versão de testes.');
+    fail('Use uma senha de 6 a 128 caracteres.');
   return login;
 }
 export function revision(p, value) {

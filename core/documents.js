@@ -5,8 +5,9 @@ export function workspaceDocuments(root) {
     docs = Object.create(null),
     manifest = {
       format: 'coroa-document-set-v4',
-      schema_version: 6,
+      schema_version: 7,
       revision,
+      default_game: clone(root.default_game),
       active_campaign_id: root.active_campaign_id,
       accounts_file: 'accounts.json',
       campaign_files: []
@@ -25,6 +26,7 @@ export function workspaceDocuments(root) {
         characters: [],
         maps: [],
         notes: base + 'notes.json',
+        social: base + 'social.json',
         quests: base + 'quests.json',
         network: base + 'network.json',
         submissions: base + 'submissions.json',
@@ -57,7 +59,7 @@ export function workspaceDocuments(root) {
         _document_type: 'map'
       };
     }
-    for (const key of ['notes', 'quests', 'network', 'submissions', 'notifications'])
+    for (const key of ['notes', 'quests', 'network', 'submissions', 'notifications', 'social'])
       docs[refs[key]] = {
         format: 'coroa-' + key + '-v4',
         _campaign_id: c.id,
@@ -77,6 +79,7 @@ export function workspaceDocuments(root) {
       'characters',
       'maps',
       'notes',
+      'social',
       'quests',
       'network',
       'submissions',
@@ -130,8 +133,9 @@ export function assembleDocuments(documents) {
   const accounts = get(manifest.accounts_file),
     root = {
       format: 'coroa-hub-v2',
-      schema_version: 6,
+      schema_version: 7,
       revision: manifest.revision,
+      default_game: clone(manifest.default_game),
       active_campaign_id: manifest.active_campaign_id,
       accounts: clone(accounts.accounts),
       deleted_accounts: clone(accounts.deleted_accounts || []),
@@ -153,6 +157,7 @@ export function assembleDocuments(documents) {
     c.maps = f.maps.map((path) => strip(local(path)));
     for (const key of ['notes', 'quests', 'network', 'submissions', 'notifications'])
       c[key] = clone(local(f[key])[key]);
+    c.social = f.social ? clone(local(f.social).social) : [];
     const archive = local(f.archive);
     c.snapshots = clone(archive.snapshots);
     c.deleted_characters = clone(archive.deleted_characters);

@@ -1,4 +1,4 @@
-import { initialize, session, saveSession, clearSession } from './api.js';
+import { api, initialize, session, saveSession, clearSession } from './api.js';
 import { showLogin } from './login.js';
 import { startPortal, stopPortal } from './portal.js';
 import { initializeFiles } from './files.js';
@@ -25,10 +25,18 @@ export async function startApp({ identity } = {}) {
     await initialize();
     await initializeFiles();
     if (identity) saveSession(identity);
+    else {
+      try {
+        saveSession(await api('/auth/me', { allowUnauthorized: true }));
+      } catch (error) {
+        if (error.status !== 401) throw error;
+      }
+    }
     if (session()) await enter();
     else await showLogin(enter);
   } catch (error) {
     document.querySelector('#app').innerHTML =
-      `<main class="loading-screen"><h1>Não foi possível abrir o livro.</h1><p>${esc(error.message)}</p><p>Confira sua conexão com a campanha e tente novamente.</p></main>`;
+      `<main class="loading-screen"><h1>Não foi possível abrir o livro.</h1><p>${esc(error.message)}</p><p>Confira sua conexão com a campanha e tente novamente.</p><button type="button" class="button primary" id="retry-portal">Tentar novamente</button></main>`;
+    document.querySelector('#retry-portal').onclick = () => location.reload();
   }
 }

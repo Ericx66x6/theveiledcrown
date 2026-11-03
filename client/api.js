@@ -1,3 +1,4 @@
+import { beginLoading } from './loading.js';
 import { RemoteClient } from './transport.js';
 let activeSession = null,
   transport;
@@ -26,18 +27,38 @@ export async function initialize() {
   transport = new RemoteClient(globalThis.COROA_CONFIG?.apiBase || location.origin);
   return store;
 }
-export async function api(path, { method = 'GET', data } = {}) {
+export async function api(
+  path,
+  { method = 'GET', data, allowUnauthorized = false, silent = false } = {}
+) {
   if (!transport) throw new Error('A conexão da campanha ainda não foi inicializada.');
+  const controller = new AbortController();
+  const done = silent
+    ? () => {}
+    : beginLoading(method === 'GET' ? 'Carregando a crônica…' : 'Salvando na crônica…', () =>
+        controller.abort()
+      );
   try {
-    const result = await transport.request(path, { method, data, token: activeSession?.token });
+    const result = await transport.request(path, {
+      method,
+      data,
+      token: activeSession?.token,
+      signal: controller.signal
+    });
     store.remoteRevision = transport.store.remoteRevision;
     if (method !== 'GET') window.dispatchEvent(new CustomEvent('portal:saved'));
     return result;
   } catch (error) {
-    if (error.status === 401 && !['/auth/login', '/auth/bootstrap'].includes(path)) {
+    if (
+      !allowUnauthorized &&
+      error.status === 401 &&
+      !['/auth/login', '/auth/bootstrap'].includes(path)
+    ) {
       clearSession();
       window.dispatchEvent(new CustomEvent('session:expired'));
     }
     throw error;
+  } finally {
+    done();
   }
 }

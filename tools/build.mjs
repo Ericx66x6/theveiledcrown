@@ -25,8 +25,26 @@ await rm(out, { recursive: true, force: true });
 await mkdir(resolve(out, 'assets/styles'), { recursive: true });
 await mkdir(resolve(out, 'assets/scripts'), { recursive: true });
 await cp(resolve(root, 'public/images'), resolve(out, 'assets/images'), { recursive: true });
-for (const name of ['base', 'theme', 'hub', 'experience'])
+for (const name of ['base', 'theme', 'hub', 'experience', 'updates'])
   await cp(resolve(root, 'client', name + '.css'), resolve(out, 'assets/styles', name + '.css'));
+await cp(
+  resolve(root, 'node_modules/leaflet/dist/leaflet.css'),
+  resolve(out, 'assets/styles/leaflet.css')
+);
+await cp(resolve(root, 'node_modules/leaflet/dist/images'), resolve(out, 'assets/styles/images'), {
+  recursive: true
+});
+await cp(resolve(root, 'node_modules/ol/ol.css'), resolve(out, 'assets/styles/geographic.css'));
+await build({
+  entryPoints: [resolve(root, 'client/geographic.js')],
+  outfile: resolve(out, 'assets/scripts/geographic.js'),
+  bundle: true,
+  format: 'esm',
+  target: ['chrome110', 'safari16', 'firefox115'],
+  minify: true,
+  legalComments: 'eof',
+  platform: 'browser'
+});
 await build({
   entryPoints: [resolve(root, 'client/main.js')],
   outfile: resolve(out, 'assets/scripts/app.js'),
@@ -35,18 +53,17 @@ await build({
   target: ['chrome110', 'safari16', 'firefox115'],
   minify: true,
   legalComments: 'eof',
-  platform: 'browser'
+  platform: 'browser',
+  external: ['/assets/scripts/geographic.js']
 });
 await writeFile(
   resolve(out, 'runtime-config.js'),
-  apiBase
-    ? `window.COROA_CONFIG=${JSON.stringify({ apiBase })};\n`
-    : 'window.COROA_CONFIG={apiBase:window.location.origin};\n'
+  'window.COROA_CONFIG={apiBase:window.location.origin};\n'
 );
-const csp = `default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'${apiBase ? ' ' + apiBase : ''}; object-src 'none'; base-uri 'self'; form-action 'none'`;
+const csp = `default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://tiles.openfreemap.org; font-src 'self'; connect-src 'self' https://tiles.openfreemap.org; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'`;
 const html = (await readFile(resolve(root, 'client/index.html'), 'utf8')).replace(
   '<meta name="description"',
   `<meta http-equiv="Content-Security-Policy" content="${csp}"><meta name="description"`
 );
 await writeFile(resolve(out, 'index.html'), html);
-console.log('Coroa Velada 6 online compilada em dist/.');
+console.log('Coroa Velada 7 online compilada em dist/.');
