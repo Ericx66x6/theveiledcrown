@@ -1,3 +1,8 @@
+import { intelPage, legaciesPage, commerceAction, bindCommerce } from './commerce.js';
+import { configureSound, soundButton, renderSoundControls, playSound } from './audio.js';
+import { applyCampaignTheme } from './campaign-theme.js';
+import { searchAction } from './search.js';
+import { powerPool, powerAction } from './power-pool.js';
 import { socialPage, communityAction, bindCommunity } from './community.js';
 import { lifecycleAction } from './lifecycle.js';
 import { xpDistribution } from './xp.js';
@@ -122,8 +127,10 @@ const nav = [
   ['quests', 'Missões'],
   ['map', 'Mapa da campanha'],
   ['social', 'Salão da campanha'],
+  ['intel', 'Ecos do Véu'],
+  ['legacies', 'Legados do Sangue'],
   ['network', 'Círculos de relações'],
-  ['chronicle', 'Objetivos e histórico'],
+  ['chronicle', 'Histórico da ficha'],
   ['dice', 'Rolagem de dados']
 ];
 const sharedNav = [
@@ -258,7 +265,7 @@ function initShell() {
   document.body.classList.remove('login-page');
   document.querySelector('.skip-link')?.setAttribute('href', '#main-content');
   $('#app').innerHTML =
-    `<aside id="sidebar" class="sidebar"><a href="#campaigns" class="brand"><span class="brand-crest">${crown}</span><span>A COROA VELADA<small>ONDE AS HISTÓRIAS VIVEM</small></span></a><button type="button" data-action="close-menu" class="icon-button drawer-close" aria-label="Fechar navegação">${icon('close')}</button><div data-nav-root></div><div class="sidebar-footer"><p>O sangue lembra.<br><span>A noite nunca esquece.</span></p><span class="version">PORTAL ONLINE · V7</span></div></aside><div class="workspace"><header class="topbar"><div class="breadcrumb"><button data-action="menu" class="icon-button mobile-menu" aria-label="Abrir navegação">${icon('menu')}</button><span class="campaign-breadcrumb"></span><i>/</i><strong id="breadcrumb-current"></strong></div><div class="topbar-right">${button(icon('download') + ' <span>Salvar JSON</span>', 'backup-table', 'aria-label="Salvar JSONs do portal"', 'button ghost top-export')}<button type="button" class="icon-button notification-button" data-action="nav-notifications" aria-label="Notificações">${icon('notes')}<span data-notification-count hidden></span></button><button type="button" class="user-button" data-action="nav-profile" aria-label="Abrir meu perfil" title="Meu perfil"><span class="avatar small" data-user-avatar></span><span data-user-name></span></button><button class="icon-button" data-action="logout" aria-label="Sair">${icon('logout')}</button></div></header><div class="connection-banner"><span>${icon('save')} <span data-sync-label></span></span><span>Atualização automática da campanha</span></div><main id="main-content" tabindex="-1"></main><footer class="app-footer"><span>A COROA VELADA</span><span>Suas histórias, além do véu.</span><span>◇</span></footer></div><button type="button" class="drawer-backdrop" data-action="close-menu" aria-label="Fechar menu"></button><nav class="mobile-bottom" aria-label="Navegação principal"></nav>`;
+    `<aside id="sidebar" class="sidebar"><a href="#campaigns" class="brand"><span class="brand-crest">${crown}</span><span>A COROA VELADA<small>ONDE AS HISTÓRIAS VIVEM</small></span></a><button type="button" data-action="close-menu" class="icon-button drawer-close" aria-label="Fechar navegação">${icon('close')}</button><div data-nav-root></div><div class="sidebar-footer"><p>O sangue lembra.<br><span>A noite nunca esquece.</span></p><span class="version">PORTAL ONLINE · V8</span></div></aside><div class="workspace"><header class="topbar"><div class="breadcrumb"><button data-action="menu" class="icon-button mobile-menu" aria-label="Abrir navegação">${icon('menu')}</button><span class="campaign-breadcrumb"></span><i>/</i><strong id="breadcrumb-current"></strong></div><div class="topbar-right">${button(icon('search'), 'global-search', 'aria-label="Pesquisar em toda a campanha" title="Pesquisar"', 'icon-button')}${soundButton()}${button(icon('download') + ' <span>Salvar JSON</span>', 'backup-table', 'aria-label="Salvar JSONs do portal"', 'button ghost top-export')}<button type="button" class="icon-button notification-button" data-action="nav-notifications" aria-label="Notificações">${icon('notes')}<span data-notification-count hidden></span></button><button type="button" class="user-button" data-action="nav-profile" aria-label="Abrir meu perfil" title="Meu perfil"><span class="avatar small" data-user-avatar></span><span data-user-name></span></button><button class="icon-button" data-action="logout" aria-label="Sair">${icon('logout')}</button></div></header><div class="connection-banner"><span>${icon('save')} <span data-sync-label></span></span><span>Atualização automática da campanha</span></div><div id="xp-hud"></div><main id="main-content" tabindex="-1"></main><footer class="app-footer"><span>A COROA VELADA</span><span>Suas histórias, além do véu.</span><span>◇</span></footer></div><button type="button" class="drawer-backdrop" data-action="close-menu" aria-label="Fechar menu"></button><nav class="mobile-bottom" aria-label="Navegação principal"></nav>`;
   document.addEventListener('click', handleClick, { signal: events.signal });
   document.addEventListener('submit', handleSubmit, { signal: events.signal });
   document.addEventListener(
@@ -320,8 +327,16 @@ async function mutate(path, data, method = 'POST') {
     document.body.classList.remove('saving');
   }
 }
-const patch = (data, revision = player()._revision) =>
-  mutate(`/api/characters/${player().id}`, { revision, patch: data }, 'PATCH');
+const patch = (data, revision = player()._revision, logMessage = '') =>
+  mutate(
+    `/api/characters/${player().id}`,
+    {
+      revision,
+      patch: data,
+      log_message: logMessage || (admin() ? $('#dialog-form [name=log_message]')?.value : '') || ''
+    },
+    'PATCH'
+  );
 function context() {
   return {
     state,
@@ -338,7 +353,15 @@ function context() {
 }
 async function refreshAll({ silent = false } = {}) {
   const mapVersion = state.campaign?.maps?.map((m) => m.id + ':' + m._revision).join('|');
+  const knownNotifications = new Set((state.notifications || []).map((n) => n.id));
   await loadFeatureState(state, { silent });
+  if (
+    silent &&
+    state.notifications.some(
+      (n) => !knownNotifications.has(n.id) && !n.read_by.includes(state.account.id)
+    )
+  )
+    playSound('notify');
   if (
     silent &&
     state.view === 'map' &&
@@ -393,7 +416,21 @@ function render() {
     : esc(state.account.display_name.slice(0, 1));
   $('[data-user-name]').innerHTML =
     `${esc(state.account.display_name)}<small>${admin() ? 'Narrador' : 'Jogador'}</small>`;
-  document.body.style.setProperty('--campaign-accent', state.campaign?.accent || '#d92343');
+  applyCampaignTheme(state.campaign);
+  configureSound(state.account.preferences?.audio_enabled !== false, async (enabled) => {
+    const account = await api('/api/profile', {
+      method: 'PATCH',
+      data: { preferences: { audio_enabled: enabled } },
+      silent: true
+    });
+    state.account = account;
+    saveSession({ ...session(), account });
+  });
+  renderSoundControls();
+  $('#xp-hud').innerHTML =
+    !admin() && player()
+      ? `<div class="xp-hud"><span>${icon('powers')}<span>SEU XP DISPONÍVEL<small>${esc(player().char)}</small></span></span><strong>${player().xp}<small>XP</small></strong>${button('Evoluir ' + icon('arrow'), 'nav-attributes', '', 'button ghost')}</div>`
+      : '';
   document.body.classList.toggle(
     'reduce-effects',
     state.account.preferences?.animations === false || state.game.interface.animations === false
@@ -417,6 +454,8 @@ function render() {
     featureViews = {
       campaigns: campaignHub,
       social: socialPage,
+      intel: intelPage,
+      legacies: legaciesPage,
       notes: notesPage,
       quests: questsPage,
       profile: profilePage,
@@ -436,7 +475,10 @@ function render() {
     powers: ['O poder corre no sangue.', 'Disciplinas, rituais e os dons que o tornam único.'],
     world: ['O preço da influência.', 'Domínios, relações e favores que a noite ainda vai cobrar.'],
     possessions: ['O que a noite lhe deu.', 'Seu inventário e cada moeda da sua jornada.'],
-    chronicle: ['Nada deve ser esquecido.', 'Ambições, convicções e os rastros da sua história.'],
+    chronicle: [
+      'Os rastros da sua história.',
+      'Cada mudança fica registrada. Somente o narrador pode apagar o histórico.'
+    ],
     dice: ['Deixe o destino falar.', 'Sua próxima decisão está a uma rolagem de distância.'],
     characters: ['Os nomes da crônica.', 'Conduza as histórias daqueles que atravessaram o véu.'],
     accounts: [
@@ -487,6 +529,7 @@ function render() {
   bindRulebook(ctx);
   bindFeatureViews(ctx);
   bindCommunity(ctx);
+  bindCommerce(ctx);
   bindCanvas(ctx);
   document.title = `${state.campaign?.title || 'Portal'} · A Coroa Velada`;
 }
@@ -495,7 +538,7 @@ function overview() {
   const experience = admin()
     ? `<span class="metric-label">RECOMPENSAS DA MESA</span>${button('Distribuir XP ' + icon('arrow'), 'distribute-xp', '', 'button primary')}<p class="hint">Escolha vários personagens e conceda a recompensa de uma vez.</p>`
     : `<span class="metric-label">Experiência disponível</span><strong>${p.xp}<small>XP</small></strong>${button('Evoluir traços ' + icon('arrow'), 'nav-attributes', '', 'text-button')}`;
-  return `<div class="welcome-row"><span class="eyebrow">O LIVRO DA NOITE · FICHA #${p.id}</span><span class="save-state">${icon('save')} ${p.updated_at ? 'Salvo em ' + date(p.updated_at) : 'Ficha carregada'} ${button(icon('refresh'), 'refresh', 'aria-label="Atualizar ficha"', 'icon-button')}</span></div><section class="character-hero"><div class="hero-lines" aria-hidden="true"></div><div class="character-avatar" data-action="view-portrait" role="button" tabindex="0" aria-label="Ver retrato ampliado">${p.profilepicture?.startsWith('data:image/') ? `<img src="${esc(p.profilepicture)}" alt="Retrato de ${esc(p.char)}" loading="lazy" referrerpolicy="no-referrer">` : `<span>${esc(p.char.slice(0, 1))}</span>`}<span class="portrait-caption">RETRATO DO PERSONAGEM</span><span class="avatar-diamond">◇</span></div><div class="character-identity"><div class="hero-tags"><span class="tag red">${esc(p.cla)}</span><span class="tag">${p.generation}ª GERAÇÃO</span>${p.archived ? '<span class="tag red">ARQUIVADO</span>' : ''}</div><h1>${esc(p.char)}</h1><p>Interpretado por <strong>${esc(p.player)}</strong></p></div><div class="hero-emblem" aria-hidden="true">${crown}</div><div class="hero-actions">${button(icon('edit') + ' Retrato', 'portrait', '', 'button ghost')}${button(icon('download') + ' Salvar JSON', 'export', '', 'button ghost')}${admin() ? button(icon('edit') + ' Editar ficha', 'identity', '', 'button ghost') : ''}</div></section><div class="overview-grid"><section class="panel vitae-panel"><div class="panel-heading"><span class="eyebrow">A ESSÊNCIA DO PERSONAGEM</span><span class="tiny-diamond">◇</span></div><div class="vitae-numbers"><div>${experience}</div><div><span class="metric-label">Potência do sangue</span><strong>${p.bloodpotency}<small>NÍVEL</small></strong>${dots(p.bloodpotency, 10)}</div></div><div class="panel-bottom">A experiência molda o monstro. O sangue revela seu poder.</div></section><section class="panel ambition-panel"><span class="eyebrow">O QUE MOVE A SUA NOITE</span><h2>${esc(p.goals?.[0]?.description || 'Toda eternidade precisa de um propósito.')}</h2><p>${esc(p.goals?.[1]?.description || 'Registre suas ambições e desejos no diário da crônica.')}</p>${button('Abrir objetivos ' + icon('arrow'), 'nav-chronicle', '', 'text-button')}</section></div>${sectionHead('Entre a humanidade e a besta', 'Ajuste os recursos. A confirmação aparece após uma breve pausa.')}${pendingStatus ? `<div class="pending-status" role="status">${icon('clock')} Prévia de alteração · aguardando confirmação ${button('Desfazer', 'cancel-status', '', 'button ghost compact')}</div>` : ''}<div class="status-grid">${Object.entries(
+  return `<div class="welcome-row"><span class="eyebrow">O LIVRO DA NOITE · FICHA #${p.id}</span><span class="save-state">${icon('save')} ${p.updated_at ? 'Salvo em ' + date(p.updated_at) : 'Ficha carregada'} ${button(icon('refresh'), 'refresh', 'aria-label="Atualizar ficha"', 'icon-button')}</span></div><section class="character-hero"><div class="hero-lines" aria-hidden="true"></div><div class="character-avatar" data-action="view-portrait" role="button" tabindex="0" aria-label="Ver retrato ampliado">${p.profilepicture?.startsWith('data:image/') ? `<img src="${esc(p.profilepicture)}" alt="Retrato de ${esc(p.char)}" loading="lazy" referrerpolicy="no-referrer">` : `<span>${esc(p.char.slice(0, 1))}</span>`}<span class="portrait-caption">RETRATO DO PERSONAGEM</span><span class="avatar-diamond">◇</span></div><div class="character-identity"><div class="hero-tags"><span class="tag red">${esc(p.cla)}</span><span class="tag">${p.generation}ª GERAÇÃO</span>${p.archived ? '<span class="tag red">ARQUIVADO</span>' : ''}</div><h1>${esc(p.char)}</h1><p>Interpretado por <strong>${esc(p.player)}</strong></p></div><div class="hero-emblem" aria-hidden="true">${crown}</div><div class="hero-actions">${button(icon('edit') + ' Retrato', 'portrait', '', 'button ghost')}${button(icon('download') + ' Salvar JSON', 'export', '', 'button ghost')}${admin() ? button(icon('edit') + ' Editar ficha', 'identity', '', 'button ghost') : ''}</div></section><div class="overview-grid"><section class="panel vitae-panel"><div class="panel-heading"><span class="eyebrow">A ESSÊNCIA DO PERSONAGEM</span><span class="tiny-diamond">◇</span></div><div class="vitae-numbers"><div>${experience}</div><div><span class="metric-label">Potência do sangue</span><strong>${p.bloodpotency}<small>NÍVEL</small></strong>${dots(p.bloodpotency, 10)}</div></div><div class="panel-bottom">A experiência molda o monstro. O sangue revela seu poder.</div></section><section class="panel ambition-panel"><span class="eyebrow">SEU CADERNO DA CRÔNICA</span><h2>As pistas ficam. As histórias continuam.</h2><p>Anotações pessoais e compartilhadas, reunidas em um único lugar.</p>${button('Abrir anotações ' + icon('arrow'), 'nav-notes', '', 'text-button')}</section></div>${sectionHead('Entre a humanidade e a besta', 'Ajuste os recursos. A confirmação aparece após uma breve pausa.')}${pendingStatus ? `<div class="pending-status" role="status">${icon('clock')} Prévia de alteração · aguardando confirmação ${button('Desfazer', 'cancel-status', '', 'button ghost compact')}</div>` : ''}<div class="status-grid">${Object.entries(
     state.game.status_rules
   )
     .map(([key, rule]) => {
@@ -542,13 +585,8 @@ function powers() {
               : 'Marcas que tornam sua história única.',
           admin()
             ? button(icon('plus') + ' Conceder', 'grant', `data-key="${key}"`, 'button ghost')
-            : key === 'disciplines' && state.game.progression.categories.disciplines.allow_new
-              ? button(
-                  icon('plus') + ' Aprender disciplina',
-                  'learn-discipline',
-                  '',
-                  'button ghost'
-                )
+            : key === 'disciplines'
+              ? button(icon('blood') + ' Legados do Sangue', 'nav-legacies', '', 'button ghost')
               : ''
         ) +
         `<div class="card-grid">${
@@ -595,7 +633,7 @@ function world() {
 }
 function recordCard(key, row) {
   const fields = worldTypes[key]?.fields || [];
-  return `<article class="record-card"><div class="record-top"><span class="record-icon">${icon(worldTypes[key]?.icon || 'chronicle')}</span>${button(icon('edit'), 'edit-record', `data-key="${key}" data-record="${esc(row.id)}" aria-label="Editar ${esc(row.name || row.description)}"`, 'icon-button')}</div><h3>${esc(row.name || row.description)}</h3>${row.rating !== undefined ? dots(row.rating) : ''}<div class="record-meta">${fields
+  return `<article class="record-card">${row.image ? `<img class="record-photo" src="${esc(row.image)}" alt="${esc(row.name || 'Imagem')}" loading="lazy">` : ''}<div class="record-top"><span class="record-icon">${icon(worldTypes[key]?.icon || 'chronicle')}</span>${button(icon('edit'), 'edit-record', `data-key="${key}" data-record="${esc(row.id)}" aria-label="Editar ${esc(row.name || row.description)}"`, 'icon-button')}</div><h3>${esc(row.name || row.description)}</h3>${row.rating !== undefined ? dots(row.rating) : ''}<div class="record-meta">${fields
     .filter(([k]) => row[k])
     .map(([k, label]) => `<div><span>${label}</span><strong>${esc(row[k])}</strong></div>`)
     .join(
@@ -608,25 +646,26 @@ function possessions() {
 }
 function chronicle() {
   const p = player();
-  return `${sectionHead('Ambições e desejos', 'Aquilo que faz uma eternidade valer a pena.', button(icon('plus') + ' Novo objetivo', 'edit-record', 'data-key="goals"', 'button ghost'))}<div class="goals-grid">${p.goals.map((row, i) => `<article class="goal-card"><span class="eyebrow">${i === 0 ? 'AMBIÇÃO' : i === 1 ? 'DESEJO' : 'OBJETIVO'} ${row.completed ? '· CONCLUÍDO' : ''}</span><h3>${esc(row.description)}</h3><div>${button(row.completed ? 'Reabrir' : 'Concluir', 'goal-complete', `data-record="${esc(row.id)}"`, 'text-button')}${button(icon('edit'), 'edit-record', `data-key="goals" data-record="${esc(row.id)}" aria-label="Editar objetivo"`, 'icon-button')}${button('Remover', 'remove-record', `data-key="goals" data-record="${esc(row.id)}"`, 'text-button danger')}</div></article>`).join('') || empty('Qual é a sua ambição?', 'Crie um objetivo para o personagem.')}</div>${sectionHead('Anotações da crônica', 'Pistas, personagens e encontros que merecem ser lembrados.', button(icon('plus') + ' Nova anotação', 'edit-record', 'data-key="notes"', 'button primary'))}<div class="card-grid">${p.notes.map((row) => recordCard('notes', row)).join('') || empty('Uma página em branco.', 'Registre a primeira descoberta da sua crônica.')}</div>${sectionHead('Princípios e convicções', 'As linhas que você ainda se recusa a atravessar.', admin() ? button(icon('edit') + ' Editar', 'morality', '', 'button ghost') : '')}<section class="panel morality-list">${p.moralityes.map((x, i) => `<div><span class="gold">${String(i + 1).padStart(2, '0')}</span><p>${esc(x.description)}</p></div>`).join('') || '<p class="muted">O narrador ainda não registrou convicções.</p>'}</section>${sectionHead('Rastros na noite', 'Últimas alterações registradas nesta ficha.', admin() ? button('Limpar histórico', 'delete-log', 'data-key="history" data-index="all"', 'text-button danger') : '')}<section class="panel history">${
+  return `${sectionHead('Princípios e convicções', 'As linhas que você ainda se recusa a atravessar.', admin() ? button(icon('edit') + ' Editar', 'morality', '', 'button ghost') : '')}<section class="panel morality-list">${p.moralityes.map((x, i) => `<div><span class="gold">${String(i + 1).padStart(2, '0')}</span><p>${esc(x.description)}</p></div>`).join('') || '<p class="muted">O narrador ainda não registrou convicções.</p>'}</section>${sectionHead('Rastros na noite', 'Alterações, evoluções e mensagens do narrador, preservadas nesta ficha.', admin() ? button('Limpar histórico', 'delete-log', 'data-key="history" data-index="all"', 'text-button danger') : '')}<section class="panel history">${
     [...(p.history || [])]
       .reverse()
-      .slice(0, 20)
+      .slice(0, state.historyLimit || 40)
       .map(
         (x, index) =>
           `<div><span class="timeline-dot"></span><div><strong>${esc(x.action)}</strong><p>${esc(x.details)}</p><small>${esc(x.actor)} · ${date(x.at)}</small>${admin() ? button('Apagar', 'delete-log', `data-key="history" data-index="${p.history.length - 1 - index}"`, 'text-button danger') : ''}</div></div>`
       )
       .join('') || '<p class="muted">As próximas alterações serão registradas aqui.</p>'
-  }</section>`;
+  }</section>${p.history.length > (state.historyLimit || 40) ? button('Carregar mais alterações', 'history-more', '', 'button ghost') : ''}`;
 }
 function dice() {
+  const preset = state.preparedRoll;
   const options = stats.slice(1, 4).flatMap((key) =>
     state.game[key].map((x) => ({
       value: `${key}:${x.id}`,
       label: `${x.name} (${value(key, x.id)})`
     }))
   );
-  return `<div class="list-toolbar">${button('Limpar rolagens', 'delete-log', 'data-key="rolls" data-index="all"', 'text-button danger')}</div><div class="dice-layout"><section class="panel dice-builder"><span class="eyebrow">ORÁCULO DA NOITE</span><h2>Monte sua parada.</h2><p class="muted">D${state.game.dice.sides} com dificuldade configurável. Cada dado que alcança a dificuldade conta um sucesso; não há regras adicionais de crítico ou falha automática.</p><form id="dice-form" class="form-grid">${select('attribute', 'Atributo', [{ value: 'none', label: 'Sem atributo' }, ...state.game.atributes.map((x) => ({ value: x.id, label: `${x.name} (${value('atributes', x.id)})` }))])}${select('skill', 'Habilidade', [{ value: 'none', label: 'Sem habilidade' }, ...options])}${field('modifier', 'Modificador', 0, 'number', 'min="-20" max="20" step="1" required')}${field('difficulty', 'Dificuldade por dado', state.game.dice.success_on, 'number', `min="1" max="${state.game.dice.sides}" step="1" required`)}<label class="checkbox full"><input type="checkbox" name="hunger" checked> Destacar dados de fome (máximo: ${player().status.hunger})</label><button class="button primary full" type="submit">${icon('dice')} Rolar os dados</button></form><p class="hint">Até 30 rolagens acompanham o JSON da ficha. Som opcional no seu perfil.</p></section><section class="dice-results" aria-live="polite">${
+  return `<div class="list-toolbar">${button('Limpar rolagens', 'delete-log', 'data-key="rolls" data-index="all"', 'text-button danger')}</div><div class="dice-layout"><section class="panel dice-builder"><span class="eyebrow">ORÁCULO DA NOITE</span><h2>Monte sua parada.</h2><p class="muted">D${state.game.dice.sides} com dificuldade configurável. Cada dado que alcança a dificuldade conta um sucesso; não há regras adicionais de crítico ou falha automática.</p>${preset ? `<div class="prepared-power"><strong>${esc(preset.label)}</strong><span>${preset.pool} dados preparados da sua ficha</span>${button('Limpar teste preparado', 'dice-clear-preset', '', 'text-button')}</div>` : ''}<form id="dice-form" class="form-grid">${preset ? `<input type="hidden" name="prepared_pool" value="${preset.pool}"><input type="hidden" name="prepared_label" value="${esc(preset.label)}">` : ''}${select('attribute', 'Atributo', [{ value: 'none', label: 'Sem atributo' }, ...state.game.atributes.map((x) => ({ value: x.id, label: `${x.name} (${value('atributes', x.id)})` }))])}${select('skill', 'Habilidade', [{ value: 'none', label: 'Sem habilidade' }, ...options])}${field('modifier', 'Modificador', 0, 'number', 'min="-20" max="20" step="1" required')}${field('difficulty', 'Dificuldade por dado', state.game.dice.success_on, 'number', `min="1" max="${state.game.dice.sides}" step="1" required`)}<label class="checkbox full"><input type="checkbox" name="hunger" checked> Destacar dados de fome (máximo: ${player().status.hunger})</label><button class="button primary full" type="submit">${icon('dice')} Rolar os dados</button></form><p class="hint">Até 30 rolagens acompanham o JSON da ficha. O som é controlado pelo botão geral no topo.</p></section><section class="dice-results" aria-live="polite">${
     player().rolls?.length
       ? player()
           .rolls.map(
@@ -646,7 +685,7 @@ function characterRows() {
       `${p.char} ${p.player} ${p.cla}`.toLowerCase().includes(q)
     );
   return matches.length
-    ? `<div class="admin-character-grid">${matches.map((p) => `<article class="admin-character-card ${p.archived ? 'archived' : ''}"><div class="admin-character-top"><span class="character-initial">${esc(p.char.slice(0, 1))}</span><div><span class="eyebrow">FICHA #${p.id}${p.archived ? ' · ARQUIVADA' : ''}</span><h3>${esc(p.char)}</h3><p>${esc(p.player)}</p></div><span class="xp-pill">${p.xp} XP</span></div><div class="admin-character-meta"><span class="tag red">${esc(p.cla)}</span><span>${p.generation}ª geração</span></div><div class="admin-character-actions">${button('Abrir ficha', 'open-character', `data-id="${p.id}"`, 'button primary')}${button(icon('edit') + ' Editar', 'edit-full', `data-id="${p.id}" ${p.archived ? 'disabled' : ''}`, 'button ghost')}${button('Conceder XP', 'xp', `data-id="${p.id}" ${p.archived ? 'disabled' : ''}`, 'button ghost')}${button('Transferir controle', 'assign-character', `data-id="${p.id}"`, 'button ghost')}${button('Pacote do jogador', 'player-package', `data-id="${p.id}"`, 'button ghost')}${button('Remover', 'delete-character', `data-id="${p.id}"`, 'text-button danger')}${button(p.archived ? 'Restaurar' : 'Arquivar', 'archive', `data-id="${p.id}"`, 'text-button danger')}</div></article>`).join('')}</div>`
+    ? `<div class="admin-character-grid">${matches.map((p) => `<article class="admin-character-card ${p.archived ? 'archived' : ''}"><div class="admin-character-top"><span class="character-initial">${p.profilepicture?.startsWith('data:image/') ? `<img src="${esc(p.profilepicture)}" alt="${esc(p.char)}">` : esc(p.char.slice(0, 1))}</span><div><span class="eyebrow">FICHA #${p.id}${p.archived ? ' · ARQUIVADA' : ''}</span><h3>${esc(p.char)}</h3><p>${esc(p.player)}</p></div><span class="xp-pill">${p.xp} XP</span></div><div class="admin-character-meta"><span class="tag red">${esc(p.cla)}</span><span>${p.generation}ª geração</span></div><div class="admin-character-actions">${button('Abrir ficha', 'open-character', `data-id="${p.id}"`, 'button primary')}${button(icon('edit') + ' Editar', 'edit-full', `data-id="${p.id}" ${p.archived ? 'disabled' : ''}`, 'button ghost')}${button('Conceder XP', 'xp', `data-id="${p.id}" ${p.archived ? 'disabled' : ''}`, 'button ghost')}${button('Transferir controle', 'assign-character', `data-id="${p.id}"`, 'button ghost')}${button(icon('download') + ' Download', 'player-package', `data-id="${p.id}"`, 'button ghost')}${button('Remover', 'delete-character', `data-id="${p.id}"`, 'text-button danger')}${button(p.archived ? 'Restaurar' : 'Arquivar', 'archive', `data-id="${p.id}"`, 'text-button danger')}</div></article>`).join('')}</div>`
     : empty(
         'A próxima história começa aqui.',
         'Cadastre o jogador e transcreva a ficha de papel. O arquivo JSON e o acesso serão criados para você.',
@@ -672,31 +711,37 @@ function bindSearch() {
     });
 }
 function accountsView() {
-  return `${sectionHead('Quem tem as chaves da mesa.', 'Cada jogador pode ter vários personagens. A conta do narrador administra a campanha.', button(icon('plus') + ' Criar acesso', 'create-account', '', 'button primary'))}<div class="account-grid">${state.accounts.map((a) => `<article class="panel account-card"><div class="account-card-header"><span class="avatar small">${a.avatar ? `<img src="${esc(a.avatar)}" alt="">` : esc(a.display_name.slice(0, 1))}</span><div><h3>${esc(a.display_name)}</h3><p>@${esc(a.username)}</p></div><span class="tag ${a.active ? 'red' : ''}">${a.active ? 'ATIVO' : 'INATIVO'}</span></div><p class="account-role">${a.role === 'admin' ? 'Narrador · administra sem personagem' : a.campaign_access ? 'Jogador com acesso à campanha' : 'Sem acesso a esta campanha'}</p><div class="account-linked">${a.role === 'admin' ? '<span class="muted">Pode administrar todas as fichas.</span>' : a.character_ids.map((id) => `<span class="tag">${esc(state.players.find((p) => p.id === id)?.char || '#' + id)}</span>`).join('') || '<span class="muted">Pode criar propostas quando tiver acesso à campanha.</span>'}</div>${button('Gerenciar acesso e personagens', 'edit-account', `data-id="${a.id}"`, 'button ghost')}${a.role === 'player' && a.campaign_access ? button(icon('download') + ' Pacote de acesso do jogador', 'export-account', `data-id="${a.id}"`, 'button ghost') : ''}${a.id !== state.account.id ? button(a.role === 'admin' ? 'Remover narrador' : 'Remover jogador', 'delete-account', `data-id="${a.id}"`, 'text-button danger') : ''}</article>`).join('')}</div>`;
+  return `${sectionHead('Quem tem as chaves da mesa.', 'Cada jogador pode ter vários personagens. A conta do narrador administra a campanha.', button(icon('plus') + ' Criar acesso', 'create-account', '', 'button primary'))}<div class="account-grid">${state.accounts.map((a) => `<article class="panel account-card"><div class="account-card-header"><span class="avatar small">${a.avatar ? `<img src="${esc(a.avatar)}" alt="">` : esc(a.display_name.slice(0, 1))}</span><div><h3>${esc(a.display_name)}</h3><p>@${esc(a.username)}</p></div><span class="tag ${a.active ? 'red' : ''}">${a.active ? 'ATIVO' : 'INATIVO'}</span></div><p class="account-role">${a.role === 'admin' ? 'Narrador · administra sem personagem' : a.campaign_access ? 'Jogador com acesso à campanha' : 'Sem acesso a esta campanha'}</p><div class="account-linked">${a.role === 'admin' ? '<span class="muted">Pode administrar todas as fichas.</span>' : a.character_ids.map((id) => `<span class="tag">${esc(state.players.find((p) => p.id === id)?.char || '#' + id)}</span>`).join('') || '<span class="muted">Pode criar propostas quando tiver acesso à campanha.</span>'}</div>${button('Gerenciar acesso e personagens', 'edit-account', `data-id="${a.id}"`, 'button ghost')}${a.role === 'player' && a.campaign_access ? button(icon('download') + ' Download do acesso (JSON)', 'export-account', `data-id="${a.id}"`, 'button ghost') : ''}${a.id !== state.account.id ? button(a.role === 'admin' ? 'Remover narrador' : 'Remover jogador', 'delete-account', `data-id="${a.id}"`, 'text-button danger') : ''}</article>`).join('')}</div>`;
 }
 function rulesView() {
   return rulebookPage(context());
 }
 function recordForm(key, recordId) {
+  if (['notes', 'goals'].includes(key)) {
+    go('notes');
+    return;
+  }
   const p = player(),
-    revision = p._revision;
-  const row = p[key].find((x) => String(x.id) === String(recordId));
-  const def = worldTypes[key];
-  const title = def?.singular || { notes: 'anotação', items: 'item', goals: 'objetivo' }[key];
-  const content = `<div class="form-grid">${key === 'goals' ? '' : field('name', 'Nome', row?.name || '', 'text', 'required maxlength="150"')}${def ? def.fields.map(([k, label]) => field(k, label, row?.[k] || '', 'text', 'maxlength="300"')).join('') + select('rating', 'Nível / influência', [0, 1, 2, 3, 4, 5], row?.rating ?? 1) : ''}${key === 'items' ? field('quantity', 'Quantidade', row?.quantity ?? 1, 'number', 'min="0" max="9999" step="1" required') : ''}${area('description', key === 'goals' ? 'Seu objetivo' : 'Descrição e observações', row?.description || '', 'maxlength="10000" ' + (key === 'goals' ? 'required' : ''))}</div>`;
+    revision = p._revision,
+    row = p[key].find((x) => String(x.id) === String(recordId)),
+    def = worldTypes[key],
+    title = def?.singular || 'item';
+  const content = `<div class="form-grid">${field('name', 'Nome', row?.name || '', 'text', 'required maxlength="150"')}${def ? def.fields.map(([k, label]) => field(k, label, row?.[k] || '', 'text', 'maxlength="300"')).join('') + select('rating', 'Nível / influência', [0, 1, 2, 3, 4, 5], row?.rating ?? 1) : ''}${key === 'items' ? field('quantity', 'Quantidade', row?.quantity ?? 1, 'number', 'min="0" max="9999" step="1" required') : ''}${area('description', 'Descrição e observações', row?.description || '', 'maxlength="10000"')}<label class="field full"><span>Imagem (opcional)</span><input type="file" name="image_file" accept="image/png,image/jpeg,image/webp"></label>${row?.image ? `<img class="record-image-preview" src="${esc(row.image)}" alt="Imagem atual"><label class="checkbox full"><input type="checkbox" name="remove_image"> Remover imagem atual</label>` : ''}${admin() ? area('log_message', 'Mensagem no histórico (opcional)', '', 'maxlength="2000"') : ''}</div>`;
   modal(`${row ? 'Editar' : 'Adicionar'} ${title}`, content, async (data) => {
-    const item = { ...row, id: row?.id ?? newId(), ...Object.fromEntries(data) };
+    const body = Object.fromEntries(data),
+      file = data.get('image_file');
+    delete body.image_file;
+    delete body.remove_image;
+    delete body.log_message;
+    const item = { ...row, id: row?.id ?? newId(), ...body };
+    if (data.has('remove_image')) item.image = '';
+    if (file?.size) item.image = (await readImage(file)).image;
     if (data.has('rating')) item.rating = Number(data.get('rating'));
     if (data.has('quantity')) item.quantity = Number(data.get('quantity'));
-    if (key === 'notes' && !row) {
-      const now = new Date();
-      item.date = now.toLocaleDateString('pt-BR');
-      item.time = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    }
     const list = structuredClone(p[key]);
     if (row) list[list.findIndex((x) => String(x.id) === String(row.id))] = item;
     else list.push(item);
-    await patch({ [key]: list }, revision);
+    await patch({ [key]: list }, revision, data.get('log_message') || '');
   });
 }
 function powerBadges(n) {
@@ -774,7 +819,7 @@ function grantModal(key) {
     .join('');
   modal(
     `Gerenciar ${labels[key].toLowerCase()}`,
-    `${existing ? '<div class="granted-list">' + existing + '</div>' : ''}${choices.length ? catalog + (key === 'disciplines' ? field('nivel', 'Nível inicial', 1, 'number', `min="1" max="${state.game.maxvalue_generation[p.generation]}" step="1" required`) : '') : '<p class="muted">Todos os traços do catálogo já foram concedidos.</p>'}`,
+    `${existing ? '<div class="granted-list">' + existing + '</div>' : ''}${choices.length ? catalog + (key === 'disciplines' ? field('nivel', 'Nível inicial', 1, 'number', `min="1" max="${state.game.maxvalue_generation[p.generation]}" step="1" required`) : '') : '<p class="muted">Todos os traços do catálogo já foram concedidos.</p>'}${area('log_message', 'Mensagem no histórico (opcional)', '', 'maxlength="2000"')}`,
     choices.length
       ? async (data) => {
           const row = { id: Number(data.get('id')) };
@@ -790,12 +835,14 @@ function identityModal() {
     revision = p._revision;
   modal(
     'Identidade do personagem',
-    `<div class="form-grid">${field('char', 'Personagem', p.char, 'text', 'required maxlength="150"')}${field('player', 'Jogador', p.player, 'text', 'required maxlength="150"')}${field('cla', 'Clã', p.cla, 'text', 'required maxlength="80"')}${field('generation', 'Geração', p.generation, 'number', 'min="4" max="13" step="1" required')}${field('bloodpotency', 'Potência do sangue', p.bloodpotency, 'number', 'min="1" max="10" step="1" required')}${field('profilepicture', 'URL HTTPS do retrato', p.profilepicture === 'image_link' ? '' : p.profilepicture, 'url', 'maxlength="2000"')}</div><p class="hint">A potência do sangue e os traços precisam respeitar os limites da nova geração.</p>`,
+    `<div class="form-grid">${field('char', 'Personagem', p.char, 'text', 'required maxlength="150"')}${field('player', 'Jogador', p.player, 'text', 'required maxlength="150"')}${field('cla', 'Clã', p.cla, 'text', 'required maxlength="80"')}${field('generation', 'Geração', p.generation, 'number', 'min="4" max="13" step="1" required')}${field('bloodpotency', 'Potência do sangue', p.bloodpotency, 'number', 'min="1" max="10" step="1" required')}${field('profilepicture', 'URL HTTPS do retrato', p.profilepicture === 'image_link' ? '' : p.profilepicture, 'url', 'maxlength="2000"')}</div><p class="hint">A potência do sangue e os traços precisam respeitar os limites da nova geração.</p>${area('log_message', 'Mensagem no histórico (opcional)', '', 'maxlength="2000"')}`,
     async (data) => {
       const result = Object.fromEntries(data);
       result.generation = Number(result.generation);
       result.bloodpotency = Number(result.bloodpotency);
-      await patch(result, revision);
+      const message = result.log_message;
+      delete result.log_message;
+      await patch(result, revision, message);
     }
   );
 }
@@ -854,6 +901,19 @@ async function handleClick(event) {
     if (action.startsWith('nav-')) {
       closeModal();
       await go(action.slice(4));
+      return;
+    }
+    if (await searchAction(action, control.dataset, context())) return;
+    if (await commerceAction(action, control.dataset, context())) return;
+    if (await powerAction(action, control.dataset, context())) return;
+    if (action === 'history-more') {
+      state.historyLimit = (state.historyLimit || 40) + 40;
+      render();
+      return;
+    }
+    if (action === 'dice-clear-preset') {
+      state.preparedRoll = null;
+      render();
       return;
     }
     if (await lifecycleAction(action, control.dataset, context())) return;
@@ -1253,12 +1313,13 @@ function handleSubmit(event) {
       [key, id] = skill.split(':'),
       a = attribute === 'none' ? 0 : value('atributes', Number(attribute)),
       b = skill === 'none' ? 0 : value(key, Number(id)),
-      pool = a + b + Number(f.get('modifier'));
+      pool = Number(f.get('prepared_pool') || 0) + a + b + Number(f.get('modifier'));
     if (pool < 1 || pool > state.game.dice.max_pool)
       throw new Error(`A parada deve ter entre 1 e ${state.game.dice.max_pool} dados.`);
     const aName = state.game.atributes.find((x) => x.id === Number(attribute))?.name,
       bName = state.game[key]?.find((x) => x.id === Number(id))?.name,
       label =
+        f.get('prepared_label') ||
         [attribute !== 'none' && aName, skill !== 'none' && bName].filter(Boolean).join(' + ') ||
         'Parada livre';
     control.disabled = true;
@@ -1271,7 +1332,12 @@ function handleSubmit(event) {
       );
       await api(`/api/characters/${player().id}/roll`, {
         method: 'POST',
-        data: { pool, hunger: f.has('hunger'), threshold: Number(f.get('difficulty')), label }
+        data: {
+          pool,
+          hunger: f.has('hunger'),
+          threshold: Number(f.get('difficulty')),
+          label: label.slice(0, 200)
+        }
       });
       await loadPlayer(player().id);
       render();
@@ -1370,6 +1436,7 @@ async function go(view, fromHash = false) {
 }
 let syncTimer;
 export function stopPortal() {
+  configureSound(undefined, null);
   clearInterval(syncTimer);
   delete document.body.dataset.pendingEditor;
   clearPending();
@@ -1407,6 +1474,20 @@ export async function startPortal() {
   if (state.view === 'storage' && admin()) state.storageMarkup = await storageView();
   if (state.view === 'trash' && admin()) state.trash = await api('/api/admin/trash');
   initShell();
+  document.addEventListener(
+    'keydown',
+    (event) => {
+      if (
+        (event.ctrlKey || event.metaKey) &&
+        event.key.toLowerCase() === 'k' &&
+        !$('#modal').open
+      ) {
+        event.preventDefault();
+        run(() => searchAction('global-search', {}, context()));
+      }
+    },
+    { signal: events.signal }
+  );
   updateSelect();
   render();
   {

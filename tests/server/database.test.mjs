@@ -131,9 +131,24 @@ test('adaptador Supabase atravessa as funções SQL e preserva contas, sessões 
     method: 'POST',
     data: { username: 'narrador', password: 'senha-de-teste-123', display_name: 'Narrador' }
   });
+  const entry = await service.request('/api/intel', {
+    method: 'POST',
+    token: auth.token,
+    data: {
+      title: 'Uma pista persistida',
+      teaser: 'Apresentação pública',
+      category: 'Pista',
+      xp_cost: 7,
+      money_cost: 2.5,
+      secret: 'Somente depois de investigar.',
+      images: []
+    }
+  });
   await repository.save(await store.workspace(), 0);
   const loaded = await repository.load();
   assert.equal(loaded.root.accounts[0].username, 'narrador');
+  assert.equal(loaded.root.campaigns[0].intel[0].id, entry.id);
+  assert.equal(loaded.root.campaigns[0].intel[0].secret, 'Somente depois de investigar.');
   assert.equal(loaded.root.sessions[0].token, auth.token);
   assert.equal(
     (

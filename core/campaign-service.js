@@ -84,10 +84,11 @@ export class CampaignService extends CharacterService {
         .map((c) => ({
           id: c.id,
           title: c.title,
-          system: c.system,
+          cover: c.cover || '',
+          accent: c.accent,
+          _revision: c._revision,
           status: c.status,
           description: c.description,
-          accent: c.accent,
           characters: c.characters.length,
           quests: c.quests.filter((q) => !['completed', 'cancelled'].includes(q.status)).length
         }));
@@ -97,7 +98,7 @@ export class CampaignService extends CharacterService {
       await this.store.atomic((r) => {
         const campaign = campaignRecord(validateSettings(gameSettings(data.game || doc.game)), {
           title: text(data.title, 'Nome', 150, true),
-          system: text(data.system || 'RPG', 'Sistema', 100, true),
+          cover: imageData(data.cover || ''),
           description: text(data.description || '', 'Descrição', 2000),
           accent: data.accent || '#d92343'
         });
@@ -123,7 +124,7 @@ export class CampaignService extends CharacterService {
       let result;
       await this.store.atomic((r) => {
         const target = r.campaigns.find((x) => x.id === c.id);
-        for (const key of ['title', 'system', 'description'])
+        for (const key of ['title', 'description'])
           if (data[key] !== undefined)
             target[key] = text(data[key], key, key === 'description' ? 2000 : 150, true);
         if (data.status !== undefined) {
@@ -134,12 +135,22 @@ export class CampaignService extends CharacterService {
           if (!/^#[a-f\d]{6}$/i.test(data.accent)) fail('Cor inválida.');
           target.accent = data.accent;
         }
+        if (data.revision !== undefined && data.revision !== target._revision)
+          fail('A campanha mudou. Reabra a edição.', 409);
+        if (data.cover !== undefined) target.cover = imageData(data.cover);
+        target._revision++;
         target.updated_at = timestamp();
         result = Object.fromEntries(
-          ['id', 'title', 'system', 'description', 'status', 'accent', 'updated_at'].map((key) => [
-            key,
-            clone(target[key])
-          ])
+          [
+            'id',
+            'title',
+            'cover',
+            'description',
+            'status',
+            'accent',
+            '_revision',
+            'updated_at'
+          ].map((key) => [key, clone(target[key])])
         );
         return r;
       });
@@ -178,12 +189,22 @@ export class CampaignService extends CharacterService {
         a.display_name = text(data.display_name ?? a.display_name, 'Nome', 100, true);
         a.bio = text(data.bio ?? a.bio ?? '', 'Biografia', 2000);
         if (data.avatar !== undefined) a.avatar = imageData(data.avatar);
-        if (data.preferences)
-          a.preferences = {
-            sound: !!data.preferences.sound,
-            ui_sound: data.preferences.ui_sound !== false,
-            animations: data.preferences.animations !== false
-          };
+        if (data.preferences) {
+          const preferences = data.preferences;
+          a.preferences = { ...a.preferences };
+          for (const key of ['audio_enabled', 'animations'])
+            if (preferences[key] !== undefined) {
+              if (typeof preferences[key] !== 'boolean') fail('Preferência inválida.');
+              a.preferences[key] = preferences[key];
+            }
+          if (preferences.social_mood !== undefined) {
+            if (!['chat', 'chill', 'busy'].includes(preferences.social_mood))
+              fail('Status social inválido.');
+            a.preferences.social_mood = preferences.social_mood;
+          }
+          if (preferences.social_note !== undefined)
+            a.preferences.social_note = text(preferences.social_note, 'Status', 120);
+        }
         return publicAccount(a);
       });
     }

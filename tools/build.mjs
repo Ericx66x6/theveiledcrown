@@ -1,3 +1,4 @@
+import { themeCSS, themeVariables } from './theme-css.mjs';
 import { build } from 'esbuild';
 import { cp, mkdir, rm, writeFile, readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -25,8 +26,12 @@ await rm(out, { recursive: true, force: true });
 await mkdir(resolve(out, 'assets/styles'), { recursive: true });
 await mkdir(resolve(out, 'assets/scripts'), { recursive: true });
 await cp(resolve(root, 'public/images'), resolve(out, 'assets/images'), { recursive: true });
-for (const name of ['base', 'theme', 'hub', 'experience', 'updates'])
-  await cp(resolve(root, 'client', name + '.css'), resolve(out, 'assets/styles', name + '.css'));
+for (const name of ['base', 'theme', 'hub', 'experience', 'updates', 'expansion'])
+  await writeFile(
+    resolve(out, 'assets/styles', name + '.css'),
+    themeCSS(await readFile(resolve(root, 'client', name + '.css'), 'utf8'))
+  );
+await writeFile(resolve(out, 'assets/styles/theme-vars.css'), themeVariables());
 await cp(
   resolve(root, 'node_modules/leaflet/dist/leaflet.css'),
   resolve(out, 'assets/styles/leaflet.css')
@@ -66,4 +71,4 @@ const html = (await readFile(resolve(root, 'client/index.html'), 'utf8')).replac
   `<meta http-equiv="Content-Security-Policy" content="${csp}"><meta name="description"`
 );
 await writeFile(resolve(out, 'index.html'), html);
-console.log('Coroa Velada 7 online compilada em dist/.');
+console.log('Coroa Velada 8 online compilada em dist/.');

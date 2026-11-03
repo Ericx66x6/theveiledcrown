@@ -1,6 +1,7 @@
 import { clone, fail, newId, number, text, timestamp } from './model.js';
 import { imageData, coordinate, visible, validatePin } from './workspace.js';
 import { emptyMap } from './campaign-shape.js';
+import { publicMap, validateScale, validateMapPosition } from './map-state.js';
 const admin = (a) => {
   if (a.role !== 'admin') fail('Ação exclusiva do narrador.', 403);
 };
@@ -14,8 +15,49 @@ function access(m, a) {
     fail('Este mapa não foi liberado para jogadores.', 403);
   return m;
 }
-const publicMap = (m, a) => ({ ...clone(m), pins: m.pins.filter((p) => visible(p, a)).map(clone) });
 export async function mapsRequest(service, path, method, data, token, doc, account) {
+  const personal = path.match(/^\/api\/maps\/([^/]+)\/characters\/(\d+)$/);
+  if (personal) {
+    if (!['PUT', 'PATCH', 'DELETE'].includes(method)) fail('Operação de posição inválida.', 405);
+    return service.write(token, (d, a) => {
+      const m = access(
+          d.maps.find((m) => m.id === personal[1]),
+          a
+        ),
+        id = Number(personal[2]);
+      if (a.role !== 'player' || !a.character_ids.includes(id))
+        fail('Cada jogador controla o próprio marcador.', 403);
+      const character = d.characters.find((p) => p.id === id && !p.archived);
+      if (!character) fail('Personagem indisponível.', 404);
+      m.character_markers ??= [];
+      const old = m.character_markers.find((p) => p.character_id === id);
+      if (data.revision !== (old?._revision || 0)) fail('Sua posição mudou. Atualize o mapa.', 409);
+      if (method === 'DELETE') {
+        m.character_markers = m.character_markers.filter((p) => p.character_id !== id);
+        m._revision++;
+        return { status: 'deleted' };
+      }
+      const next = {
+        ...old,
+        character_id: id,
+        x: data.x ?? old?.x,
+        y: data.y ?? old?.y,
+        visibility: data.visibility ?? old?.visibility ?? 'private',
+        _revision: (old?._revision || 0) + 1,
+        updated_at: timestamp()
+      };
+      if (m.mode === 'geographic') {
+        next.lat = data.lat ?? old?.lat;
+        next.lng = data.lng ?? old?.lng;
+      }
+      validateMapPosition(next, m.mode);
+      if (old) m.character_markers[m.character_markers.indexOf(old)] = next;
+      else m.character_markers.push(next);
+      m._revision++;
+      m.updated_at = timestamp();
+      return publicMap(m, a, d.characters);
+    });
+  }
   const parts = path.split('/'),
     legacy = parts[2] === 'map',
     id = legacy ? null : parts[3],
@@ -28,10 +70,12 @@ export async function mapsRequest(service, path, method, data, token, doc, accou
     if (!legacy && !id)
       return doc.maps
         .filter((m) => account.role === 'admin' || m.player_access)
-        .map((m) => publicMap(m, account));
+        .map((m) => publicMap(m, account, doc.characters));
     if (!selected && !id) return emptyMap();
     selected = access(selected, account);
-    return pins ? publicMap(selected, account).pins : publicMap(selected, account);
+    return pins
+      ? publicMap(selected, account, doc.characters).pins
+      : publicMap(selected, account, doc.characters);
   }
   return service.write(token, (d, a) => {
     let m = id
@@ -52,6 +96,8 @@ export async function mapsRequest(service, path, method, data, token, doc, accou
         width: 0,
         height: 0,
         pins: [],
+        character_markers: [],
+        scale: null,
         _revision: 0,
         created_by: a.id,
         created_at: timestamp()
@@ -81,7 +127,7 @@ export async function mapsRequest(service, path, method, data, token, doc, accou
       }
       const mode = data.mode ?? m.mode ?? 'image';
       if (!['image', 'geographic'].includes(mode)) fail('Tipo de mapa inválido.');
-      if (mode !== (m.mode || 'image') && m.pins.length)
+      if (mode !== (m.mode || 'image') && (m.pins.length || m.character_markers?.length))
         fail('Crie outro mapa para mudar o tipo e preservar as posições.');
       m.mode = mode;
       if (data.center !== undefined) {
@@ -103,14 +149,16 @@ export async function mapsRequest(service, path, method, data, token, doc, accou
       if (data.image !== undefined && mode === 'image') {
         imageData(data.image, 45000000);
         if (!data.image) fail('Selecione uma imagem de mapa.');
+        if (m.image !== data.image) m.scale = null;
         m.image = data.image;
         m.width = number(data.width, 'Largura', 1, 20000);
         m.height = number(data.height, 'Altura', 1, 20000);
       }
+      if (data.scale !== undefined) m.scale = validateScale(data.scale);
       if (m.mode === 'image' && !m.image) fail('Envie uma imagem para o mapa.');
       m._revision++;
       m.updated_at = timestamp();
-      return publicMap(m, a);
+      return publicMap(m, a, d.characters);
     }
     let pin = pinId ? m.pins.find((p) => p.id === pinId) : null;
     if (pinId && !pin) fail('Marcador não encontrado.', 404);

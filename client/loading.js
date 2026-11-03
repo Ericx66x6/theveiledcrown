@@ -1,3 +1,4 @@
+import { playSound } from './audio.js';
 const pending = new Map();
 let timer, noticeTimer;
 function element() {
@@ -24,6 +25,7 @@ export function beginLoading(title = 'Carregando a crônica…', cancel) {
     timer = setTimeout(() => {
       const el = element();
       el.hidden = false;
+      playSound('loading');
       if (!el.open) el.showModal();
       el.querySelector('[data-loading-title]').textContent = title;
       el.querySelector('[data-loading-notice]').textContent =
@@ -46,7 +48,10 @@ export function beginLoading(title = 'Carregando a crônica…', cancel) {
     clearTimeout(noticeTimer);
     const el = document.querySelector('#portal-loading');
     if (el) {
-      if (el.open) el.close();
+      if (el.open) {
+        el.close();
+        playSound('loaded');
+      }
       el.hidden = true;
     }
     document.querySelector('#app')?.removeAttribute('aria-busy');

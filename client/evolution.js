@@ -1,11 +1,13 @@
-import { $, esc, icon, button, dots, empty, modal, field, toast } from '../shared/ui.js';
+import { powerPool } from './power-pool.js';
+import { fold } from '../core/power-tests.js';
+import { $, esc, icon, button, dots, empty, modal, field, area, toast } from '../shared/ui.js';
 import { labels } from '../shared/rules.js';
 import { api } from './api.js';
 import { upgradeQuote, mechanics } from '../core/settings.js';
 import { uiSound } from './media.js';
 const categories = ['atributes', 'talents', 'expertises', 'knowledges', 'precedents'];
 let timer;
-const sounds = (ctx) => ctx.state.account.preferences?.ui_sound !== false;
+const sounds = (ctx) => ctx.state.account.preferences?.audio_enabled !== false;
 const currentLevel = (p, key, id) =>
   key === 'bloodpotency'
     ? p.bloodpotency
@@ -27,23 +29,30 @@ function compute(ctx, u) {
 export function traitsPage(ctx) {
   const s = ctx.state,
     p = ctx.player(),
+    categories = ['atributes', 'talents', 'expertises', 'knowledges', 'precedents'],
     key = s.traitCategory || 'atributes',
-    max = s.game.maxvalue_generation[p.generation];
+    max = s.game.maxvalue_generation[p.generation],
+    query = s.traitQuery || '';
+  const entries = (query ? categories : [key])
+    .flatMap((k) => s.game[k].map((d) => ({ ...d, key: k })))
+    .filter((d) => !query || fold(d.name + ' ' + d.description).includes(fold(query)));
   const heading = ctx.admin()
-    ? `<div><span class="eyebrow">CONSULTA DO NARRADOR</span><h1>Os traços desta história.</h1><p>Consulte as habilidades ou ajuste os níveis da ficha. O jogador administra a própria evolução.</p></div>${button('Distribuir XP', 'distribute-xp', '', 'button primary')}`
+    ? `<div><span class="eyebrow">AJUSTE DO NARRADOR</span><h1>Os traços desta história.</h1><p>Consulte as habilidades ou ajuste os níveis da ficha.</p></div>${button('Distribuir XP', 'distribute-xp', '', 'button primary')}`
     : `<div><span class="eyebrow">CONSTRUA A SUA LENDA</span><h1>O próximo nível tem a sua marca.</h1><p>Escolha um traço, planeje a evolução e confirme o investimento.</p></div><div class="xp-wallet">${icon('powers')}<strong>${p.xp}<small>XP DISPONÍVEIS</small></strong></div>`;
-  return `<section class="advancement-header">${heading}</section><div class="advancement-tabs" role="tablist" aria-label="Categorias de traços">${categories.map((k) => `<button type="button" role="tab" aria-selected="${k === key}" class="${k === key ? 'active' : ''}" data-action="trait-category" data-key="${k}">${labels[k]}<span>${s.game[k].length}</span></button>`).join('')}</div><div class="advancement-toolbar"><label class="search-field">${icon('search')}<input type="search" id="trait-catalog-search" aria-label="Buscar traço" placeholder="Buscar habilidade"></label><span>Limite da geração <strong>${max}</strong></span></div><div class="advancement-grid">${s.game[
-    key
-  ]
-    .map((d) => {
-      const level = currentLevel(p, key, d.id);
-      let q;
-      try {
-        q = upgradeQuote(p, s.game, key, d.id, level + 1);
-      } catch {}
-      return `<button type="button" class="advancement-card ${!q ? 'maxed' : ''}" data-trait-search="${esc(d.name.toLowerCase())}" data-action="trait" data-key="${key}" data-id="${d.id}"><div class="advancement-card-heading"><span>${esc(d.name)}</span><span class="trait-level-emblem">${level}</span></div><div class="advancement-dots">${dots(level, max)}</div><p>${esc((d.description || 'O que você aprende muda o que é possível.').slice(0, 155))}</p><div class="advancement-card-bottom"><span>${ctx.admin() ? 'CONSULTAR E AJUSTAR' : q ? `PRÓXIMO NÍVEL <strong>${q.cost} XP</strong>` : level >= max ? 'DOMÍNIO ALCANÇADO' : 'CONCESSÃO DO NARRADOR'}</span><span class="advancement-arrow">${icon('arrow')}</span></div></button>`;
-    })
-    .join('')}</div>`;
+  return `<section class="advancement-header">${heading}</section><div class="advancement-tabs" role="tablist" aria-label="Categorias de traços">${categories.map((k) => `<button type="button" role="tab" aria-selected="${k === key}" class="${k === key ? 'active' : ''}" data-action="trait-category" data-key="${k}">${labels[k]}<span>${s.game[k].length}</span></button>`).join('')}</div><div class="advancement-toolbar"><label class="search-field">${icon('search')}<input type="search" id="trait-catalog-search" aria-label="Buscar traço em todas as categorias" placeholder="Pesquisar em todos os atributos e habilidades" value="${esc(query)}"></label><span>${query ? 'RESULTADOS DE TODAS AS CATEGORIAS' : 'Limite da geração ' + max}</span></div><div class="advancement-grid">${
+    entries
+      .map((d) => {
+        const key = d.key,
+          level = currentLevel(p, key, d.id);
+        let q;
+        try {
+          q = upgradeQuote(p, s.game, key, d.id, level + 1);
+        } catch {}
+        return `<button type="button" class="advancement-card ${!q ? 'maxed' : ''}" data-action="trait" data-key="${key}" data-id="${d.id}"><div class="advancement-card-heading"><span>${esc(d.name)}</span><span class="trait-level-emblem">${level}</span></div>${query ? `<span class="eyebrow">${labels[key]}</span>` : ''}<div class="advancement-dots">${dots(level, max)}</div><p>${esc((d.description || 'O que você aprende muda o que é possível.').slice(0, 155))}</p><div class="advancement-card-bottom"><span>${ctx.admin() ? 'CONSULTAR E AJUSTAR' : q ? `PRÓXIMO NÍVEL <strong>${q.cost} XP</strong>` : level >= max ? 'DOMÍNIO ALCANÇADO' : 'CONCESSÃO DO NARRADOR'}</span><span class="advancement-arrow">${icon('arrow')}</span></div></button>`;
+      })
+      .join('') ||
+    empty('Nenhum traço com esse nome.', 'Tente outra palavra ou parte da descrição.')
+  }</div>`;
 }
 export async function openEvolution(ctx, key, id, returnView = 'attributes') {
   const p = ctx.player();
@@ -64,7 +73,7 @@ export async function openEvolution(ctx, key, id, returnView = 'attributes') {
       key === 'bloodpotency' ? ctx.state.game.bloodpotency_generation[p.generation].min : 0;
     modal(
       `Consultar e ajustar · ${d.name}`,
-      `<p>Ficha de <strong>${esc(p.char)}</strong>. Este ajuste administrativo não gasta XP.</p>${field('level', 'Nível da ficha', from, 'number', `required min="${min}" max="${max}" step="1"`)}<p class="prose">${esc(d.description || '')}</p>${lore(ctx, { key, id })}`,
+      `<p>Ficha de <strong>${esc(p.char)}</strong>. Este ajuste administrativo não gasta XP.</p>${field('level', 'Nível da ficha', from, 'number', `required min="${min}" max="${max}" step="1"`)}<p class="prose">${esc(d.description || '')}</p>${lore(ctx, { key, id })}${area('log_message', 'Mensagem no histórico (opcional)', '', 'maxlength="2000"')}`,
       async (form) => {
         const level = Number(form.get('level'));
         const fieldName = key === 'disciplines' ? 'nivel' : 'value';
@@ -76,7 +85,11 @@ export async function openEvolution(ctx, key, id, returnView = 'attributes') {
         }
         await api(`/api/characters/${p.id}`, {
           method: 'PATCH',
-          data: { revision: p._revision, patch: { [key]: rows || level } }
+          data: {
+            revision: p._revision,
+            patch: { [key]: rows || level },
+            log_message: form.get('log_message') || ''
+          }
         });
         await ctx.refresh();
         toast('Nível ajustado pelo narrador.');
@@ -104,12 +117,12 @@ export async function openEvolution(ctx, key, id, returnView = 'attributes') {
 function lore(ctx, u) {
   const d = definition(ctx, u.key, u.id);
   if (!d) return '';
-  return `<section class="panel evolution-lore"><details><summary>Conheça ${esc(d.name.toLowerCase())}</summary><p class="prose">${esc(d.description || d.short_description || '')}</p>${(
+  return `<section class="panel evolution-lore"><details open><summary>Conheça ${esc(d.name.toLowerCase())}</summary><p class="prose">${esc(d.description || d.short_description || '')}</p>${(
     d.nivels || []
   )
     .map((n) => {
       const m = mechanics(n.description, n.mechanics).mechanics;
-      return `<article class="evolution-power"><span class="power-level-number">${n.nivel}</span><div><h3>${esc(n.subname)}</h3><div class="power-badges"><span class="power-badge ${m.rouse_check ? 'required' : 'quiet'}">${icon('blood')} ${m.rouse_check === null ? 'Despertar não informado' : m.rouse_check ? 'Teste de Despertar' : 'Sem despertar'}</span><span class="power-badge">${icon('test')} ${esc(m.test || 'Sem teste')}</span></div><p class="prose">${esc(n.description)}</p></div></article>`;
+      return `<article class="evolution-power"><span class="power-level-number">${n.nivel}</span><div><h3>${esc(n.subname)}</h3><div class="power-badges"><span class="power-badge ${m.rouse_check ? 'required' : 'quiet'}">${icon('blood')} ${m.rouse_check === null ? 'Despertar não informado' : m.rouse_check ? 'Teste de Despertar' : 'Sem despertar'}</span><span class="power-badge">${icon('test')} ${esc(m.test || 'Sem teste')}</span></div>${powerPool(ctx, d, n, d.nivels.indexOf(n))}<p class="prose">${esc(n.description)}</p></div></article>`;
     })
     .join('')}</details></section>`;
 }
@@ -147,7 +160,7 @@ export function evolutionPage(ctx) {
     )
     .join(
       ''
-    )}</div>${button(icon('volume') + ' <span>Som ' + (sounds(ctx) ? 'ligado' : 'desligado') + '</span>', 'evolution-sound', 'aria-label="Alternar sons da evolução" aria-pressed="' + sounds(ctx) + '"', 'button ghost evolution-sound')}</header><div class="evolution-title"><span class="eyebrow">${success ? 'UMA NOVA MARCA NA SUA HISTÓRIA' : review ? 'CONFIRME O SEU INVESTIMENTO' : 'PLANEJE A SUA ASCENSÃO'}</span><h1>${esc(u.name)}</h1><p>${esc(p.char)} · ${esc(labels[u.key])}</p></div>${
+    )}</div></header><div class="evolution-title"><span class="eyebrow">${success ? 'UMA NOVA MARCA NA SUA HISTÓRIA' : review ? 'CONFIRME O SEU INVESTIMENTO' : 'PLANEJE A SUA ASCENSÃO'}</span><h1>${esc(u.name)}</h1><p>${esc(p.char)} · ${esc(labels[u.key])}</p></div>${
     success
       ? `<div class="evolution-victory"><div class="victory-rays" aria-hidden="true"></div><div class="victory-rune">${icon('powers')}<span>+${u.target - u.from}</span></div><span class="eyebrow">EVOLUÇÃO CONCLUÍDA</span><h2>Nível ${u.target} conquistado.</h2><p>Você investiu ${q.cost} XP. Sua história acaba de ganhar poder.</p><div class="victory-wallet"><strong>${p.xp}</strong><span>XP AINDA DISPONÍVEIS</span></div><div class="evolution-victory-actions">${button('Continuar evoluindo ' + icon('arrow'), 'nav-' + u.returnView, '', 'button primary')}${button('Voltar à ficha', 'nav-overview', '', 'button ghost')}</div></div>`
       : `<div class="evolution-layout"><section class="panel evolution-workbench"><span class="eyebrow">${review ? 'O PODER QUE VOCÊ ESTÁ PRESTES A CONQUISTAR' : 'ESCOLHA ATÉ ONDE QUER CHEGAR'}</span><div class="evolution-level-journey"><div><span>AGORA</span><strong>${u.from}</strong></div><span class="evolution-stream" aria-hidden="true">${icon('arrow')}<i></i></span><div class="target-level"><span>${review ? 'DEPOIS' : 'NÍVEL DESEJADO'}</span><strong>${u.target}</strong></div></div>${
@@ -172,12 +185,13 @@ export function bindEvolution(ctx) {
   clearInterval(timer);
   const search = $('#trait-catalog-search');
   if (search)
-    search.oninput = () =>
-      document
-        .querySelectorAll('[data-trait-search]')
-        .forEach(
-          (card) => (card.hidden = !card.dataset.traitSearch.includes(search.value.toLowerCase()))
-        );
+    search.oninput = () => {
+      const value = search.value;
+      ctx.state.traitQuery = value;
+      ctx.draw();
+      const next = $('#trait-catalog-search');
+      next.focus();
+    };
   const u = ctx.state.evolution;
   if (ctx.state.view !== 'evolution' || u?.stage !== 'review' || u.busy) return;
   const update = () => {
@@ -206,6 +220,7 @@ export async function evolutionAction(action, data, ctx) {
   const u = ctx.state.evolution;
   if (action === 'trait-category') {
     ctx.state.traitCategory = data.key;
+    ctx.state.traitQuery = '';
     uiSound('tick', sounds(ctx));
     ctx.draw();
     return true;
@@ -220,16 +235,6 @@ export async function evolutionAction(action, data, ctx) {
     return true;
   }
   if (!action.startsWith('evolution-')) return false;
-  if (action === 'evolution-sound') {
-    const enabled = !sounds(ctx);
-    uiSound('tick', enabled);
-    await api('/api/profile', {
-      method: 'PATCH',
-      data: { preferences: { ...ctx.state.account.preferences, ui_sound: enabled } }
-    });
-    await ctx.refresh();
-    return true;
-  }
   if (!u) return true;
   if (u.busy) return true;
   if (action === 'evolution-back') {

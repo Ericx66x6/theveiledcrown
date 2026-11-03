@@ -1,3 +1,4 @@
+import { fold } from '../core/power-tests.js';
 import { $, esc, icon, button, field, area, select, modal, toast, empty } from '../shared/ui.js';
 import { labels } from '../shared/rules.js';
 import { api } from './api.js';
@@ -24,13 +25,7 @@ export function rulebookPage(ctx) {
     pane = s.rulePane || 'catalog',
     key = s.ruleCatalog || 'disciplines';
   let content = '';
-  if (pane === 'catalog')
-    content = `<div class="rulebook-toolbar">${select(
-      'rule-catalog',
-      'Catálogo',
-      catalogs.map((k) => ({ value: k, label: labels[k] })),
-      key
-    )}<label class="search-field">${icon('search')}<input type="search" id="rulebook-search" placeholder="Buscar conteúdo" aria-label="Buscar conteúdo do livro"></label>${button(icon('plus') + ' Novo conteúdo', 'rule-add', `data-key="${key}"`, 'button primary')}</div><div class="rulebook-catalog-grid">${g[key].map((d) => `<article class="rulebook-entry" data-rule-search="${esc((d.name + ' ' + (d.description || '')).toLowerCase())}"><div><span class="eyebrow">${labels[key]} ${d.nivel ? '· NÍVEL ' + d.nivel : ''}</span><h2>${esc(d.name)}</h2><p class="prose">${esc((d.description || d.short_description || 'Sem descrição.').slice(0, 500))}</p>${key === 'disciplines' ? `<span class="tag">${d.nivels.length} poderes cadastrados</span>` : ''}</div><footer>${button(icon('edit') + ' Editar', 'rule-edit', `data-key="${key}" data-id="${d.id}"`, 'button ghost')}${button('JSON', 'rule-json', `data-key="${key}" data-id="${d.id}"`, 'text-button')}${button('Remover', 'rule-delete', `data-key="${key}" data-id="${d.id}"`, 'text-button danger')}</footer></article>`).join('') || empty('O próximo conhecimento começa aqui.', 'Adicione seu primeiro conteúdo ao catálogo.')}</div>`;
+  if (pane === 'catalog') content = ruleCatalog(ctx, key);
   else if (pane === 'chapters')
     content = `<div class="list-toolbar"><p class="muted">História do mundo, facções, regras da casa ou qualquer assunto da sua campanha.</p>${button(icon('plus') + ' Novo capítulo', 'rule-chapter-add', '', 'button primary')}</div><div class="rulebook-chapters">${g.rulebook.map((section) => `<section class="panel rulebook-chapter"><header><div><span class="eyebrow">CAPÍTULO DA CAMPANHA</span><h2>${esc(section.title)}</h2><p>${esc(section.description || '')}</p></div>${button('Editar capítulo', 'rule-chapter-edit', `data-id="${section.id}"`, 'button ghost')}${button('Remover', 'rule-chapter-delete', `data-id="${section.id}"`, 'text-button danger')}</header><div class="rulebook-free-entries">${section.entries.map((e) => `<article><h3>${esc(e.title)}</h3><p class="prose">${esc(e.body)}</p><footer>${button('Editar', 'rule-text-edit', `data-chapter="${section.id}" data-id="${e.id}"`, 'text-button')}${button('Remover', 'rule-text-delete', `data-chapter="${section.id}" data-id="${e.id}"`, 'text-button danger')}</footer></article>`).join('') || '<p class="muted">Este capítulo está pronto para receber seu primeiro texto.</p>'}</div>${button(icon('plus') + ' Acrescentar informação', 'rule-text-add', `data-chapter="${section.id}"`, 'button ghost')}</section>`).join('') || empty('O livro também é seu.', 'Crie capítulos livres e acrescente tudo o que a campanha precisar.', button('Criar primeiro capítulo', 'rule-chapter-add', '', 'button primary'))}</div>`;
   else content = `${creationSettings(ctx)}${ruleConfig(ctx)}`;
@@ -271,14 +266,16 @@ export function bindRulebook(ctx) {
   if (catalog)
     catalog.onchange = () => {
       ctx.state.ruleCatalog = catalog.value;
+      ctx.state.ruleQuery = '';
       ctx.draw();
     };
   const search = $('#rulebook-search');
   if (search)
-    search.oninput = () =>
-      document
-        .querySelectorAll('[data-rule-search]')
-        .forEach((el) => (el.hidden = !el.dataset.ruleSearch.includes(search.value.toLowerCase())));
+    search.oninput = () => {
+      ctx.state.ruleQuery = search.value;
+      ctx.draw();
+      $('#rulebook-search').focus();
+    };
   const creation = $('#creation-config');
   if (creation)
     creation.onsubmit = (event) => {
@@ -296,4 +293,22 @@ export function bindRulebook(ctx) {
         await saveGame(ctx, g);
       });
     };
+}
+
+function ruleCatalog(ctx, key) {
+  const g = ctx.state.game,
+    query = ctx.state.ruleQuery || '',
+    entries = (query ? catalogs : [key])
+      .flatMap((k) => g[k].map((d) => ({ ...d, key: k })))
+      .filter(
+        (d) =>
+          !query ||
+          fold(d.name + ' ' + d.description + ' ' + d.short_description).includes(fold(query))
+      );
+  return `<div class="rulebook-toolbar">${select(
+    'rule-catalog',
+    'Catálogo',
+    catalogs.map((k) => ({ value: k, label: labels[k] })),
+    key
+  )}<label class="search-field">${icon('search')}<input type="search" id="rulebook-search" placeholder="Pesquisar em todos os catálogos" aria-label="Buscar conteúdo em todos os catálogos" value="${esc(query)}"></label>${button(icon('plus') + ' Novo conteúdo', 'rule-add', `data-key="${key}"`, 'button primary')}</div>${query ? '<p class="hint">Resultados em todos os catálogos do livro.</p>' : ''}<div class="rulebook-catalog-grid">${entries.map((d) => `<article class="rulebook-entry"><div><span class="eyebrow">${labels[d.key]} ${d.nivel ? '· NÍVEL ' + d.nivel : ''}</span><h2>${esc(d.name)}</h2><p class="prose">${esc((d.description || d.short_description || 'Sem descrição.').slice(0, 500))}</p>${d.key === 'disciplines' ? `<span class="tag">${d.nivels.length} poderes cadastrados</span>` : ''}</div><footer>${button(icon('edit') + ' Editar', 'rule-edit', `data-key="${d.key}" data-id="${d.id}"`, 'button ghost')}${button('JSON', 'rule-json', `data-key="${d.key}" data-id="${d.id}"`, 'text-button')}${button('Remover', 'rule-delete', `data-key="${d.key}" data-id="${d.id}"`, 'text-button danger')}</footer></article>`).join('') || empty('Nada com esse nome.', 'Tente outra palavra ou acrescente conteúdo ao livro.')}</div>`;
 }

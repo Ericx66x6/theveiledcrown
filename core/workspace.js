@@ -1,3 +1,4 @@
+import { socialVisible, publicSocialPost, socialKinds, gestures } from './social-state.js';
 import { personalNetwork, questVisible } from './permissions.js';
 import {
   clone,
@@ -14,15 +15,10 @@ import {
 import { gameSettings, validateSettings } from './settings.js';
 import { workspaceFromLegacy } from './store.js';
 import { normalizeRoot, emptyMap } from './campaign-shape.js';
-export function imageData(value, max = 2000000) {
-  if (
-    typeof value !== 'string' ||
-    value.length > max ||
-    (value && !/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=\s]+$/.test(value))
-  )
-    fail('Use uma imagem PNG, JPG ou WebP local válida.');
-  return value;
-}
+export { imageData } from './image-data.js';
+import { imageData } from './image-data.js';
+import { publicMap, validateScale, validateMapPosition } from './map-state.js';
+import { publicIntel, validateIntel } from './intel-state.js';
 export function coordinate(value) {
   if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > 1)
     fail('Posição fora do mapa.');
@@ -145,7 +141,7 @@ export function validateWorkspace(source) {
       fail('Campanha repetida ou ID inválido.');
     campaignIds.add(c.id);
     text(c.title, 'Nome da campanha', 150, true);
-    text(c.system, 'Sistema', 100, true);
+    imageData(c.cover || '');
     if (!['active', 'closed'].includes(c.status)) fail('Estado de campanha inválido.');
     if (!/^#[a-f\d]{6}$/i.test(c.accent || '#d92343')) fail('Cor de campanha inválida.');
     c.game = validateSettings(gameSettings(validateGame(c.game)));
@@ -188,6 +184,19 @@ export function validateWorkspace(source) {
         number(m.width, 'Largura do mapa', 1, 20000);
         number(m.height, 'Altura do mapa', 1, 20000);
       }
+      validateScale(m.scale);
+      const positions = m.character_markers || [];
+      if (
+        !Array.isArray(positions) ||
+        positions.length > 1000 ||
+        new Set(positions.map((p) => p.character_id)).size !== positions.length
+      )
+        fail('Marcadores de personagens inválidos.');
+      for (const p of positions) {
+        number(p.character_id, 'Personagem', 0, 999999);
+        validateMapPosition(p, m.mode);
+        if (!ids.has(p.character_id)) fail('Marcador ligado a personagem inexistente.');
+      }
       for (const pin of list(m.pins, 'marcadores')) {
         validatePin(pin);
         if (m.mode === 'geographic' && (pin.lat === undefined || pin.lng === undefined))
@@ -216,6 +225,8 @@ export function validateWorkspace(source) {
       ids.has(id) ||
       (c.roster || []).some((p) => p.id === id) ||
       c.retired_roster.some((p) => p.id === id);
+    for (const item of list(c.intel || [], 'informações', 500))
+      validateIntel(item, { redacted: !Object.hasOwn(item, 'secret') });
     for (const q of list(c.quests, 'missões')) {
       if (
         !Array.isArray(q.assignees) ||
@@ -258,9 +269,17 @@ export function validateWorkspace(source) {
       if (!['active', 'review', 'completed', 'cancelled'].includes(q.status))
         fail('Estado de missão inválido.');
     }
-    for (const post of list(c.social || [], 'recados', 500)) {
+    for (const post of list(c.social || [], 'recados', 100000)) {
       text(post.content, 'Recado', 5000, true);
-      if (!['message', 'reminder', 'poke'].includes(post.kind)) fail('Recado inválido.');
+      if (!socialKinds.includes(post.kind)) fail('Recado inválido.');
+      if (
+        post.kind === 'challenge' &&
+        (!['pending', 'completed'].includes(post.status) ||
+          !post.choices ||
+          Object.values(post.choices).some((v) => !gestures.includes(v)) ||
+          !Number.isFinite(Date.parse(post.expires_at)))
+      )
+        fail('Desafio inválido.');
       identifier(post.created_by, 'Autor');
       if (post.to) identifier(post.to, 'Destinatário');
       if (post.due_at && !Number.isFinite(Date.parse(post.due_at))) fail('Lembrete inválido.');
@@ -277,7 +296,7 @@ export function validateWorkspace(source) {
       number(s.submission_revision ?? 1, 'Revisão da proposta', 1);
       text(s.review_note ?? '', 'Parecer', 5000);
     }
-    for (const n of list(c.notifications, 'notificações')) {
+    for (const n of list(c.notifications, 'notificações', 100000)) {
       text(n.title, 'Notificação', 200, true);
       text(n.message ?? '', 'Notificação', 5000);
       if (!['gm', 'account'].includes(n.audience)) fail('Destinatário de notificação inválido.');
@@ -357,12 +376,19 @@ export function publicCampaign(c, a) {
     ...(c.retired_roster || [])
   ];
   result.notes = result.notes.filter((n) => visible(n, a)).map((n) => publicNote(n, c));
-  result.social = (result.social || []).filter(
-    (p) => !p.hidden_by?.includes(a.id) && (!p.to || p.to === a.id || p.created_by === a.id)
-  );
+  result.social = (result.social || [])
+    .filter((p) => socialVisible(p, a))
+    .map((p) => publicSocialPost(p, a));
   result.maps = result.maps
     .filter((m) => a.role === 'admin' || m.player_access)
-    .map((m) => ({ ...m, pins: m.pins.filter((p) => visible(p, a)) }));
+    .map((m) =>
+      publicMap(
+        m,
+        { ...a, character_ids: a.character_ids || a.memberships?.[c.id] || [] },
+        c.characters
+      )
+    );
+  result.intel = (c.intel || []).map((item) => publicIntel(item, a));
   result.map = result.maps[0] || emptyMap();
   result.network = personalNetwork(c, a);
   result.quests = result.quests.filter((q) => questVisible(q, a, c.id));
@@ -415,7 +441,7 @@ export function playerExport(root, account) {
   own.memberships = Object.fromEntries(campaigns.map((c) => [c.id, memberships[c.id]]));
   return {
     format: 'coroa-hub-v2',
-    schema_version: 7,
+    schema_version: 8,
     revision: root.revision,
     updated_at: timestamp(),
     default_game: clone(root.default_game),

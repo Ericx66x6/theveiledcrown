@@ -266,7 +266,7 @@ test('HTTP: arquivos privados, origem indevida e controle de tempo são recusado
     404
   );
 });
-test('HTTP: frontend compilado é a versão 7 online', async (t) => {
+test('HTTP: frontend compilado é a versão 8 online', async (t) => {
   const f = await fixture(t),
     r = await f.request('/');
   assert.equal(r.status, 200);

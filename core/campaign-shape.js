@@ -4,6 +4,9 @@ export const emptyMap = () => ({ image: '', width: 0, height: 0, pins: [] });
 export function normalizeCampaign(source) {
   const c = clone(source);
   delete c.universe;
+  delete c.system;
+  c.cover ??= '';
+  c._revision ??= 0;
   c.xp_distributions ??= [];
   c.game = gameSettings(c.game);
   if (!c.maps) {
@@ -29,10 +32,13 @@ export function normalizeCampaign(source) {
     player_access: false,
     _revision: 0,
     pins: [],
+    character_markers: [],
+    scale: null,
     ...m
   }));
   for (const key of [
     'notes',
+    'intel',
     'social',
     'quests',
     'submissions',
@@ -50,17 +56,97 @@ export function normalizeCampaign(source) {
 }
 export function normalizeRoot(source) {
   const root = clone(source);
-  root.schema_version = 7;
+  root.schema_version = 8;
   root.deleted_accounts ??= [];
   root.default_game ??= clone(root.campaigns[0]?.game);
   root.active_campaign_id ??= root.campaigns[0]?.id || null;
   root.campaigns = root.campaigns.map(normalizeCampaign);
   for (const a of root.accounts) {
-    a.preferences = { sound: false, ui_sound: true, animations: true, ...a.preferences };
+    a.preferences = {
+      audio_enabled: a.preferences?.ui_sound !== false,
+      animations: true,
+      social_mood: 'chat',
+      social_note: '',
+      ...a.preferences
+    };
+    delete a.preferences.sound;
+    delete a.preferences.ui_sound;
     if (a.role === 'admin')
       a.memberships = Object.fromEntries(Object.keys(a.memberships || {}).map((id) => [id, []]));
   }
   for (const c of root.campaigns) {
+    const imported = new Set(c.notes.map((n) => n.id));
+    for (const p of c.characters) {
+      const owner = root.accounts.find(
+        (a) => a.role === 'player' && a.memberships?.[c.id]?.includes(p.id)
+      );
+      if (!owner) continue;
+      for (const kind of ['notes', 'goals']) {
+        for (const [index, row] of (p[kind] || []).entries()) {
+          const fingerprint = JSON.stringify([
+            row.id ?? index,
+            row.title,
+            row.name,
+            row.content || row.description || '',
+            row.created_at || row.date || '',
+            row.time || ''
+          ]);
+          const hash = [...fingerprint]
+            .reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0, 2166136261)
+            .toString(16);
+          const id = `legacy-${p.id}-${kind}-${hash}`;
+          if (imported.has(id)) continue;
+          const content = row.content || row.description || '';
+          if (content) {
+            c.notes.push({
+              id,
+              title:
+                row.title ||
+                row.name ||
+                (kind === 'goals' ? (index === 0 ? 'Ambição' : 'Desejo') : 'Anotação') +
+                  ' · ' +
+                  p.char,
+              content,
+              visibility: 'private',
+              created_by: owner.id,
+              created_at: row.created_at || p.created_at || c.updated_at || timestamp(),
+              ...(row.date
+                ? { legacy_date_label: String(row.date) + (row.time ? ' · ' + row.time : '') }
+                : {}),
+              updated_at: c.updated_at || timestamp(),
+              _revision: 0,
+              character_id: p.id,
+              tags: 'Importada da ficha'
+            });
+            imported.add(id);
+          }
+        }
+        p[kind] = [];
+      }
+    }
+    const retained = [];
+    for (const post of c.social) {
+      if (post.to) {
+        retained.push(post);
+        continue;
+      }
+      const id = 'legacy-social-' + post.id;
+      if (!imported.has(id)) {
+        c.notes.push({
+          id,
+          title: post.title || 'Recado da mesa',
+          content: post.content || '',
+          created_by: post.created_by,
+          created_at: post.created_at,
+          updated_at: post.created_at,
+          visibility: 'campaign',
+          _revision: 0,
+          tags: 'Importada do salão'
+        });
+        imported.add(id);
+      }
+    }
+    c.social = retained;
     const orphaned = c.network.nodes.filter((n) => n.character_id === undefined);
     for (const n of orphaned) {
       const owner = root.accounts.find((a) => a.id === n.created_by && a.role === 'player');

@@ -1,9 +1,15 @@
+import { installSound } from './audio.js';
 import { api, initialize, session, saveSession, clearSession } from './api.js';
 import { showLogin } from './login.js';
 import { startPortal, stopPortal } from './portal.js';
 import { initializeFiles } from './files.js';
 import { esc } from '../shared/ui.js';
 export async function startApp({ identity } = {}) {
+  installSound();
+  window.addEventListener('audio:save-error', (event) => {
+    document.querySelector('#toasts').textContent = event.detail;
+  });
+
   async function enter() {
     document.body.classList.remove('login-page');
     await startPortal();

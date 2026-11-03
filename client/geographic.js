@@ -1,3 +1,13 @@
+import { guardedMarker } from './map-gesture.js';
+import Feature from 'ol/Feature.js';
+import LineString from 'ol/geom/LineString.js';
+import VectorLayer from 'ol/layer/Vector.js';
+import VectorSource from 'ol/source/Vector.js';
+import Style from 'ol/style/Style.js';
+import Stroke from 'ol/style/Stroke.js';
+import Fill from 'ol/style/Fill.js';
+import Text from 'ol/style/Text.js';
+import { defaults as defaultInteractions } from 'ol/interaction/defaults.js';
 import Map from 'ol/Map.js';
 import View from 'ol/View.js';
 import Overlay from 'ol/Overlay.js';
@@ -28,7 +38,12 @@ class Geographic {
       minZoom: 2,
       maxZoom: 19
     });
-    this.raw = new Map({ target: 'atlas-map', view: this.view, controls: [] });
+    this.raw = new Map({
+      target: 'atlas-map',
+      view: this.view,
+      controls: [],
+      interactions: defaultInteractions({ doubleClickZoom: false })
+    });
     this.map = {
       getZoom: () => this.view.getZoom(),
       setZoom: (zoom) => this.view.animate({ zoom, duration: this.duration() }),
@@ -50,7 +65,7 @@ class Geographic {
       autoPan: { margin: 25, animation: { duration: 200 } }
     });
     this.raw.addOverlay(this.popupOverlay);
-    for (const point of data.pins) this.addMarker(point);
+    for (const point of options.points) this.addMarker(point);
     this.raw.on('singleclick', (event) => {
       if (!this.placing) {
         this.popup.hidden = true;
@@ -106,10 +121,16 @@ class Geographic {
       clearTimeout(deadline);
     }
   }
+  toggleDrag(enabled) {
+    this.raw.getInteractions().forEach((i) => {
+      if (i instanceof DragPan) i.setActive(enabled);
+    });
+  }
   addMarker(point) {
     const element = document.createElement('button');
     element.type = 'button';
-    element.className = 'atlas-marker vector-marker';
+    element.className =
+      'atlas-marker vector-marker' + (point.personal ? ' character-map-marker' : '');
     element.innerHTML = this.options.markerHTML(point);
     element.setAttribute('aria-label', point.title);
     element.title = point.title;
@@ -121,74 +142,72 @@ class Geographic {
     });
     this.raw.addOverlay(overlay);
     this.markers.set(point.id, { overlay, point });
-    const opts = { signal: this.events.signal };
-    element.addEventListener(
-      'keydown',
-      (event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          this.openPopup(point);
-        }
+    guardedMarker(element, {
+      editable: () => this.options.editable(point),
+      signal: this.events.signal,
+      onTap: () => {
+        if (!this.options.onPoint(point)) this.openPopup(point);
       },
-      opts
-    );
-    let drag;
-    element.addEventListener(
-      'pointerdown',
-      (event) => {
-        if (event.button && event.button !== 0) return;
-        drag = { x: event.clientX, y: event.clientY, distance: 0 };
-        element.setPointerCapture(event.pointerId);
-        if (this.options.editable(point))
-          this.raw.getInteractions().forEach((i) => {
-            if (i instanceof DragPan) i.setActive(false);
+      onStart: () => {
+        this.toggleDrag(false);
+        this.popup.hidden = true;
+        this.notice('Posição liberada. Arraste o marcador e solte para salvar.');
+      },
+      onMove: (event) =>
+        overlay.setPosition(this.raw.getCoordinateFromPixel(this.raw.getEventPixel(event))),
+      onEnd: (moved) => {
+        this.toggleDrag(true);
+        this.notice('');
+        if (moved)
+          this.ctx.safe(async () => {
+            try {
+              await this.options.onMove(point, this.position(toLonLat(overlay.getPosition())));
+            } catch (error) {
+              overlay.setPosition(fromLonLat([point.lng, point.lat]));
+              throw error;
+            }
           });
       },
-      opts
-    );
-    element.addEventListener(
-      'pointermove',
-      (event) => {
-        if (!drag || !this.options.editable(point)) return;
-        drag.distance = Math.hypot(event.clientX - drag.x, event.clientY - drag.y);
-        if (drag.distance > 5) {
-          this.popup.hidden = true;
-          overlay.setPosition(this.raw.getCoordinateFromPixel(this.raw.getEventPixel(event)));
-        }
-      },
-      opts
-    );
-    const end = (event) => {
-      if (!drag) return;
-      const moved = drag.distance > 5;
-      drag = null;
-      this.raw.getInteractions().forEach((i) => {
-        if (i instanceof DragPan) i.setActive(true);
-      });
-      if (event.type === 'pointercancel') {
+      onCancel: () => {
         overlay.setPosition(fromLonLat([point.lng, point.lat]));
-        return;
+        this.toggleDrag(true);
+        this.notice('');
       }
-      if (!moved) {
-        this.openPopup(point);
-        return;
-      }
-      const position = this.position(toLonLat(overlay.getPosition()));
-      this.ctx.safe(async () => {
-        try {
-          await api('/api/maps/' + this.data.id + '/pins/' + point.id, {
-            method: 'PATCH',
-            data: { ...position, revision: point._revision }
-          });
-          await this.ctx.refresh();
-        } catch (error) {
-          overlay.setPosition(fromLonLat([point.lng, point.lat]));
-          throw error;
-        }
-      });
-    };
-    element.addEventListener('pointerup', end, opts);
-    element.addEventListener('pointercancel', end, opts);
+    });
+  }
+  setMeasurement(a, b, label) {
+    this.clearMeasurement();
+    const points = [fromLonLat([a.lng, a.lat]), fromLonLat([b.lng, b.lat])],
+      world = 40075016.6856;
+    if (points[1][0] - points[0][0] > world / 2) points[1][0] -= world;
+    if (points[0][0] - points[1][0] > world / 2) points[1][0] += world;
+    const color =
+      getComputedStyle(document.documentElement).getPropertyValue('--campaign-accent').trim() ||
+      '#d92343';
+    this.measurement = new VectorLayer({
+      source: new VectorSource({ features: [new Feature(new LineString(points))] }),
+      zIndex: 1000,
+      style: new Style({
+        stroke: new Stroke({ color, width: 3, lineDash: [8, 8] }),
+        text: new Text({
+          text: label,
+          font: 'bold 14px system-ui',
+          placement: 'line',
+          offsetY: -15,
+          fill: new Fill({ color: '#fff4f7' }),
+          stroke: new Stroke({ color: '#160c14', width: 6 }),
+          backgroundFill: new Fill({ color: '#160c14' }),
+          padding: [5, 8, 5, 8]
+        })
+      })
+    });
+    this.raw.addLayer(this.measurement);
+  }
+  clearMeasurement() {
+    if (this.measurement) {
+      this.raw.removeLayer(this.measurement);
+      this.measurement = null;
+    }
   }
   openPopup(point) {
     this.popup.innerHTML =

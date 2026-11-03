@@ -1,3 +1,4 @@
+import { commerceRequest } from './commerce-service.js';
 import { communityRequest, socialSnapshot } from './community-service.js';
 import { lifecycleRequest } from './lifecycle-service.js';
 import { distributeXp } from './xp-service.js';
@@ -19,6 +20,8 @@ export class PortalService extends CampaignService {
     const { method = 'GET', data = {}, token } = options;
     const special =
       path === '/api/portal-state' ||
+      path.startsWith('/api/intel') ||
+      path.startsWith('/api/discipline-market') ||
       path.startsWith('/api/social') ||
       path.startsWith('/api/members/') ||
       path === '/api/admin/reset' ||
@@ -61,6 +64,16 @@ export class PortalService extends CampaignService {
       };
     if (a.role !== 'admin' && !a._campaign_member)
       fail('Escolha uma campanha vinculada ao seu acesso.', 403);
+    if (path.startsWith('/api/intel') || path.startsWith('/api/discipline-market')) {
+      if (!root.campaigns.some((c) => c.id === doc.id)) fail('Selecione uma campanha.', 409);
+      if (
+        method !== 'GET' &&
+        doc.status === 'closed' &&
+        !(a.role === 'admin' && method === 'DELETE')
+      )
+        fail('A campanha está encerrada.', 409);
+      return commerceRequest(this, path, method, data, token, doc, a);
+    }
     if (path === '/api/portal-state') {
       const campaign = publicCampaign(doc, a);
       delete campaign.social;

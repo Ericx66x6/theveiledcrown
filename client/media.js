@@ -56,79 +56,11 @@ export function animateMoney(from, to, element) {
   }
   requestAnimationFrame(frame);
 }
-let audio;
-export function diceSound(enabled) {
-  if (!enabled) return;
-  try {
-    audio ??= new (window.AudioContext || window.webkitAudioContext)();
-    audio.resume();
-    const duration = 0.35,
-      buffer = audio.createBuffer(1, Math.floor(audio.sampleRate * duration), audio.sampleRate),
-      data = buffer.getChannelData(0);
-    for (let i = 0; i < data.length; i++)
-      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 4);
-    const source = audio.createBufferSource(),
-      filter = audio.createBiquadFilter(),
-      gain = audio.createGain();
-    source.buffer = buffer;
-    filter.type = 'highpass';
-    filter.frequency.value = 1000;
-    gain.gain.value = 0.18;
-    source.connect(filter).connect(gain).connect(audio.destination);
-    source.start();
-  } catch {}
+export { playSound } from './audio.js';
+import { playSound } from './audio.js';
+export function diceSound() {
+  playSound('dice');
 }
-
-export function uiSound(kind = 'swoosh', enabled = true) {
-  if (!enabled) return;
-  try {
-    audio ??= new (window.AudioContext || window.webkitAudioContext)();
-    audio.resume();
-    const now = audio.currentTime;
-    if (kind === 'swoosh') {
-      const duration = 0.3,
-        buffer = audio.createBuffer(1, Math.floor(audio.sampleRate * duration), audio.sampleRate),
-        samples = buffer.getChannelData(0);
-      for (let i = 0; i < samples.length; i++)
-        samples[i] = (Math.random() * 2 - 1) * Math.sin((Math.PI * i) / samples.length);
-      const source = audio.createBufferSource(),
-        filter = audio.createBiquadFilter(),
-        gain = audio.createGain();
-      source.buffer = buffer;
-      filter.type = 'bandpass';
-      filter.Q.value = 0.8;
-      filter.frequency.setValueAtTime(220, now);
-      filter.frequency.exponentialRampToValueAtTime(2600, now + 0.12);
-      filter.frequency.exponentialRampToValueAtTime(500, now + 0.3);
-      gain.gain.setValueAtTime(0, now);
-      gain.gain.linearRampToValueAtTime(0.075, now + 0.08);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-      source.connect(filter).connect(gain).connect(audio.destination);
-      source.start(now);
-      return;
-    }
-    const notes =
-      kind === 'success'
-        ? [261.63, 392, 523.25, 783.99]
-        : kind === 'confirm'
-          ? [196, 293.66, 392]
-          : [480];
-    for (const [i, freq] of notes.entries()) {
-      const oscillator = audio.createOscillator(),
-        gain = audio.createGain(),
-        at = now + i * (kind === 'success' ? 0.08 : 0.035);
-      oscillator.type = kind === 'tick' ? 'sine' : 'triangle';
-      oscillator.frequency.setValueAtTime(freq, at);
-      oscillator.frequency.exponentialRampToValueAtTime(freq * 1.015, at + 0.2);
-      gain.gain.setValueAtTime(0.0001, at);
-      gain.gain.exponentialRampToValueAtTime(
-        kind === 'tick' ? 0.035 : 0.035 / Math.sqrt(notes.length),
-        at + 0.012
-      );
-      gain.gain.exponentialRampToValueAtTime(0.0001, at + (kind === 'tick' ? 0.09 : 0.65));
-      oscillator.connect(gain).connect(audio.destination);
-      oscillator.start(at);
-      oscillator.stop(at + (kind === 'tick' ? 0.1 : 0.7));
-    }
-  } catch {}
+export function uiSound(kind = 'swoosh') {
+  playSound(kind);
 }

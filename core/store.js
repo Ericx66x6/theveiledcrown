@@ -6,7 +6,8 @@ export function campaignRecord(game, data = {}) {
   return {
     id: data.id || newId(),
     title: data.title || 'A Coroa Velada',
-    system: data.system || 'Vampiro: A Máscara',
+    cover: data.cover || '',
+    _revision: 0,
     description: data.description || 'Uma crônica entre o sangue e o poder.',
     status: data.status || 'active',
     accent: data.accent || '#d92343',
@@ -14,6 +15,7 @@ export function campaignRecord(game, data = {}) {
     characters: [],
     notes: [],
     social: [],
+    intel: [],
     quests: [],
     maps: [],
     submissions: [],
@@ -38,7 +40,7 @@ export function workspaceFromLegacy(doc) {
     });
   return {
     format: 'coroa-hub-v2',
-    schema_version: 7,
+    schema_version: 8,
     revision: 0,
     updated_at: timestamp(),
     active_campaign_id: id,

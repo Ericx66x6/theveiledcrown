@@ -1,3 +1,4 @@
+import { showChallenge } from './community.js';
 import {
   $,
   esc,
@@ -31,7 +32,7 @@ export function narratorDashboard(ctx) {
   const s = ctx.state,
     pending = s.submissions.filter((x) => x.status === 'pending'),
     players = s.accounts.filter((a) => a.role === 'player' && a.campaign_access);
-  return `<div class="page-intro"><span class="eyebrow">CONSELHO DO NARRADOR</span><h1>Você conduz a história.</h1><p>Administre a campanha, acompanhe os jogadores e decida o que atravessa o véu.</p></div><section class="narrator-welcome panel"><div><span class="eyebrow">${esc(s.campaign.system)}</span><h2>${esc(s.campaign.title)}</h2><p>${esc(s.campaign.description)}</p><div class="dashboard-actions">${button(icon('plus') + ' Cadastrar ficha', 'create-character', '', 'button primary')}${button(icon('accounts') + ' Convidar jogador', 'create-account', '', 'button ghost')}</div></div><div class="narrator-seal" aria-hidden="true">${crown}</div></section><div class="dashboard-metrics"><button data-action="nav-characters"><strong>${s.players.length}</strong><span>PERSONAGENS</span>${icon('characters')}</button><button data-action="nav-accounts"><strong>${players.length}</strong><span>JOGADORES NESTA MESA</span>${icon('accounts')}</button><button data-action="nav-submissions" class="${pending.length ? 'attention' : ''}"><strong>${pending.length}</strong><span>FICHAS PARA AVALIAR</span>${icon('notes')}</button><button data-action="nav-map"><strong>${s.campaign.maps.length}</strong><span>MAPAS DA CAMPANHA</span>${icon('map')}</button></div><div class="dashboard-columns"><section class="panel"><div class="section-heading"><div><span class="eyebrow">PRÓXIMAS HISTÓRIAS</span><h2>Chegaram à sua mesa.</h2></div>${button('Ver todas', 'nav-submissions', '', 'text-button')}</div>${
+  return `<div class="page-intro"><span class="eyebrow">CONSELHO DO NARRADOR</span><h1>Você conduz a história.</h1><p>Administre a campanha, acompanhe os jogadores e decida o que atravessa o véu.</p></div>${s.campaign.cover ? `<div class="campaign-dashboard-cover"><img src="${esc(s.campaign.cover)}" alt="Capa da campanha"></div>` : ''}<section class="narrator-welcome panel"><div><span class="eyebrow">CAMPANHA ATIVA</span><h2>${esc(s.campaign.title)}</h2><p>${esc(s.campaign.description)}</p><div class="dashboard-actions">${button(icon('plus') + ' Cadastrar ficha', 'create-character', '', 'button primary')}${button(icon('accounts') + ' Convidar jogador', 'create-account', '', 'button ghost')}</div></div><div class="narrator-seal" aria-hidden="true">${crown}</div></section><div class="dashboard-metrics"><button data-action="nav-characters"><strong>${s.players.length}</strong><span>PERSONAGENS</span>${icon('characters')}</button><button data-action="nav-accounts"><strong>${players.length}</strong><span>JOGADORES NESTA MESA</span>${icon('accounts')}</button><button data-action="nav-submissions" class="${pending.length ? 'attention' : ''}"><strong>${pending.length}</strong><span>FICHAS PARA AVALIAR</span>${icon('notes')}</button><button data-action="nav-map"><strong>${s.campaign.maps.length}</strong><span>MAPAS DA CAMPANHA</span>${icon('map')}</button></div><div class="dashboard-columns"><section class="panel"><div class="section-heading"><div><span class="eyebrow">PRÓXIMAS HISTÓRIAS</span><h2>Chegaram à sua mesa.</h2></div>${button('Ver todas', 'nav-submissions', '', 'text-button')}</div>${
     pending.length
       ? pending
           .slice(0, 4)
@@ -94,8 +95,19 @@ export function notificationsView(ctx) {
         const author = s.social?.members?.find((m) => m.id === n.created_by),
           read = n.read_by.includes(s.account.id),
           type =
-            { social: 'social', quest: 'quests', xp: 'powers', submission: 'notes' }[n.kind] ||
-            'notes';
+            {
+              social: 'social',
+              'private-message': 'social',
+              poke: 'social',
+              kudos: 'favour',
+              challenge: 'dice',
+              icebreaker: 'social',
+              intel: 'search',
+              legacy: 'blood',
+              quest: 'quests',
+              xp: 'powers',
+              submission: 'notes'
+            }[n.kind] || 'notes';
         return `<article class="notification-card ${read ? 'read' : 'unread'} ${n.kind}"><span class="notification-icon">${author?.avatar ? `<img src="${esc(author.avatar)}" alt="">` : icon(type)}</span><div class="notification-content"><span class="eyebrow">${read ? 'LIDA' : 'NOVA'} · ${date(n.created_at)}</span><h2>${esc(n.title)}</h2><p class="prose">${esc(n.message)}</p></div><div class="notification-actions">${button('Abrir', 'open-notification', `data-id="${n.id}"`, 'button ghost')}${button('Apagar', 'delete-notification', `data-id="${n.id}"`, 'text-button danger')}</div></article>`;
       })
       .join('') ||
@@ -145,7 +157,7 @@ export async function administrationAction(action, data, ctx) {
     const account = s.accounts.find((a) => a.id === data.id),
       packet = await api('/api/json/player', { data: { account_id: account.id } });
     download('acesso-' + account.username + '-coroa.json', packet);
-    toast('Pacote de acesso exportado, mesmo sem personagem aprovado.');
+    toast('Download do acesso concluído.');
     return true;
   }
   if (action === 'import-submission') {
@@ -226,8 +238,26 @@ export async function administrationAction(action, data, ctx) {
     const n = s.notifications.find((n) => n.id === data.id);
     await api('/api/notifications/' + n.id + '/read', { method: 'POST' });
     await ctx.refresh();
-    if (n.kind === 'social') {
+    if (n.kind === 'challenge') {
       await ctx.go('social');
+      await showChallenge(ctx, n.target);
+      return true;
+    }
+    if (['social', 'private-message', 'poke', 'kudos', 'icebreaker', 'reminder'].includes(n.kind)) {
+      modal(
+        n.title,
+        `<p class="prose private-message-body">${esc(n.message)}</p><p class="hint">${date(n.created_at)} · Mensagem particular</p>${n.created_by && s.social.members.some((m) => m.id === n.created_by) ? button('Responder', 'social-message', `data-id="${n.created_by}"`, 'button primary') : ''}`,
+        null,
+        { wide: true }
+      );
+      return true;
+    }
+    if (n.kind === 'intel') {
+      await ctx.go('intel');
+      return true;
+    }
+    if (n.kind === 'legacy') {
+      await ctx.go('legacies');
       return true;
     }
     if (n.kind === 'quest') {
@@ -235,7 +265,11 @@ export async function administrationAction(action, data, ctx) {
       return true;
     }
     if (n.kind === 'xp') {
-      await ctx.go(ctx.admin() ? 'characters' : 'my-characters');
+      const p = s.players.find((p) => p.id === Number(n.target));
+      if (p) {
+        s.player = p;
+        await ctx.go('chronicle');
+      } else await ctx.go(ctx.admin() ? 'characters' : 'my-characters');
       return true;
     }
     if (s.submissions.some((r) => r.id === n.target)) {

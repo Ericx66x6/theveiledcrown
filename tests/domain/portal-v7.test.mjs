@@ -122,12 +122,17 @@ test('v7: nota pessoal não é visível nem editável pelo narrador', async () =
   );
   await f.call('/api/notes/' + note.id, 'DELETE', { revision: note._revision }, f.one.token);
 });
-test('v7: recados públicos são limitados à campanha e têm autor verificável', async () => {
+test('v8: mensagens sociais têm destinatário e autor verificável', async () => {
   const f = await fixture();
   await f.call(
     '/api/social',
     'POST',
-    { kind: 'message', content: 'A pista está na praia.', created_by: f.admin.account.id },
+    {
+      kind: 'message',
+      to: f.two.account.id,
+      content: 'A pista está na praia.',
+      created_by: f.admin.account.id
+    },
     f.one.token
   );
   const social = await f.call('/api/social', 'GET', {}, f.two.token);
@@ -157,7 +162,7 @@ test('v7: cutucada gera notificação, respeita destinatário e possui intervalo
   const f = await fixture();
   await f.call('/api/social', 'POST', { kind: 'poke', to: f.two.account.id }, f.one.token);
   const notices = await f.call('/api/notifications', 'GET', {}, f.two.token);
-  assert.equal(notices[0].kind, 'social');
+  assert.equal(notices[0].kind, 'poke');
   assert.match(notices[0].title, /cutucou/);
   await rejected(
     () => f.call('/api/social', 'POST', { kind: 'poke', to: f.two.account.id }, f.one.token),

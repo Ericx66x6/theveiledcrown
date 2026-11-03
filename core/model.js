@@ -1,3 +1,4 @@
+import { imageData } from './image-data.js';
 import { limits, xpCost, newId } from '../shared/rules.js';
 export { limits, xpCost, newId };
 export const stats = ['atributes', 'talents', 'expertises', 'knowledges', 'precedents'];
@@ -171,6 +172,7 @@ export function validatePlayer(source, game) {
       for (const [field, value] of Object.entries(row)) {
         if (field === 'id') continue;
         if (['rating', 'level'].includes(field)) number(value, field, 0, 5);
+        else if (field === 'image') imageData(value);
         else if (field === 'quantity') number(value, field, 0, 9999);
         else if (field === 'completed') {
           if (typeof value !== 'boolean') fail('Estado de conclusão inválido.');

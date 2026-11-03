@@ -3,35 +3,8 @@ import { commit } from './service.js';
 export const requireAdmin = (a) => {
   if (a.role !== 'admin') fail('Ação exclusiva do narrador.', 403);
 };
-export function notification(
-  doc,
-  {
-    audience = 'gm',
-    recipient_id = null,
-    title,
-    message = '',
-    target = '',
-    kind = 'submission',
-    created_by = null
-  }
-) {
-  const n = {
-    id: newId(),
-    audience,
-    recipient_id,
-    title,
-    message,
-    target,
-    kind,
-    created_by,
-    hidden_by: [],
-    created_at: timestamp(),
-    read_by: []
-  };
-  doc.notifications.unshift(n);
-  doc.notifications = doc.notifications.slice(0, 500);
-  return n;
-}
+export { notification } from './notifications.js';
+import { notification } from './notifications.js';
 export function assertRevision(item, data) {
   if (data.revision !== item._revision) fail('O registro mudou. Atualize antes de continuar.', 409);
 }
@@ -80,6 +53,8 @@ export async function deleteCharacter(service, id, data, token) {
       deleted_by: a.id
     });
     d.characters = d.characters.filter((x) => x.id !== id);
+    for (const m of d.maps)
+      m.character_markers = (m.character_markers || []).filter((p) => p.character_id !== id);
     for (const account of d.accounts)
       account.character_ids = account.character_ids.filter((pid) => pid !== id);
     d.retired_roster = d.retired_roster.filter((p) => p.id !== id);

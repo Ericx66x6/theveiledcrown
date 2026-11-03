@@ -17,6 +17,7 @@ export class SheetEditor {
     draftKey = ''
   }) {
     this.mode = mode;
+    this.logMessage = '';
     this.submitOverride = onSubmit;
     this.game = game;
     this.existing = !!character;
@@ -96,7 +97,7 @@ export class SheetEditor {
             ]
               .map((def) => {
                 const entry = p[key].find((x) => x.id === def.id);
-                return `<div class="catalog-row" data-catalog-name="${esc(def.name.toLowerCase())}"><label class="checkbox"><input name="power:${key}:${def.id}" type="checkbox" ${entry ? 'checked' : ''}><span><strong>${esc(def.name)}</strong><small>${esc(def.type || def.short_description || def.description?.slice(0, 110) || '')}${key === 'rituals' ? ' · Nível ' + def.nivel : ''}</small></span></label>${key === 'disciplines' ? `<label class="power-level-input"><span>Nível</span><input type="number" name="power-level:${def.id}" value="${entry?.nivel || 1}" min="1" max="${max}" step="1" inputmode="numeric" aria-label="Nível de ${esc(def.name)}" ${entry ? '' : 'disabled'}></label>` : ''}</div>`;
+                return `<div class="catalog-row" data-catalog-name="${esc(def.name.toLowerCase())}"><label class="checkbox"><input name="power:${key}:${def.id}" type="checkbox" ${entry ? 'checked' : ''}><span><strong>${esc(def.name)}</strong><small>${esc(def.type || def.short_description || def.description?.slice(0, 110) || '')}${key === 'rituals' ? ' · Nível ' + def.nivel : ''}</small></span></label>${key === 'disciplines' ? `<label class="power-level-input"><span>Nível</span><input type="number" name="power-level:${def.id}" value="${entry?.nivel ?? 1}" min="${this.mode === 'proposal' ? 1 : 0}" max="${max}" step="1" inputmode="numeric" aria-label="Nível de ${esc(def.name)}" ${entry ? '' : 'disabled'}></label>` : ''}</div>`;
               })
               .join('')}</div></section>`
         )
@@ -104,7 +105,8 @@ export class SheetEditor {
       'editor-powers',
       false
     )}
-    ${step('04', 'História, ambições e convicções', 'Os campos narrativos, do seu jeito.', `${area('biography', 'História do personagem', p.biography, 'maxlength="30000" placeholder="Origem, aparência, personalidade e segredos…"')}${area('ambition', 'Ambição', p.goals[0]?.description || '', 'maxlength="10000"')}${area('desire', 'Desejo', p.goals[1]?.description || '', 'maxlength="10000"')}${area('convictions', 'Princípios e convicções — uma por linha', p.moralityes.map((x) => x.description).join('\n'), 'maxlength="10000"')}<p class="hint">Domínios, aliados, contatos, lacaios e inventário podem ser preenchidos na ficha depois do cadastro.</p>`, 'editor-story', false)}
+    ${step('04', 'História e convicções', 'Os campos narrativos, do seu jeito.', `${area('biography', 'História do personagem', p.biography, 'maxlength="30000" placeholder="Origem, aparência, personalidade e segredos…"')}${area('convictions', 'Princípios e convicções — uma por linha', p.moralityes.map((x) => x.description).join('\n'), 'maxlength="10000"')}<p class="hint">Domínios, aliados, contatos, lacaios e inventário podem ser preenchidos na ficha depois do cadastro.</p>`, 'editor-story', false)}
+    ${this.mode === 'admin' && this.existing ? `<section class="panel edit-commit"><span class="eyebrow">MENSAGEM DO NARRADOR</span><h3>O que mudou nesta ficha?</h3>${area('log_message', 'Comentário no histórico (opcional)', this.logMessage, 'maxlength="2000" placeholder="Ex.: Ajustei Destreza para 3 após revisar a ficha de papel."')}</section>` : ''}
     <p class="form-error editor-error" id="editor-error" role="alert"></p><div class="editor-savebar"><div><span class="save-dot"></span><span id="draft-state">${this.existing ? 'Ajustes diretos do narrador' : this.draftLoaded ? 'Rascunho recuperado nesta sessão' : 'Rascunho nesta aba · cadastre para exportar'}</span></div><div>${button('Cancelar', 'editor-cancel', '', 'button ghost')}${button('Prévia JSON', 'editor-preview', '', 'button ghost')}<button class="button primary" type="submit">${icon('save')} ${this.mode === 'proposal' ? 'Enviar para avaliação' : this.mode === 'review' ? 'Salvar ajustes da proposta' : this.existing ? 'Salvar ficha' : 'Cadastrar jogador'}</button></div></div></form>`;
   }
   saveDraft() {
@@ -133,6 +135,10 @@ export class SheetEditor {
   updateField(input) {
     const name = input.name;
     if (!name) return;
+    if (name === 'log_message') {
+      this.logMessage = input.value;
+      return;
+    }
     if (name === 'create_access') {
       this.makeAccount = input.checked;
       const container = document.querySelector('#editor-access-fields');
@@ -286,7 +292,7 @@ export class SheetEditor {
           : await api(this.existing ? `/api/characters/${p.id}/full` : '/api/admin/characters', {
               method: this.existing ? 'PUT' : 'POST',
               data: this.existing
-                ? { revision: this.original._revision, character: p }
+                ? { revision: this.original._revision, character: p, log_message: this.logMessage }
                 : { character: p, access }
             });
         await this.clearDraft();

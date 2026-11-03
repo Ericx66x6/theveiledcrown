@@ -1,7 +1,10 @@
+import { playSound } from '../client/audio.js';
 export const $ = (selector, root = document) => root.querySelector(selector);
 export const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 export const crown = `<svg viewBox="0 0 80 64" fill="none" aria-hidden="true"><path d="M13 19l9 31h36l9-31-18 14-9-23-9 23-18-14zM23 56h34" stroke="currentColor" stroke-width="2"/><path d="M40 2v5M5 13l5 3M75 13l-5 3M40 32v12" stroke="currentColor"/><circle cx="13" cy="17" r="2" fill="currentColor"/><circle cx="40" cy="8" r="2" fill="currentColor"/><circle cx="67" cy="17" r="2" fill="currentColor"/></svg>`;
 const paths = {
+ intel:'M3 4h18v16H3zM7 8h10M7 12h6M7 16h4',
+ legacies:'M12 2S5 10 5 15a7 7 0 0 0 14 0c0-5-7-13-7-13z',
  social:'M3 4h18v12H9l-6 5zM7 8h10M7 12h6',
  map:'M3 7l6-3 6 3 6-3v16l-6 2-6-3-6 3zM9 4v15M15 7v15',quests:'M5 3h14v18H5zM8 7h8M8 11l2 2 5-5M8 17h8',notes:'M4 3h16v18H4zM8 8h8M8 12h8M8 16h5',network:'M7 6a3 3 0 1 0-6 0 3 3 0 0 0 6 0M23 6a3 3 0 1 0-6 0 3 3 0 0 0 6 0M15 20a3 3 0 1 0-6 0 3 3 0 0 0 6 0M7 7h10M5 9l5 8M19 9l-5 8',profile:'M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8M4 21v-2a8 8 0 0 1 16 0v2',blood:'M12 2S5 10 5 15a7 7 0 0 0 14 0c0-5-7-13-7-13z',test:'M4 5h16v14H4zM8 10l3 3 5-6',clock:'M12 8v5l4 2M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20',pin:'M12 22s7-8 7-13a7 7 0 0 0-14 0c0 5 7 13 7 13zM12 6a3 3 0 1 0 0 6 3 3 0 0 0 0-6',favour:'M3 12l5 6 4-3 4 3 5-6-5-5-4 2-4-2-5 5z',volume:'M3 9h4l5-5v16l-5-5H3zM16 8a6 6 0 0 1 0 8M19 5a10 10 0 0 1 0 14',
  overview:'M3 10l9-7 9 7v10H3zM9 20v-7h6v7', attributes:'M5 4v16M12 4v16M19 4v16M2 8h6M9 16h6M16 10h6',
@@ -24,6 +27,7 @@ export const field = (name, label, value = '', type = 'text', extra = '') => `<l
 export const area = (name, label, value = '', extra = '') => `<label class="field full"><span>${label}</span><textarea name="${name}" rows="5" ${extra}>${esc(value)}</textarea></label>`;
 export const select = (name, label, options, value = '') => `<label class="field"><span>${label}</span><select name="${name}">${options.map(o => `<option value="${esc(o.value ?? o)}" ${String(o.value ?? o) === String(value) ? 'selected' : ''}>${esc(o.label ?? o)}</option>`).join('')}</select></label>`;
 export function toast(message, error = false) {
+  playSound(error?'error':'success');
   const host = $('#toasts');
   const node = document.createElement('div');
   node.className = `toast ${error ? 'error' : ''}`;
@@ -54,6 +58,7 @@ export function modal(title, content, submit, {wide = false, saveLabel = 'Salvar
     finally { control.disabled = false; }
   };
   dialog.showModal();
+  playSound('open');
 }
 export function download(name, data) {
   const link = document.createElement('a');

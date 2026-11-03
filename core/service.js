@@ -1,3 +1,5 @@
+import { characterChanges } from './character-audit.js';
+import { notification } from './notifications.js';
 import { upgradeQuote, gameSettings, validateSettings } from './settings.js';
 import {
   stats,
@@ -33,7 +35,7 @@ export function accountRecord(data, passwordHash) {
     _campaign_member: true,
     avatar: '',
     bio: '',
-    preferences: { sound: false, ui_sound: true, animations: true },
+    preferences: { audio_enabled: true, animations: true, social_mood: 'chat', social_note: '' },
     active: true,
     session_version: 0,
     password_hash: passwordHash
@@ -72,8 +74,30 @@ export function commit(doc, previous, data, actor, action, details = '') {
   next.updated_at = timestamp();
   next.history = [
     ...(previous.history || []),
-    { at: next.updated_at, actor: actor.display_name, action, details }
-  ].slice(-100);
+    {
+      id: newId(),
+      at: next.updated_at,
+      actor: actor.display_name,
+      actor_id: actor.id,
+      action,
+      details
+    }
+  ];
+  if (next.xp > previous.xp && action !== 'Missão concluída') {
+    const owner = doc.accounts.find(
+      (a) => a.role === 'player' && a.character_ids.includes(next.id)
+    );
+    if (owner)
+      notification(doc, {
+        audience: 'account',
+        recipient_id: owner.id,
+        title: `${next.char} recebeu ${next.xp - previous.xp} XP`,
+        message: details || action,
+        kind: 'xp',
+        target: String(next.id),
+        created_by: actor.id
+      });
+  }
   doc.characters[doc.characters.findIndex((p) => p.id === next.id)] = next;
   return publicPlayer(next);
 }
@@ -429,7 +453,11 @@ export class CharacterService {
         entry[field] = data.target;
         next.xp -= quote.cost;
         label = 'Evolução';
-        details = `${key} → ${data.target} (−${quote.cost} XP)`;
+        const name =
+          key === 'bloodpotency'
+            ? 'Potência do sangue'
+            : doc.game[key].find((e) => e.id === data.id).name;
+        details = `${name}: ${quote.from} → ${data.target} · −${quote.cost} XP · saldo ${next.xp} XP.`;
       } else if (action === 'xp') {
         admin(a);
         const amount = number(data.amount, 'XP', -100000, 100000);
@@ -471,6 +499,10 @@ export class CharacterService {
         Object.assign(next, clone(data.patch));
         details = Object.keys(data.patch).join(', ');
       } else fail('Ação não encontrada.', 404);
+      if (action === 'full' || (!action && method === 'PATCH'))
+        details = characterChanges(p, next, doc.game) || details;
+      if (a.role === 'admin' && data.log_message)
+        details += (details ? ' · ' : '') + text(data.log_message, 'Mensagem do histórico', 2000);
       return commit(doc, p, next, a, label, details);
     });
   }

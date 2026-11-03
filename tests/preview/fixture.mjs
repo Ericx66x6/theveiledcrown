@@ -124,12 +124,6 @@ export async function previewFixture() {
     tags: 'porto,livro,Isadora',
     visibility: 'campaign'
   });
-  await request('/api/social', 'POST', {
-    title: 'Um caminho para seguir',
-    content:
-      'O porto guarda a próxima pista. Deixem por aqui as descobertas antes de visitar a corte.',
-    kind: 'message'
-  });
   const player = await service.request('/auth/login', {
     method: 'POST',
     data: { username: 'qa-jogador', password: 'senha-ficticia-123' }
@@ -143,7 +137,9 @@ export async function previewFixture() {
     method: 'POST',
     token: player.token,
     data: {
-      content: 'Anotei os nomes citados por Isadora. Tem alguém da corte nessa lista.',
+      content: 'Qual filme você recomenda para a próxima noite sem sessão?',
+      title: 'Uma mensagem fora do jogo',
+      to: admin.account.id,
       kind: 'message'
     }
   });
@@ -156,6 +152,91 @@ export async function previewFixture() {
       role: 'Uma aliada de intenções incertas',
       theories: 'Sabe mais sobre o livro do que admite.'
     }
+  });
+  const active = store.root.active_campaign_id;
+  await request('/api/campaigns/' + active, 'PATCH', { cover: image });
+  const g = await request('/api/game');
+  g.discipline_market.allowed_ids = g.disciplines
+    .filter((d) => d.id !== 0)
+    .slice(0, 3)
+    .map((d) => d.id);
+  g._expected_revision = g._revision;
+  await request('/api/game', 'PUT', g);
+  let pc = await request('/api/characters/234567');
+  const attributes = pc.atributes.map((e) => (e.id === 7 ? { ...e, value: 2 } : e)),
+    skills = pc.expertises.map((e) => (e.id === 4 ? { ...e, value: 3 } : e));
+  await request('/api/characters/234567', 'PATCH', {
+    revision: pc._revision,
+    patch: {
+      profilepicture: image,
+      atributes: attributes,
+      expertises: skills,
+      disciplines: [{ id: 0, nivel: 2 }],
+      allies: [
+        {
+          id: 'isadora-qa',
+          name: 'Isadora',
+          role: 'Informante',
+          description: 'Uma aliança que nasceu no cais.',
+          rating: 2,
+          image
+        }
+      ],
+      domains: [
+        {
+          id: 'porto-qa',
+          name: 'O velho armazém',
+          type: 'Refúgio',
+          rating: 2,
+          description: 'Uma porta para a cidade que acorda depois da meia-noite.',
+          image
+        }
+      ]
+    },
+    log_message: 'Transcrição de uma ficha fictícia para validação da interface.'
+  });
+  let map = (await request('/api/maps'))[0];
+  await request('/api/maps/' + map.id, 'PATCH', {
+    revision: map._revision,
+    scale: { pixels: 1000, meters: 10000 }
+  });
+  await service.request(`/api/maps/${map.id}/characters/234567`, {
+    method: 'PUT',
+    token: player.token,
+    data: { x: 0.67, y: 0.4, revision: 0, visibility: 'private' }
+  });
+  for (const entry of [
+    {
+      title: 'Os nomes por trás do cais',
+      category: 'Personagem',
+      teaser: 'Uma informante conhece quem está comprando silêncio no porto.',
+      xp_cost: 7,
+      money_cost: 200,
+      secret:
+        'Isadora revelou que o guardião da corte financia os barcos clandestinos. O encontro acontece no armazém 9.'
+    },
+    {
+      title: 'A porta que não aparece nos mapas',
+      category: 'Lugar',
+      teaser: 'Alguns caminhos só se abrem para quem sabe o nome certo.',
+      xp_cost: 10,
+      money_cost: 0,
+      secret: 'Sob a capela abandonada existe uma passagem para o arquivo dos antigos.'
+    },
+    {
+      title: 'Um sinal na última carta',
+      category: 'Pista',
+      teaser: 'Um detalhe quase invisível pode mudar a leitura de toda a história.',
+      xp_cost: 4,
+      money_cost: 0,
+      secret: 'O selo da carta não pertence ao príncipe. É o símbolo de uma casa esquecida.'
+    }
+  ])
+    await request('/api/intel', 'POST', { ...entry, cover: image, images: [image] });
+  await service.request('/api/social', {
+    method: 'POST',
+    token: player.token,
+    data: { kind: 'challenge', to: admin.account.id, choice: 'rock' }
   });
   const campaign_id = store.root.active_campaign_id;
   return {

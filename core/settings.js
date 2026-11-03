@@ -40,7 +40,7 @@ export function mechanics(description, explicit = {}) {
 }
 export function gameSettings(source) {
   const g = clone(source);
-  g.schema_version = 7;
+  g.schema_version = 8;
   g._revision ??= 0;
   g.status_rules ??= {};
   for (const [key, max] of Object.entries(statusMax))
@@ -98,6 +98,7 @@ export function gameSettings(source) {
     disciplines: null,
     ...g.character_creation.budgets
   };
+  g.discipline_market = { allowed_ids: [], ...g.discipline_market };
   g.rulebook ??= [];
   g.labels ??= {};
   g.disciplines = (g.disciplines || []).map((d) => ({
@@ -111,6 +112,13 @@ export function gameSettings(source) {
 }
 export function validateSettings(g) {
   number(g._revision, 'Revisão das regras');
+  const allowed = g.discipline_market.allowed_ids;
+  if (
+    !Array.isArray(allowed) ||
+    new Set(allowed).size !== allowed.length ||
+    allowed.some((id) => !g.disciplines.some((d) => d.id === id))
+  )
+    fail('Catálogo de legados inválido.');
   if (
     typeof g.character_creation.enabled !== 'boolean' ||
     g.character_creation.require_approval !== true
@@ -184,6 +192,8 @@ export function upgradeQuote(p, g, key, id, target) {
   const rule = g.progression.categories[key];
   if (!rule?.enabled) fail('Este traço não está habilitado para evolução com XP.');
   const entry = key === 'bloodpotency' ? p : p[key]?.find((x) => x.id === id);
+  if (!entry && key === 'disciplines')
+    fail('Adquira este dom em Legados do Sangue ou peça ao narrador para concedê-lo.');
   if (!entry && !rule.allow_new) fail('O narrador precisa conceder este traço antes de evoluir.');
   if (key !== 'bloodpotency' && !g[key]?.some((d) => d.id === id)) fail('Traço desconhecido.');
   const field = key === 'bloodpotency' ? 'bloodpotency' : key === 'disciplines' ? 'nivel' : 'value',

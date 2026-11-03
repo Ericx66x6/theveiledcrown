@@ -1,4 +1,5 @@
 {
+    "discipline_market": { "allowed_ids": [] },
     "xp_cost": {
         "bloodpotency": 5,
         "atributes": 5,

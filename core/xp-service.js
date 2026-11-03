@@ -31,15 +31,6 @@ export async function distributeXp(service, data, token) {
     });
     for (const [p, next] of changes) {
       commit(doc, p, next, actor, 'XP distribuído', `+${amount} XP · ${reason}`);
-      const owner = doc.accounts.find((a) => a.role === 'player' && a.character_ids.includes(p.id));
-      if (owner)
-        notification(doc, {
-          audience: 'account',
-          recipient_id: owner.id,
-          kind: 'xp',
-          title: `${p.char} recebeu ${amount} XP`,
-          message: reason
-        });
     }
     const result = { amount, character_ids: clone(ids), count: ids.length, reason };
     doc.xp_distributions.push({ id, actor: actor.id, fingerprint, at: timestamp(), result });

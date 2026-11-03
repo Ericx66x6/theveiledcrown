@@ -26,7 +26,12 @@ const routes = [
   [/^\/api\/portal-state$/, ['GET']],
   [/^\/api\/members\/[^/]+$/, ['GET']],
   [/^\/api\/social$/, ['GET', 'POST']],
+  [/^\/api\/social\/[^/]+\/respond$/, ['POST']],
   [/^\/api\/social\/[^/]+$/, ['DELETE']],
+  [/^\/api\/intel$/, ['GET', 'POST']],
+  [/^\/api\/intel\/[^/]+\/purchase$/, ['POST']],
+  [/^\/api\/intel\/[^/]+$/, ['GET', 'PATCH', 'DELETE']],
+  [/^\/api\/discipline-market\/\d+\/acquire$/, ['POST']],
   [/^\/api\/admin\/reset$/, ['POST']],
   [/^\/api\/admin\/trash\/purge$/, ['DELETE']],
   [/^\/api\/characters\/\d+\/logs\/(history|transactions|rolls)$/, ['DELETE']],
@@ -36,6 +41,7 @@ const routes = [
   [/^\/api\/characters\/import$/, ['POST']],
   [/^\/api\/characters\/\d+$/, ['GET', 'PATCH', 'DELETE']],
   [/^\/api\/characters\/\d+\/upgrade-preview$/, ['GET']],
+  [/^\/api\/characters\/\d+\/full$/, ['POST', 'PUT']],
   [/^\/api\/characters\/\d+\/(upgrade|xp|full|archive|money|roll|assign)$/, ['POST']],
   [/^\/api\/admin\/accounts$/, ['GET', 'POST']],
   [/^\/api\/admin\/accounts\/[^/]+$/, ['PATCH', 'DELETE']],
@@ -47,6 +53,7 @@ const routes = [
   [/^\/api\/quests\/[^/]+\/(complete)$/, ['POST']],
   [/^\/api\/maps$/, ['GET', 'POST']],
   [/^\/api\/maps\/[^/]+$/, ['GET', 'PATCH', 'DELETE']],
+  [/^\/api\/maps\/[^/]+\/characters\/\d+$/, ['PUT', 'PATCH', 'DELETE']],
   [/^\/api\/maps\/[^/]+\/pins(?:\/[^/]+)?$/, ['POST', 'PATCH', 'DELETE']],
   [/^\/api\/network(?:\/(nodes|links)(?:\/[^/]+)?)?$/, ['GET', 'POST', 'PATCH', 'DELETE']],
   [/^\/api\/submissions(?:\/[^/]+)?$/, ['GET', 'POST', 'PATCH', 'DELETE']],
@@ -178,7 +185,7 @@ export function createPortalServer({
         return;
       }
       if (url.pathname === '/api/health') {
-        respond(200, { status: 'ok', version: '7.0.0' });
+        respond(200, { status: 'ok', version: '8.0.0' });
         return;
       }
       const ip = trustProxy

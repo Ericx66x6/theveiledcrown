@@ -282,12 +282,14 @@ test('XP insuficiente, limite e geração são validados', async () => {
     );
   assert.equal((await f.request('/api/characters/234567')).xp, 0);
 });
-test('configuração permite aprender traço novo com custo do nível zero', () => {
+test('disciplina nova exige aquisição e nível zero evolui com a regra configurada', () => {
   const p = character(),
     g = clone(game),
     id = g.disciplines[0].id;
   assert.throws(() => upgradeQuote(p, g, 'disciplines', id, 1));
   g.progression.categories.disciplines.allow_new = true;
+  assert.throws(() => upgradeQuote(p, g, 'disciplines', id, 1));
+  p.disciplines.push({ id, nivel: 0 });
   const q = upgradeQuote(p, g, 'disciplines', id, 1);
   assert.equal(q.from, 0);
   assert.equal(q.cost, g.xp_cost.disciplines);
@@ -555,11 +557,11 @@ test('perfil e fotos sobrevivem ao ciclo de exportação e importação', async 
     display_name: 'Eric',
     avatar: image,
     bio: 'Narrador de histórias',
-    preferences: { sound: true, animations: false }
+    preferences: { audio_enabled: true, animations: false }
   });
   const root = validateWorkspace(await f.request('/api/json/workspace'));
   assert.equal(root.accounts[0].avatar, image);
-  assert.equal(root.accounts[0].preferences.sound, true);
+  assert.equal(root.accounts[0].preferences.audio_enabled, true);
 });
 test('favores e campos extras permanecem na ficha', async () => {
   const f = await fixture(),
