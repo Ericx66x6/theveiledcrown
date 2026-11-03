@@ -1,8 +1,8 @@
-# The Veiled Crown · A Coroa Velada 7
+# The Veiled Crown · A Coroa Velada 8
 
 Portal de RPG exclusivamente online: **Vercel → API Node.js no Render → Supabase**.
 
-Já usa a versão 6? Siga **[ATUALIZAR.md](ATUALIZAR.md)** para preservar seus dados. Para instalar do zero, leia **[TUTORIAL.md](TUTORIAL.md)** para instalar no seu repositório `Ericx66x6/theveiledcrown`. Inclui o passo a passo do Supabase, GitHub, Render, Vercel e do primeiro acesso.
+Já usa a versão 6 ou 7? Siga **[ATUALIZAR.md](ATUALIZAR.md)** para preservar seus dados. Para instalar do zero, leia **[TUTORIAL.md](TUTORIAL.md)** para instalar no seu repositório `Ericx66x6/theveiledcrown`. Inclui o passo a passo do Supabase, GitHub, Render, Vercel e do primeiro acesso.
 
 - Node.js 24 e API que valida as permissões, custos e recompensas.
 - Fichas, contas, regras e campanhas como documentos JSONB no Supabase.
@@ -10,7 +10,12 @@ Já usa a versão 6? Siga **[ATUALIZAR.md](ATUALIZAR.md)** para preservar seus d
 - Site somente por HTTP/HTTPS; não inclui executável local, banco do navegador nem servidor Python.
 - Backups JSON e ZIP permanecem disponíveis no painel do narrador.
 - Missões com recompensa prevista e entrega final ajustável, exclusiva do narrador.
-- Salão da campanha: presença, recados públicos/privados, perfis e cutucadas.
+- Salão fora do jogo: presença, mensagens privadas, brindes, cutucadas e desafios sociais.
+- Ecos do Véu: informações com custo em XP/dinheiro, pagamento único e descoberta para toda a mesa.
+- Legados do Sangue: disciplinas autorizadas pelo narrador, por 10 XP, começando no nível 0.
+- Tema e capa por campanha, som geral com botão único, busca global e testes automáticos das disciplinas.
+- Marcadores pessoais com privacidade e distância em quilômetros, com escala por imagem ou coordenadas.
+- Anotações centralizadas e histórico com mensagem de edição do narrador.
 - Atlas por imagem ou mapa vetorial OpenFreeMap; locais com imagens e NPCs.
 - Exclusões, limpeza de históricos, lixeira e reset com confirmação.
 - Murais pessoais por personagem; vários personagens por conta e XP em lote.

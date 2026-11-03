@@ -1,97 +1,113 @@
-# Atualizar para A Coroa Velada 7
+# Atualizar para A Coroa Velada 8
 
-Esta atualização mantém seu Supabase, seus buckets e suas contas atuais. **Não precisa executar SQL novo**, apagar tabelas nem criar outro serviço. Faça um backup pelo painel antes de atualizar.
+A versão 8 usa seus serviços atuais: GitHub, API Node.js 24 no Render, Supabase e Vercel. **Não há SQL novo, bucket novo nem variável nova para esta atualização.** As contas, fichas, campanhas e imagens atuais continuam no mesmo Supabase.
 
-## 1. Enviar o código atualizado ao GitHub
+## 1. Faça um backup e envie o código completo
 
-1. Extraia o ZIP e abra a pasta `theveiledcrown`.
-2. No repositório `Ericx66x6/theveiledcrown`, **apague o antigo `vercel.json`**. Esta versão usa **`vercel.mjs`** para encaminhar a API pelo mesmo domínio do site. Deixe apenas um dos dois: o arquivo desta versão é `vercel.mjs`.
-3. Envie o conteúdo da pasta extraída para a raiz do repositório, substituindo os arquivos existentes. `package.json`, `vercel.mjs` e `render.yaml` precisam aparecer na raiz.
-4. Envie também os arquivos iniciados por ponto que acompanham o pacote, como `.gitignore`. Se seu sistema os esconder, o GitHub Desktop facilita enviar a pasta inteira em um único commit.
-5. Não envie o ZIP como um arquivo único, nem `node_modules`, `.git`, `.qa`, `dist` ou suas credenciais. O ZIP entregue não inclui essas pastas.
+No painel do narrador, use **Arquivos e backups → Exportar portal completo**. Guarde esse arquivo antes da atualização. Não use os botões de reset, importação ou limpeza para instalar o código.
 
-Se preferir atualizar pelo Git, o checkout do projeto pode receber os novos arquivos e as exclusões em um único commit. Isso evita que os serviços tentem compilar enquanto o upload ainda está incompleto.
+O ZIP é código-fonte. Extraia e envie **o conteúdo da pasta `theveiledcrown` para a raiz** de `Ericx66x6/theveiledcrown`, substituindo os arquivos antigos. Na raiz devem aparecer `package.json`, `vercel.mjs`, `render.yaml`, `client`, `core` e `server`.
 
-## 2. Publicar primeiro a API no Render
+Esta entrega tem mais de 100 arquivos; o GitHub limita o upload pelo navegador a 100 por vez. Recomendo atualizar com **GitHub Desktop**:
 
-Abra seu serviço atual no Render e confira:
+1. Use **File → Clone repository** e escolha `Ericx66x6/theveiledcrown`.
+2. Clique em **Fetch origin / Pull origin** para receber a versão atual.
+3. Abra a pasta clonada pelo **Show in Explorer**.
+4. Copie todo o conteúdo extraído de `theveiledcrown` para essa pasta e confirme a substituição. Inclua os arquivos iniciados por ponto, como `.gitignore` e `.env.render.example`.
+5. Apague um eventual **`vercel.json` antigo**. O projeto usa somente **`vercel.mjs`**. Não apague a pasta `.git` do checkout.
+6. No Desktop, revise as alterações, escreva `Atualização 8 — Ecos do Véu e Legados do Sangue`, faça **Commit to main** e depois **Push origin**.
 
-| Configuração | Valor |
+Se preferir o navegador, envie primeiro `client`, `core`, `shared`, `server`, `tools` e `data` em um commit; depois envie os outros arquivos e pastas. Faça os deploys finais somente depois que o pacote inteiro estiver no GitHub. Não envie o ZIP fechado, `node_modules`, `dist`, `.qa`, `.git` ou um arquivo `.env` com credenciais.
+
+## 2. Atualize a API no Render primeiro
+
+Mantenha o serviço existente e confira:
+
+| Campo | Valor |
 | --- | --- |
 | Branch | `main` |
-| Runtime | Node.js |
+| Runtime / Node | Node.js 24 |
 | Build | `npm ci --include=dev && npm run build` |
 | Start | `npm start` |
-| Node | `24` |
 | Health check | `/api/health` |
 
-Mantenha as variáveis atuais: `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_IMAGE_BUCKET`, `BOOTSTRAP_TOKEN`, `NODE_ENV`, `NODE_VERSION`, `TRUST_PROXY` e `ALLOWED_ORIGINS`.
+Mantenha suas variáveis atuais: `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_IMAGE_BUCKET`, `BOOTSTRAP_TOKEN`, `NODE_ENV`, `NODE_VERSION`, `TRUST_PROXY` e `ALLOWED_ORIGINS`. A chave privada continua somente no Render. Confira `TRUST_PROXY=1` e o domínio de produção do Vercel em `ALLOWED_ORIGINS`.
 
-Confira especialmente **`TRUST_PROXY=1`** e **`ALLOWED_ORIGINS` com o domínio de produção do Vercel**. A URL do Supabase, a chave privada e o bucket continuam os mesmos. A chave privada fica somente no Render.
+Use **Manual Deploy → Deploy latest commit** se o deploy automático estiver desligado. Aguarde **Live** e abra a URL do Render seguida de `/api/health`. A resposta precisa conter **`"version":"8.0.0"`**.
 
-Use **Manual Deploy → Deploy latest commit**, se o deploy automático estiver desligado. Aguarde **Live** e abra o endereço do Render seguido de `/api/health`. A resposta deve mostrar **`version: "7.0.0"`**.
+## 3. Atualize o frontend no Vercel
 
-## 3. Publicar o frontend no Vercel
+Mantenha `vercel.mjs` e a variável **`COROA_API_BASE` com a URL HTTPS atual do Render**, sem `/api` ou outros caminhos. O encaminhamento de `/auth` e `/api` pelo domínio do próprio site continua mantendo o login por cookie protegido.
 
-Abra o projeto existente e mantenha:
-
-| Configuração | Valor |
+| Campo | Valor |
 | --- | --- |
 | Framework | Other |
-| Root directory | Raiz do repositório |
+| Root Directory | Raiz do repositório |
 | Install | `npm ci --include=dev` |
 | Build | `npm run build` |
 | Output | `dist` |
 | Node | 24.x |
-| `COROA_API_BASE` | URL HTTPS atual do Render, sem `/api` nem outros caminhos |
 
-O novo **`vercel.mjs`** declara os comandos e cria dois encaminhamentos: `/auth/...` e `/api/...` para o Render. O navegador passa a falar com a API pelo domínio do próprio site. Isso permite usar um cookie protegido de primeira parte para manter o login, inclusive em navegadores mobile que restringem cookies de terceiros.
+Após a API 8 ficar Live, publique o commit completo no Vercel. Se o Vercel compilou um upload incompleto ou publicou antes do Render terminar, faça **Redeploy**. Um aviso de que `engines` escolheu Node 24 em vez da versão configurada no painel não é erro; selecionar 24.x no painel deixa as configurações alinhadas.
 
-Depois que a API 7 estiver Live, faça **Redeploy** no Vercel com o commit atualizado. Se o Vercel publicou automaticamente antes do Render terminar, republique após a API ficar pronta.
+Não crie outro narrador e não importe o backup para efetuar a atualização. Abra seu domínio normal e confira o indicador **V8**. Se houver um erro de rota nova, confira primeiro se o Render já informa versão 8.
 
-Se aparecer erro de dois arquivos de configuração, confira se o antigo `vercel.json` foi realmente removido do GitHub. Só arrastar os arquivos novos não apaga arquivos antigos do repositório.
+## 4. Personalize sua campanha
 
-## 4. Entrar uma vez e conferir
+Em **Minhas campanhas → Editar mesa**, escolha a cor e envie uma capa JPG, PNG ou WebP. Botões, iluminação, bordas, fundos e elementos da interface acompanham a cor da campanha aberta. As imagens mantêm suas cores originais. O campo de seleção de sistema de RPG foi removido.
 
-1. Abra o domínio de produção do Vercel e entre com sua conta atual. Não crie outro narrador nem importe um backup para fazer a atualização.
-2. Atualize a página e feche/reabra a aba. O acesso deve ser restaurado automaticamente.
-3. Clique em **Sair** para encerrar o acesso. A limpeza dos cookies do navegador também remove o acesso salvo. Desativação da conta e troca de senha continuam revogando sessões.
-4. Confira as fotos em **Jogadores e acesso**, as notas com autoria, as notificações e o **Salão da campanha**.
-5. No mapa, abra um marcador para ver a bolha e o dossiê. Você pode cadastrar até seis imagens e doze NPCs por local. Esses NPCs do local são separados dos murais pessoais dos personagens.
-6. Para criar um mapa sem imagem, escolha **Mapa geográfico · OpenFreeMap**. A base usa dados do OpenStreetMap e renderização vetorial em Canvas, com zoom e arraste. Não precisa cadastrar chave de mapas. O serviço externo precisa estar disponível e o navegador precisa de internet.
-7. Na missão, confira o rótulo **Recompensa prevista**. Ao clicar em **Entregar recompensa**, ajuste os valores finais, os itens e o desfecho. Depois da confirmação, a entrega é feita uma vez por missão.
+O botão de alto-falante no topo controla **todos os efeitos sonoros**, inclusive dados, transições, confirmações e carregamento. A preferência fica salva na conta. O navegador libera áudio depois do primeiro toque/clique; não é necessário baixar arquivos de som ou configurar chaves.
 
-O salão tem recados públicos para a campanha, recados privados entre participantes, cutucadas e lembretes com data no mural. Novos recados geram notificações aos destinatários. A presença se atualiza enquanto a campanha está aberta; ao sair ou ficar ausente, o participante deixa de aparecer como presente.
+## 5. Prepare os Ecos do Véu
 
-## 5. Entender as exclusões
+O narrador abre **Ecos do Véu → Cadastrar informação** e preenche:
 
-| Ação | Resultado |
-| --- | --- |
-| Apagar anotação compartilhada | Autor ou narrador remove o registro da mesa |
-| Apagar anotação privada | Somente seu autor tem acesso ao registro |
-| Apagar recado público | Autor ou narrador remove o recado |
-| Apagar recado privado recebido | Oculta o recado para o destinatário; o remetente conserva sua cópia |
-| Apagar recado privado enviado | O remetente remove o recado |
-| Apagar notificação | Altera somente a caixa da própria conta |
-| Apagar missão concluída | Remove a missão, preservando as recompensas já entregues |
-| Apagar movimentação/histórico | Narrador remove o registro sem mudar os valores atuais da ficha |
-| Apagar rolagem | Responsável pela ficha ou narrador remove o resultado salvo |
-| Remover ficha, conta ou mapa | Move para a lixeira, de onde o narrador pode restaurar |
-| Apagar definitivamente/esvaziar lixeira | Remove os registros selecionados da recuperação pelo portal |
-| Apagar campanha | Remove os dados daquela mesa e seus vínculos; preserva as contas e outras mesas |
-| Zerar todo o portal | Remove contas e campanhas e volta à instalação inicial |
+- Título, categoria, apresentação pública e capa opcional.
+- Custo em XP e, se quiser, dinheiro.
+- Conteúdo reservado e até seis imagens reservadas.
 
-O reset completo fica em **Arquivos e backups → Limpar e recomeçar**. Ele exige digitar **ZERAR PORTAL**. Depois, a `BOOTSTRAP_TOKEN` do Render será necessária para cadastrar o primeiro narrador novamente. **Não use esse botão para instalar a atualização.**
+Os jogadores veem a apresentação e o preço. Ao comprar, escolhem **um personagem próprio**, conferem o saldo e confirmam. Esse personagem paga o custo inteiro; não existe divisão entre contas ou fichas. O conteúdo reservado só é enviado ao jogador depois da compra. A partir daí, toda a campanha pode consultar a descoberta, com o nome de quem investigou e os valores pagos.
 
-As imagens sem referência permanecem no bucket privado para evitar apagar conteúdo necessário a backups anteriores. Elas não aparecem no portal reiniciado. O código não apaga buckets ou arquivos antigos de outros projetos.
+O servidor confere saldos, preço e revisão e impede pagamentos duplicados ou concorrentes. Apagar uma descoberta não devolve recursos já pagos; o histórico do personagem conserva o registro. O narrador consulta e administra as informações, mas a compra é feita pelo acesso do jogador.
 
-## Se algo não carregar
+## 6. Libere os Legados do Sangue
 
-- **Vercel com erro 404 na API:** confira se `vercel.mjs` está na raiz, se o antigo `vercel.json` saiu e se `COROA_API_BASE` aponta para o Render correto. Faça um novo deploy.
-- **API informa versão 6:** publique o commit novo no Render antes de testar a interface 7.
-- **Login não persiste:** use o endereço de produção do site, confira o encaminhamento acima e permita os cookies do próprio site. Faça um login após atualizar a API e o frontend.
-- **Mapa geográfico não carrega:** a interface avisa quando a base externa não responde. Os locais continuam salvos e os mapas por imagem seguem disponíveis. Bloqueadores podem precisar permitir `tiles.openfreemap.org`.
-- **Erro de origem:** confira `ALLOWED_ORIGINS` no Render com a origem exata do Vercel, sem barra final, e republique o serviço.
-- **Tela de carregamento prolongada:** após alguns segundos aparece um aviso. Se interromper uma gravação, atualize e confira o resultado antes de repetir a ação.
+No acesso do narrador, abra **Legados do Sangue**, marque as disciplinas permitidas e clique em **Salvar legados permitidos**. A seleção é independente por campanha e acompanha o `game_data` em `discipline_market.allowed_ids`.
 
-O projeto foi validado com dados fictícios e testes locais de HTTP/SQL. Esta entrega não modifica automaticamente seus serviços ou os dados de produção.
+O jogador paga sempre **10 XP** para acrescentar uma disciplina permitida ao personagem, com **nível 0**. Depois usa a evolução normal para comprar os níveis. Uma disciplina já conhecida não é comprada de novo. Retirar uma disciplina do catálogo não remove o que já foi adquirido.
+
+O catálogo começa sem permissões automáticas na atualização: o narrador escolhe o que fica disponível. A concessão administrativa e as fichas enviadas para aprovação continuam disponíveis.
+
+## 7. Posicione personagens e calibre o mapa
+
+Cada jogador escolhe seu personagem no painel do mapa e usa **Marcar minha posição / Mudar minha posição**. O marcador tem retrato e nome. Por padrão, só o jogador responsável e o narrador veem a posição; o jogador pode compartilhar com a campanha ou voltar a reservar. O narrador vê todos, mas cada jogador controla seus próprios marcadores.
+
+Para mover um marcador diretamente, dê **dois toques/cliques e arraste no segundo**. Um arraste simples não altera a posição salva. Também existe o posicionamento deliberado por botão e toque no mapa.
+
+Nos mapas por imagem, o narrador usa **Calibrar escala**:
+
+1. Toque no início de uma distância conhecida.
+2. Toque no fim dessa referência.
+3. Informe quantos **metros reais** a linha representa e salve.
+
+A escala considera os pixels da imagem original, não os pixels da tela, e continua correta em qualquer zoom. Ao trocar a imagem, calibre novamente. Mapas geográficos calculam a distância pelas coordenadas e dispensam calibração.
+
+Em **Medir distância**, o jogador parte de sua posição e toca no destino. O narrador pode escolher origem e destino livremente. A linha e o total em quilômetros ficam temporariamente no mapa. **Fechar medição** remove essa visualização e volta à navegação normal. Nenhuma rota de carro, barco, avião ou caminhada é calculada: o trajeto pertence ao roleplay. A base geográfica continua usando OpenFreeMap e depende da disponibilidade desse serviço externo.
+
+## 8. Confira a ficha, o caderno e o salão
+
+- O XP aparece em uma faixa evidente enquanto o jogador usa sua ficha. Ganhos de XP geram notificação, e evoluções registram nome do traço, níveis, custo e saldo.
+- O narrador pode escrever uma **mensagem no histórico** ao editar a ficha completa ou ajustar traços. O histórico permanece salvo; só o narrador pode apagar registros. A interface carrega mais alterações por demanda.
+- A busca do topo funciona em todas as páginas; `Ctrl+K` / `Cmd+K` também abre a pesquisa. Buscar traços e buscar no livro atravessa as categorias. `Força` aparece mesmo com Perícias abertas.
+- Testes de disciplinas reconhecidos mostram os valores da ficha e a soma dos dados. O botão **Preparar rolagem** monta a parada. Combinações com termos desconhecidos ou alternativas pedem conferência manual, sem inventar valores. A oposição do teste fica separada.
+- Aliados, contatos, domínios, favores, lacaios e itens podem receber imagens. Os cartões e os downloads dos personagens ficaram mais claros.
+
+As anotações antigas das fichas, ambições/desejos e recados públicos antigos do salão são centralizados em **Anotações**, mantendo o conteúdo. As notas de ficha ficam privadas para a conta responsável; recados antes públicos entram no diário compartilhado. Notas de personagens ainda sem conta responsável são conservadas no JSON e migram quando o acesso é vinculado. Datas originais registradas em notas antigas continuam indicadas.
+
+O **Salão da campanha** fica para conversar fora do jogo: mensagens privadas por notificação, cutucadas, brindes, perguntas para puxar assunto e desafios de pedra, papel e tesoura. Os desafios não usam recursos nem dão recompensas de jogo. A escolha fica oculta até a resposta; convites duram 48 horas. Presença e notificações usam a sincronização periódica do portal.
+
+## Conferência após publicar
+
+Abra dois acessos em navegadores ou dispositivos diferentes. Confira login, upload de capa, catálogo permitido, compra de uma informação de teste, marcador reservado/compartilhado, histórico e mensagens. O relatório [VALIDACAO.md](VALIDACAO.md) distingue os testes executados da conferência que depende dos seus serviços publicados.
+
+Referências: [GitHub — envio de arquivos](https://docs.github.com/pt/repositories/working-with-files/managing-files/adding-a-file-to-a-repository) · [Áudio no navegador](https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Autoplay). A instalação do zero continua em [TUTORIAL.md](TUTORIAL.md).

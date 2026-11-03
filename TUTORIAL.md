@@ -1,4 +1,4 @@
-# A Coroa Velada 7 · instalação online
+# A Coroa Velada 8 · instalação online
 
 Para atualizar uma instalação existente, siga primeiro [ATUALIZAR.md](ATUALIZAR.md).
 
@@ -100,7 +100,7 @@ Clique em **Deploy Web Service**. Ao ficar **Live**, copie o endereço HTTPS que
 Abra `URL-DO-RENDER/api/health`. A resposta esperada contém:
 
 ```json
-{"status":"ok","version":"7.0.0"}
+{"status":"ok","version":"8.0.0"}
 ```
 
 Depois abra somente `URL-DO-RENDER`. Clique em **Entrar** para chegar ao formulário do primeiro acesso. Preencha nome, login, senha com pelo menos dez caracteres e a `BOOTSTRAP_TOKEN` configurada no Render. Clique em **Criar portal e entrar**.
@@ -220,3 +220,7 @@ Ao compartilhar um erro, envie a mensagem e o trecho relevante do log, ocultando
 - [Vercel: versões do Node](https://vercel.com/docs/functions/runtimes/node-js/node-js-versions)
 
 Os mapas geográficos usam OpenFreeMap/OpenStreetMap e não precisam de outra chave. As anotações compartilhadas exibem autoria, criação e perfil. A comunidade de cada campanha permanece isolada das demais.
+
+## Recursos da versão 8
+
+Após a instalação, o narrador pode cadastrar informações em **Ecos do Véu**, liberar disciplinas em **Legados do Sangue** e personalizar cor/capa da campanha. O guia [ATUALIZAR.md](ATUALIZAR.md) explica esses controles, a escala dos mapas, o novo salão e a centralização das anotações. Nenhuma chave adicional é necessária.
