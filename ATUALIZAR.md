@@ -1,6 +1,6 @@
-# Atualizar para A Coroa Velada 8
+# Atualizar para A Coroa Velada 9 · Beta
 
-A versão 8 usa seus serviços atuais: GitHub, API Node.js 24 no Render, Supabase e Vercel. **Não há SQL novo, bucket novo nem variável nova para esta atualização.** As contas, fichas, campanhas e imagens atuais continuam no mesmo Supabase.
+A versão 9 usa seus serviços atuais: GitHub, API Node.js 24 no Render, Supabase e Vercel. **Não há SQL, bucket ou variável obrigatória nova.** Para domínio próprio, há uma variável pública opcional para o compartilhamento. As contas, fichas, campanhas e imagens atuais continuam no mesmo Supabase.
 
 ## 1. Faça um backup e envie o código completo
 
@@ -15,7 +15,7 @@ Esta entrega tem mais de 100 arquivos; o GitHub limita o upload pelo navegador a
 3. Abra a pasta clonada pelo **Show in Explorer**.
 4. Copie todo o conteúdo extraído de `theveiledcrown` para essa pasta e confirme a substituição. Inclua os arquivos iniciados por ponto, como `.gitignore` e `.env.render.example`.
 5. Apague um eventual **`vercel.json` antigo**. O projeto usa somente **`vercel.mjs`**. Não apague a pasta `.git` do checkout.
-6. No Desktop, revise as alterações, escreva `Atualização 8 — Ecos do Véu e Legados do Sangue`, faça **Commit to main** e depois **Push origin**.
+6. No Desktop, revise as alterações, escreva `Beta 9 — consulta rápida, ambição e desejo`, faça **Commit to main** e depois **Push origin**.
 
 Se preferir o navegador, envie primeiro `client`, `core`, `shared`, `server`, `tools` e `data` em um commit; depois envie os outros arquivos e pastas. Faça os deploys finais somente depois que o pacote inteiro estiver no GitHub. Não envie o ZIP fechado, `node_modules`, `dist`, `.qa`, `.git` ou um arquivo `.env` com credenciais.
 
@@ -33,7 +33,7 @@ Mantenha o serviço existente e confira:
 
 Mantenha suas variáveis atuais: `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_IMAGE_BUCKET`, `BOOTSTRAP_TOKEN`, `NODE_ENV`, `NODE_VERSION`, `TRUST_PROXY` e `ALLOWED_ORIGINS`. A chave privada continua somente no Render. Confira `TRUST_PROXY=1` e o domínio de produção do Vercel em `ALLOWED_ORIGINS`.
 
-Use **Manual Deploy → Deploy latest commit** se o deploy automático estiver desligado. Aguarde **Live** e abra a URL do Render seguida de `/api/health`. A resposta precisa conter **`"version":"8.0.0"`**.
+Use **Manual Deploy → Deploy latest commit** se o deploy automático estiver desligado. Aguarde **Live** e abra a URL do Render seguida de `/api/health`. A resposta precisa conter **`"version":"9.0.0"`**.
 
 ## 3. Atualize o frontend no Vercel
 
@@ -48,15 +48,15 @@ Mantenha `vercel.mjs` e a variável **`COROA_API_BASE` com a URL HTTPS atual do 
 | Output | `dist` |
 | Node | 24.x |
 
-Após a API 8 ficar Live, publique o commit completo no Vercel. Se o Vercel compilou um upload incompleto ou publicou antes do Render terminar, faça **Redeploy**. Um aviso de que `engines` escolheu Node 24 em vez da versão configurada no painel não é erro; selecionar 24.x no painel deixa as configurações alinhadas.
+Após a API 9 ficar Live, publique o commit completo no Vercel. Se o Vercel compilou um upload incompleto ou publicou antes do Render terminar, faça **Redeploy**. Um aviso de que `engines` escolheu Node 24 em vez da versão configurada no painel não é erro; selecionar 24.x no painel deixa as configurações alinhadas.
 
-Não crie outro narrador e não importe o backup para efetuar a atualização. Abra seu domínio normal e confira o indicador **V8**. Se houver um erro de rota nova, confira primeiro se o Render já informa versão 8.
+Não crie outro narrador e não importe o backup para efetuar a atualização. Abra seu domínio normal e confira o indicador **V9 BETA**. Se houver um erro de rota nova, confira primeiro se o Render já informa versão 9.
 
 ## 4. Personalize sua campanha
 
 Em **Minhas campanhas → Editar mesa**, escolha a cor e envie uma capa JPG, PNG ou WebP. Botões, iluminação, bordas, fundos e elementos da interface acompanham a cor da campanha aberta. As imagens mantêm suas cores originais. O campo de seleção de sistema de RPG foi removido.
 
-O botão de alto-falante no topo controla **todos os efeitos sonoros**, inclusive dados, transições, confirmações e carregamento. A preferência fica salva na conta. O navegador libera áudio depois do primeiro toque/clique; não é necessário baixar arquivos de som ou configurar chaves.
+O alto-falante do topo abre **O som da sua noite**. Efeitos e trilha ambiente têm interruptores e volumes separados; **Silenciar tudo** desliga os dois. A conta guarda as preferências. A trilha começa desativada; depois da sua escolha, toca uma composição instrumental de graves, drones e pulsos. Ela pausa ao ocultar a aba. O navegador libera áudio após uma interação; não há arquivos de som externos ou chaves adicionais.
 
 ## 5. Prepare os Ecos do Véu
 
@@ -74,7 +74,7 @@ O servidor confere saldos, preço e revisão e impede pagamentos duplicados ou c
 
 No acesso do narrador, abra **Legados do Sangue**, marque as disciplinas permitidas e clique em **Salvar legados permitidos**. A seleção é independente por campanha e acompanha o `game_data` em `discipline_market.allowed_ids`.
 
-O jogador paga sempre **10 XP** para acrescentar uma disciplina permitida ao personagem, com **nível 0**. Depois usa a evolução normal para comprar os níveis. Uma disciplina já conhecida não é comprada de novo. Retirar uma disciplina do catálogo não remove o que já foi adquirido.
+O narrador define **Custo geral em XP** e pode preencher **Preço individual em XP** em cada disciplina. Campo individual vazio herda o custo geral; `0` libera gratuitamente. O valor inicial continua sendo 10 XP, até o narrador personalizar. O jogador confirma o preço exibido e acrescenta a disciplina ao personagem com **nível 0**. Depois usa a evolução normal para comprar os níveis. Uma disciplina já conhecida não é comprada de novo. Retirar uma disciplina do catálogo não remove o que já foi adquirido.
 
 O catálogo começa sem permissões automáticas na atualização: o narrador escolhe o que fica disponível. A concessão administrativa e as fichas enviadas para aprovação continuam disponíveis.
 
@@ -102,12 +102,36 @@ Em **Medir distância**, o jogador parte de sua posição e toca no destino. O n
 - Testes de disciplinas reconhecidos mostram os valores da ficha e a soma dos dados. O botão **Preparar rolagem** monta a parada. Combinações com termos desconhecidos ou alternativas pedem conferência manual, sem inventar valores. A oposição do teste fica separada.
 - Aliados, contatos, domínios, favores, lacaios e itens podem receber imagens. Os cartões e os downloads dos personagens ficaram mais claros.
 
-As anotações antigas das fichas, ambições/desejos e recados públicos antigos do salão são centralizados em **Anotações**, mantendo o conteúdo. As notas de ficha ficam privadas para a conta responsável; recados antes públicos entram no diário compartilhado. Notas de personagens ainda sem conta responsável são conservadas no JSON e migram quando o acesso é vinculado. Datas originais registradas em notas antigas continuam indicadas.
+**Ambição e desejo voltam a ter uma área própria**, acessível na ficha e no menu do personagem. Cada campo é independente e pode ser alterado livremente. **Concluir** ou **Desistir** pede confirmação, registra o texto no histórico e limpa somente o campo escolhido. Cada resultado tem sua animação; não há recompensa automática em XP. Objetivos antigos em `goals` e as notas criadas automaticamente pela versão 8 voltam a essa área. Se houver mais de uma versão do texto, as anteriores ficam no histórico. Anotações criadas manualmente permanecem no caderno.
+
+As anotações comuns das fichas e recados públicos antigos do salão continuam em **Anotações**, com autoria e data. Notas sem conta responsável são conservadas no JSON até o vínculo de acesso.
 
 O **Salão da campanha** fica para conversar fora do jogo: mensagens privadas por notificação, cutucadas, brindes, perguntas para puxar assunto e desafios de pedra, papel e tesoura. Os desafios não usam recursos nem dão recompensas de jogo. A escolha fica oculta até a resposta; convites duram 48 horas. Presença e notificações usam a sincronização periódica do portal.
 
+## 9. Use a consulta e o botão Voltar
+
+**Sangue e poderes → disciplina** abre uma consulta compacta. As abas por nível mostram o poder, o teste e os valores da ficha. **Evoluir disciplina** fica depois da consulta e abre o planejamento de XP somente quando escolhido.
+
+O **Voltar** aparece em todas as páginas internas. Ao preparar uma rolagem por um poder, você pode voltar para a mesma disciplina, no mesmo nível e posição da página. O histórico do navegador também funciona; filtros e escolhas da rolagem são mantidos durante essa navegação. **Início** leva ao painel do narrador ou à seleção dos personagens. Voltar não desfaz alterações já salvas. Recarregar a página começa uma nova trilha de navegação.
+
+A pesquisa do topo encontra disciplinas, rituais e poderes por nome. Um poder encontrado abre diretamente sua consulta. Campos de pesquisa dos traços e do livro preservam o cursor enquanto você digita.
+
+## 10. Enquadre o retrato e abra o mapa no celular
+
+Em **Visão geral → Retrato**, use posição horizontal, posição vertical e aproximação. A prévia tem a proporção usada na ficha. Salve o enquadramento; a imagem original continua guardada e pode ser reenquadrada depois. **Centralizar** reinicia a prévia e **Remover o retrato** apaga a foto atual da ficha.
+
+No celular, a galeria de mapas vira um seletor compacto. **Posição e distância** recolhe os controles menos usados e **Ver mapa** leva direto à área interativa. No desktop, a galeria e os controles continuam à vista.
+
+## 11. Confira os detalhes de lançamento
+
+O pacote inclui favicon SVG/ICO/PNG, ícones para celular, manifesto, título, descrição, Open Graph e imagem social de 1200 × 630. Esses arquivos são públicos e não contêm informações dos jogadores.
+
+No Vercel, a origem principal de produção é detectada por `VERCEL_PROJECT_PRODUCTION_URL`. Se usar domínio próprio, adicione no Vercel a variável opcional **`COROA_SITE_URL=https://seu-dominio.com.br`**, sem caminho, e faça outro build. Ela serve ao endereço canônico, à imagem de compartilhamento e ao sitemap; não é a URL do Render e não contém uma chave.
+
+Depois de publicar, compartilhe a URL pública da apresentação no WhatsApp e confira a miniatura. A geração foi validada no pacote; a leitura pelo WhatsApp depende do domínio publicado e do cache do serviço. O manifesto permite adicionar um ícone à tela inicial; o portal continua online e não adiciona cache de fichas para uso offline.
+
 ## Conferência após publicar
 
-Abra dois acessos em navegadores ou dispositivos diferentes. Confira login, upload de capa, catálogo permitido, compra de uma informação de teste, marcador reservado/compartilhado, histórico e mensagens. O relatório [VALIDACAO.md](VALIDACAO.md) distingue os testes executados da conferência que depende dos seus serviços publicados.
+Abra dois acessos em navegadores ou dispositivos diferentes. Confira login, ambição/desejo, enquadramento, Voltar depois de uma rolagem preparada, preços dos legados, som, capa, compra de informação, marcador reservado/compartilhado e histórico. O relatório [VALIDACAO.md](VALIDACAO.md) distingue os testes executados da conferência que depende dos seus serviços publicados.
 
 Referências: [GitHub — envio de arquivos](https://docs.github.com/pt/repositories/working-with-files/managing-files/adding-a-file-to-a-repository) · [Áudio no navegador](https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Autoplay). A instalação do zero continua em [TUTORIAL.md](TUTORIAL.md).

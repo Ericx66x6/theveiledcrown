@@ -100,7 +100,7 @@ Clique em **Deploy Web Service**. Ao ficar **Live**, copie o endereço HTTPS que
 Abra `URL-DO-RENDER/api/health`. A resposta esperada contém:
 
 ```json
-{"status":"ok","version":"8.0.0"}
+{"status":"ok","version":"9.0.0"}
 ```
 
 Depois abra somente `URL-DO-RENDER`. Clique em **Entrar** para chegar ao formulário do primeiro acesso. Preencha nome, login, senha com pelo menos dez caracteres e a `BOOTSTRAP_TOKEN` configurada no Render. Clique em **Criar portal e entrar**.
@@ -221,6 +221,8 @@ Ao compartilhar um erro, envie a mensagem e o trecho relevante do log, ocultando
 
 Os mapas geográficos usam OpenFreeMap/OpenStreetMap e não precisam de outra chave. As anotações compartilhadas exibem autoria, criação e perfil. A comunidade de cada campanha permanece isolada das demais.
 
-## Recursos da versão 8
+## Recursos da versão 9 · Beta
 
 Após a instalação, o narrador pode cadastrar informações em **Ecos do Véu**, liberar disciplinas em **Legados do Sangue** e personalizar cor/capa da campanha. O guia [ATUALIZAR.md](ATUALIZAR.md) explica esses controles, a escala dos mapas, o novo salão e a centralização das anotações. Nenhuma chave adicional é necessária.
+
+Para domínio próprio, `COROA_SITE_URL` no Vercel define a origem pública do compartilhamento. Na URL padrão do Vercel, a origem de produção é detectada automaticamente. Consulte [ATUALIZAR.md](ATUALIZAR.md) para enquadramento, consulta rápida, ambição/desejo, áudio e preços dos legados.

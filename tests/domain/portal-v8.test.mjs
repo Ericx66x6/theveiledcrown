@@ -197,6 +197,7 @@ async function acquire(f, id = 0, extra = {}) {
     {
       character_id: p.id,
       character_revision: p._revision,
+      quoted_cost: 10,
       confirmed: true,
       request_id: newId(),
       ...extra
@@ -432,7 +433,8 @@ test('v8: notas antigas, ambições e recados públicos migram uma vez, com auto
     root2 = await migrated.workspace();
   assert.equal(root2.campaigns[0].characters[0].notes.length, 0);
   assert.equal(root2.campaigns[0].social.length, 0);
-  assert.equal(root2.campaigns[0].notes.filter((n) => n.id.startsWith('legacy-')).length, 3);
+  assert.equal(root2.campaigns[0].characters[0].aspirations.ambition, 'Uma ambição antiga');
+  assert.equal(root2.campaigns[0].notes.filter((n) => n.id.startsWith('legacy-')).length, 2);
   const own = await service.request('/api/notes', { token: f.one.token }),
     gm = await service.request('/api/notes', { token: f.admin.token });
   assert.equal(own.find((n) => n.content === 'Conteúdo pessoal').created_at, at);

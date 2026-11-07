@@ -62,8 +62,10 @@ export function normalize(source) {
   p.bloodpotency ??= 1;
   p.biography ??= '';
   p.profilepicture ??= '';
+  p.portrait_frame ??= { x: 50, y: 50, zoom: 1 };
+  p.aspirations ??= { ambition: '', desire: '' };
   p._revision ??= 0;
-  p.schema_version = 6;
+  p.schema_version = 9;
   return p;
 }
 export function blank(game, id) {
@@ -186,6 +188,39 @@ export function validatePlayer(source, game) {
     text(row?.description, 'Convicção');
   }
   text(p.biography, 'História', 30000);
+  if (
+    !p.aspirations ||
+    typeof p.aspirations !== 'object' ||
+    Array.isArray(p.aspirations) ||
+    Object.keys(p.aspirations).some((k) => !['ambition', 'desire'].includes(k))
+  )
+    fail('Ambição e desejo inválidos.');
+  for (const key of ['ambition', 'desire'])
+    p.aspirations[key] = text(
+      p.aspirations[key] ?? '',
+      key === 'ambition' ? 'Ambição' : 'Desejo',
+      30000
+    );
+  const frame = p.portrait_frame;
+  if (
+    !frame ||
+    typeof frame !== 'object' ||
+    Array.isArray(frame) ||
+    Object.keys(frame).some((k) => !['x', 'y', 'zoom'].includes(k))
+  )
+    fail('Enquadramento inválido.');
+  for (const [key, min, max] of [
+    ['x', 0, 100],
+    ['y', 0, 100],
+    ['zoom', 1, 3]
+  ])
+    if (
+      typeof frame[key] !== 'number' ||
+      !Number.isFinite(frame[key]) ||
+      frame[key] < min ||
+      frame[key] > max
+    )
+      fail('Enquadramento inválido.');
   text(p.profilepicture, 'Retrato', 2000000);
   if (
     p.profilepicture &&

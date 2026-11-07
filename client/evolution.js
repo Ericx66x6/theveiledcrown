@@ -33,13 +33,22 @@ export function traitsPage(ctx) {
     key = s.traitCategory || 'atributes',
     max = s.game.maxvalue_generation[p.generation],
     query = s.traitQuery || '';
-  const entries = (query ? categories : [key])
-    .flatMap((k) => s.game[k].map((d) => ({ ...d, key: k })))
-    .filter((d) => !query || fold(d.name + ' ' + d.description).includes(fold(query)));
   const heading = ctx.admin()
     ? `<div><span class="eyebrow">AJUSTE DO NARRADOR</span><h1>Os traços desta história.</h1><p>Consulte as habilidades ou ajuste os níveis da ficha.</p></div>${button('Distribuir XP', 'distribute-xp', '', 'button primary')}`
     : `<div><span class="eyebrow">CONSTRUA A SUA LENDA</span><h1>O próximo nível tem a sua marca.</h1><p>Escolha um traço, planeje a evolução e confirme o investimento.</p></div><div class="xp-wallet">${icon('powers')}<strong>${p.xp}<small>XP DISPONÍVEIS</small></strong></div>`;
-  return `<section class="advancement-header">${heading}</section><div class="advancement-tabs" role="tablist" aria-label="Categorias de traços">${categories.map((k) => `<button type="button" role="tab" aria-selected="${k === key}" class="${k === key ? 'active' : ''}" data-action="trait-category" data-key="${k}">${labels[k]}<span>${s.game[k].length}</span></button>`).join('')}</div><div class="advancement-toolbar"><label class="search-field">${icon('search')}<input type="search" id="trait-catalog-search" aria-label="Buscar traço em todas as categorias" placeholder="Pesquisar em todos os atributos e habilidades" value="${esc(query)}"></label><span>${query ? 'RESULTADOS DE TODAS AS CATEGORIAS' : 'Limite da geração ' + max}</span></div><div class="advancement-grid">${
+  return `<section class="advancement-header">${heading}</section><div class="advancement-tabs" role="tablist" aria-label="Categorias de traços">${categories.map((k) => `<button type="button" role="tab" aria-selected="${k === key}" class="${k === key ? 'active' : ''}" data-action="trait-category" data-key="${k}">${labels[k]}<span>${s.game[k].length}</span></button>`).join('')}</div><div class="advancement-toolbar"><label class="search-field">${icon('search')}<input type="search" id="trait-catalog-search" aria-label="Buscar traço em todas as categorias" placeholder="Pesquisar em todos os atributos e habilidades" value="${esc(query)}"></label><span data-trait-result-label>${query ? 'RESULTADOS DE TODAS AS CATEGORIAS' : 'Limite da geração ' + max}</span></div> <div class="advancement-grid" id="trait-results">${traitResults(ctx)}</div>`;
+}
+
+function traitResults(ctx) {
+  const s = ctx.state,
+    p = ctx.player(),
+    key = s.traitCategory || 'atributes',
+    max = s.game.maxvalue_generation[p.generation],
+    query = s.traitQuery || '';
+  const entries = (query ? categories : [key])
+    .flatMap((k) => s.game[k].map((d) => ({ ...d, key: k })))
+    .filter((d) => !query || fold(d.name + ' ' + d.description).includes(fold(query)));
+  return (
     entries
       .map((d) => {
         const key = d.key,
@@ -52,7 +61,7 @@ export function traitsPage(ctx) {
       })
       .join('') ||
     empty('Nenhum traço com esse nome.', 'Tente outra palavra ou parte da descrição.')
-  }</div>`;
+  );
 }
 export async function openEvolution(ctx, key, id, returnView = 'attributes') {
   const p = ctx.player();
@@ -186,11 +195,11 @@ export function bindEvolution(ctx) {
   const search = $('#trait-catalog-search');
   if (search)
     search.oninput = () => {
-      const value = search.value;
-      ctx.state.traitQuery = value;
-      ctx.draw();
-      const next = $('#trait-catalog-search');
-      next.focus();
+      ctx.state.traitQuery = search.value;
+      $('#trait-results').innerHTML = traitResults(ctx);
+      $('[data-trait-result-label]').textContent = search.value
+        ? 'RESULTADOS DE TODAS AS CATEGORIAS'
+        : 'Limite da geração ' + ctx.state.game.maxvalue_generation[ctx.player().generation];
     };
   const u = ctx.state.evolution;
   if (ctx.state.view !== 'evolution' || u?.stage !== 'review' || u.busy) return;
@@ -240,7 +249,7 @@ export async function evolutionAction(action, data, ctx) {
   if (action === 'evolution-back') {
     clearInterval(timer);
     uiSound('swoosh', sounds(ctx));
-    await ctx.go(u.returnView);
+    await (ctx.back ? ctx.back(u.returnView) : ctx.go(u.returnView));
     return true;
   }
   if (action === 'evolution-level') {

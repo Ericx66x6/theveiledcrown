@@ -1,4 +1,4 @@
-# API da versão 8
+# API da versão 9
 
 Servidor: `server/index.mjs`. As operações usam JSON. O site autentica por cookie HttpOnly; clientes programáticos podem usar `Authorization: Bearer <token>`. Login e instalação retornam token somente no modo Bearer. `X-Campaign-ID` seleciona explicitamente uma campanha autorizada; o servidor conserva uma escolha por sessão quando esse cabeçalho está ausente.
 
@@ -62,7 +62,7 @@ As rotas abaixo usam a mesma autenticação, seleção de campanha e revisão da
 | `/api/intel` | POST | Narrador cadastra título, categoria, teaser, capa, segredo, imagens e preços |
 | `/api/intel/:id` | GET/PATCH/DELETE | Consulta autorizada; escrita só do narrador, com `revision` |
 | `/api/intel/:id/purchase` | POST | Jogador paga com uma ficha própria; revisão, preço, saldo e confirmação conferidos |
-| `/api/discipline-market/:id/acquire` | POST | Jogador adquire disciplina permitida por 10 XP, nível inicial 0 |
+| `/api/discipline-market/:id/acquire` | POST | Jogador adquire disciplina permitida pelo preço configurado, nível inicial 0 |
 | `/api/maps/:id/characters/:characterId` | PUT/PATCH/DELETE | Responsável pela ficha controla posição e visibilidade |
 | `/api/social/:id/respond` | POST | Destinatário responde desafio social, sem alterar XP/dinheiro |
 | `/api/characters/:id/full` | POST ou PUT | Narrador edita a ficha completa; aceita `log_message` |
@@ -83,7 +83,7 @@ Compra de informação:
 
 Repetir o mesmo identificador, personagem e compra já concluída devolve o resultado sem novo débito. Outra tentativa de comprar um eco já revelado retorna conflito. O pagamento não pode ser dividido. A resposta inclui `information` e `character`; `purchase` guarda a pessoa, personagem, valores e instante da investigação. Conteúdo reservado não aparece no snapshot, na pesquisa ou no backup autorizado de um jogador antes da revelação.
 
-Aquisição de disciplina usa `character_id`, `character_revision`, `confirmed` e `request_id`. O preço é fixo em 10 XP no servidor, independente de campos enviados pelo cliente. Permissões ficam em `game.discipline_market.allowed_ids`. Evolução de disciplina ausente não concede o traço; primeiro é necessária aquisição ou concessão do narrador.
+Aquisição de disciplina usa `character_id`, `character_revision`, `quoted_cost`, `confirmed` e `request_id`. O servidor calcula o preço por `game.discipline_market.costs[id]`, com herança de `default_cost` (inicialmente 10). Permissões ficam em `allowed_ids`. Cotação divergente retorna 409 sem débito. Zero é um preço válido. Evolução de disciplina ausente não concede o traço; primeiro é necessária aquisição ou concessão do narrador.
 
 O mapa armazena `character_markers` com `character_id`, `x`, `y`, `visibility`, `_revision`, `updated_at` e, em base geográfica, `lat`/`lng`. Visibilidade padrão `private`: responsável e narrador. `campaign`: demais participantes também veem. A projeção inclui somente o resumo e retrato do personagem. Não inclui sua ficha inteira. A API exige revisão 0 na primeira posição e a revisão corrente nas seguintes.
 
@@ -97,6 +97,14 @@ Escala de imagem em PATCH do mapa:
 
 O salão não aceita mais mensagens sem `to`. Tipos: `message`, `reminder`, `poke`, `kudos`, `icebreaker`, `challenge`. Os três primeiros recursos sociais rápidos possuem intervalo para repetição do mesmo remetente/destinatário. Desafios usam `game: "rps"`, `choice: "rock" | "paper" | "scissors"`, destinatário e prazo de 48 horas. A escolha alheia é retirada das respostas antes da conclusão; o destinatário responde em `/respond`. Narradores não recebem mensagens ou desafios privados entre outras contas pelas rotas normais.
 
-`PATCH /api/profile` aceita atualização parcial de preferências: `audio_enabled`, `animations`, `social_mood` (`chat`, `chill`, `busy`) e `social_note` (até 120 caracteres). A capa `cover` e a cor `accent` são metadados da campanha. O antigo seletor `system` não é mais utilizado.
+`PATCH /api/profile` aceita atualização parcial de preferências: `audio_enabled`, `music_enabled`, `sfx_volume` e `music_volume` (inteiros de 0 a 100), `animations`, `social_mood` (`chat`, `chill`, `busy`) e `social_note` (até 120 caracteres). A capa `cover` e a cor `accent` são metadados da campanha. O antigo seletor `system` não é mais utilizado.
 
-O conjunto de documentos conserva o formato `coroa-document-set-v4`; a revisão de esquema passa a 8. Cada campanha pode ter um novo `intel.json`, referenciado em `campaign.json`. Conjuntos antigos sem esse documento continuam aceitos. Não há alteração de tabela ou função SQL.
+O conjunto de documentos conserva o formato `coroa-document-set-v4`; a revisão de esquema passa a 9. Cada campanha pode ter um novo `intel.json`, referenciado em `campaign.json`. Conjuntos antigos sem esse documento continuam aceitos. Não há alteração de tabela ou função SQL.
+
+## Objetivos e enquadramento · versão 9
+
+`PATCH /api/characters/:id` aceita `patch.aspirations: {ambition, desire}` (textos de até 30.000 caracteres) e `patch.portrait_frame: {x, y, zoom}`. Posições são números de 0 a 100; zoom de 1 a 3. A foto original continua em `profilepicture`. Revisão e vínculo da ficha são exigidos.
+
+`POST /api/characters/:id/aspiration` recebe `revision`, `kind: "ambition" | "desire"`, `outcome: "complete" | "abandon"` e `confirmed: true`. Limpa apenas aquele objetivo, conserva seu texto no histórico e não altera XP. Repetições e revisões antigas são recusadas. Narrador pode administrar a ficha; outro jogador não pode encerrá-la.
+
+Navegação, filtros e rascunho de rolagem ficam na memória do cliente. O histórico do navegador contém apenas identificadores opacos das entradas, sem JSON de ficha, imagens ou credenciais.

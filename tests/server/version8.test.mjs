@@ -6,7 +6,7 @@ import { createPortalServer } from '../../server/app.mjs';
 import { MemoryRepository } from '../../server/repository.mjs';
 import { RemoteClient } from '../../client/transport.js';
 import { newId } from '../../core/model.js';
-test('HTTP v8: compra, legado, posição, desafio e edição completa atravessam a API HTTP', async (t) => {
+test('HTTP v9: compras, ambição, enquadramento, posição, desafio e edição completa atravessam a API HTTP', async (t) => {
   const f = await portalFixture(),
     server = createPortalServer({
       repository: new MemoryRepository(await f.store.workspace()),
@@ -53,6 +53,7 @@ test('HTTP v8: compra, legado, posição, desafio e edição completa atravessam
       await pc('/api/discipline-market/0/acquire', 'POST', {
         character_id: p.id,
         character_revision: p._revision,
+        quoted_cost: 10,
         confirmed: true,
         request_id: newId()
       })
@@ -88,4 +89,21 @@ test('HTTP v8: compra, legado, posição, desafio e edição completa atravessam
   });
   assert.match(full.history.at(-1).details, /FORÇA: 3 → 4/);
   assert.match(full.history.at(-1).details, /Revisão por HTTP/);
+  p = await pc('/api/characters/234567');
+  p = await pc('/api/characters/234567', 'PATCH', {
+    revision: p._revision,
+    patch: {
+      aspirations: { ambition: 'Ganhar a corte', desire: 'Ler a carta' },
+      portrait_frame: { x: 20, y: 70, zoom: 1.4 }
+    }
+  });
+  const resolved = await pc('/api/characters/234567/aspiration', 'POST', {
+    revision: p._revision,
+    kind: 'desire',
+    outcome: 'complete',
+    confirmed: true
+  });
+  assert.equal(resolved.aspirations.desire, '');
+  assert.equal(resolved.aspirations.ambition, 'Ganhar a corte');
+  assert.equal(resolved.portrait_frame.zoom, 1.4);
 });

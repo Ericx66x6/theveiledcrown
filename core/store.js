@@ -40,7 +40,7 @@ export function workspaceFromLegacy(doc) {
     });
   return {
     format: 'coroa-hub-v2',
-    schema_version: 8,
+    schema_version: 9,
     revision: 0,
     updated_at: timestamp(),
     active_campaign_id: id,

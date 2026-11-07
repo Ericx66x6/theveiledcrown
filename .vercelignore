@@ -1,0 +1,10 @@
+.git/
+node_modules/
+.env
+.env.*
+server/
+tests/
+supabase/
+docs/
+.qa/
+*.zip

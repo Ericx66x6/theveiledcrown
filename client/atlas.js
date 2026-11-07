@@ -36,7 +36,22 @@ export function mapPage(ctx) {
   const maps = ctx.state.campaign.maps,
     m = selected(ctx);
   if (m) ctx.state.mapId = m.id;
-  return `<div class="page-intro"><span class="eyebrow">ATLAS DA CAMPANHA</span><h1>Há histórias em cada esquina.</h1><p>Explore, aproxime e descubra os lugares que guardam os segredos da crônica.</p></div><div class="atlas-heading"><span>${maps.length} ${maps.length === 1 ? 'mapa' : 'mapas'} ${ctx.admin() ? 'na campanha' : 'disponíveis'}</span>${ctx.admin() ? button(icon('plus') + ' Adicionar mapa', 'map-upload', '', 'button primary') : ''}</div>${m ? `<div class="map-gallery" aria-label="Mapas da campanha">${maps.map((item) => `<button type="button" class="map-gallery-card ${item.id === m.id ? 'selected' : ''}" data-action="map-select" data-id="${item.id}" aria-pressed="${item.id === m.id}">${item.mode === 'geographic' ? '<span class="geographic-thumb">' + icon('map') + '</span>' : `<img src="${esc(item.image)}" alt="">`}<span><strong>${esc(item.title)}</strong><small>${item.mode === 'geographic' ? 'MAPA GEOGRÁFICO' : 'MUNDO DA CAMPANHA'} · ${ctx.admin() ? (item.player_access ? 'COMPARTILHADO' : 'NARRADOR') : item.pins.length + ' LOCAIS'}</small></span>${item.id === m.id ? icon('test') : ''}</button>`).join('')}</div><section class="atlas-map-heading"><div><span class="eyebrow">${m.mode === 'geographic' ? 'AS RUAS DO MUNDO REAL' : 'CARTOGRAFIA DA CRÔNICA'}</span><h2>${esc(m.title)}</h2><p>${esc(m.description)}</p></div>${ctx.admin() ? button(icon('edit') + ' Configurar mapa', 'map-edit', `data-id="${m.id}"`, 'button ghost') : ''}</section><div class="canvas-toolbar">${button(icon('pin') + ' Marcar local', 'map-place', '', 'button primary')}<label class="map-location-search">${icon('search')}<input type="search" id="map-location-search" aria-label="Buscar locais cadastrados" placeholder="Buscar locais cadastrados"></label><div class="canvas-zoom">${button('−', 'canvas-zoom-out', 'aria-label="Diminuir zoom"', 'icon-button')}${button('Enquadrar', 'canvas-fit', '', 'button ghost')}${button('+', 'canvas-zoom-in', 'aria-label="Aumentar zoom"', 'icon-button')}</div></div>${personalMapPanel(ctx, m)}<div id="map-measurement" hidden></div><p class="map-status-note" id="map-status-note" role="status" hidden></p><div id="atlas-map" class="atlas-leaflet ${m.mode === 'geographic' ? 'geographic' : 'illustrated'}" role="region" aria-label="Mapa interativo da campanha"></div><p class="atlas-instructions">Arraste para explorar · aproxime com dois dedos · toque para consultar · para mover um marcador, dê dois toques e arraste no segundo.</p><div class="location-directory">${m.pins.map((p) => `<article class="location-card" data-location-search="${esc((p.title + ' ' + (p.domain || '') + ' ' + (p.address || '')).toLowerCase())}"><button type="button" class="location-card-main" data-action="map-focus" data-id="${p.id}"><div class="location-cover">${p.images?.[0] ? `<img src="${esc(p.images[0])}" alt="" loading="lazy">` : `<span>${pinSymbol(p)}</span>`}<span class="tag">${esc(typeName(p))}</span></div><div><h3>${esc(p.title)}</h3><p>${esc(p.address || p.domain || 'Um lugar na história da campanha.')}</p><span class="location-meta">${(p.npcs || []).length} NPCs · ${(p.images || []).length} imagens</span></div></button><footer>${button('Dossiê do local', 'map-detail', `data-id="${p.id}"`, 'button ghost')}${canEdit(ctx, p) ? button('Editar', 'map-pin-edit', `data-id="${p.id}"`, 'text-button') : ''}</footer></article>`).join('') || empty('O primeiro lugar espera por um nome.', 'Toque em Marcar local e escolha uma posição no mapa.')}</div>` : empty(ctx.admin() ? 'Seu atlas começa aqui.' : 'Nenhum mapa foi liberado ainda.', ctx.admin() ? 'Use uma imagem da sua campanha ou um mapa geográfico navegável.' : 'O narrador escolhe os mapas disponíveis nesta campanha.', ctx.admin() ? button('Adicionar primeiro mapa', 'map-upload', '', 'button primary') : '')}`;
+  return `<div class="page-intro"><span class="eyebrow">ATLAS DA CAMPANHA</span><h1>Há histórias em cada esquina.</h1><p>Explore, aproxime e descubra os lugares que guardam os segredos da crônica.</p></div><div class="atlas-heading"><span>${maps.length} ${maps.length === 1 ? 'mapa' : 'mapas'} ${ctx.admin() ? 'na campanha' : 'disponíveis'}</span>${button(icon('map') + ' Ver mapa', 'map-jump', '', 'button ghost mobile-map-jump')}${ctx.admin() ? button(icon('plus') + ' Adicionar mapa', 'map-upload', '', 'button primary') : ''}</div>${
+    m
+      ? `<div class="mobile-map-switcher">${select(
+          'mobile-map',
+          'Mapa aberto',
+          maps.map((item) => ({ value: item.id, label: item.title })),
+          m.id
+        )}</div><div class="map-gallery" aria-label="Mapas da campanha">${maps.map((item) => `<button type="button" class="map-gallery-card ${item.id === m.id ? 'selected' : ''}" data-action="map-select" data-id="${item.id}" aria-pressed="${item.id === m.id}">${item.mode === 'geographic' ? '<span class="geographic-thumb">' + icon('map') + '</span>' : `<img src="${esc(item.image)}" alt="">`}<span><strong>${esc(item.title)}</strong><small>${item.mode === 'geographic' ? 'MAPA GEOGRÁFICO' : 'MUNDO DA CAMPANHA'} · ${ctx.admin() ? (item.player_access ? 'COMPARTILHADO' : 'NARRADOR') : item.pins.length + ' LOCAIS'}</small></span>${item.id === m.id ? icon('test') : ''}</button>`).join('')}</div><section class="atlas-map-heading"><div><span class="eyebrow">${m.mode === 'geographic' ? 'AS RUAS DO MUNDO REAL' : 'CARTOGRAFIA DA CRÔNICA'}</span><h2>${esc(m.title)}</h2><p>${esc(m.description)}</p></div>${ctx.admin() ? button(icon('edit') + ' Configurar mapa', 'map-edit', `data-id="${m.id}"`, 'button ghost') : ''}</section><div class="canvas-toolbar">${button(icon('pin') + ' Marcar local', 'map-place', '', 'button primary')}<label class="map-location-search">${icon('search')}<input type="search" id="map-location-search" aria-label="Buscar locais cadastrados" placeholder="Buscar locais cadastrados"></label><div class="canvas-zoom">${button('−', 'canvas-zoom-out', 'aria-label="Diminuir zoom"', 'icon-button')}${button('Enquadrar', 'canvas-fit', '', 'button ghost')}${button('+', 'canvas-zoom-in', 'aria-label="Aumentar zoom"', 'icon-button')}</div></div><div class="map-tools-toggle">${button(icon('profile') + ' Posição e distância', 'map-tools', `aria-expanded="${!!ctx.state.mapToolsOpen}"`, 'button ghost')}</div><div class="map-tools ${ctx.state.mapToolsOpen ? 'is-open' : ''}">${personalMapPanel(ctx, m)}</div><div id="map-measurement" hidden></div><p class="map-status-note" id="map-status-note" role="status" hidden></p><div id="atlas-map" class="atlas-leaflet ${m.mode === 'geographic' ? 'geographic' : 'illustrated'}" role="region" aria-label="Mapa interativo da campanha"></div><p class="atlas-instructions">Arraste para explorar · aproxime com dois dedos · toque para consultar · para mover um marcador, dê dois toques e arraste no segundo.</p><div class="location-directory">${m.pins.map((p) => `<article class="location-card" data-location-search="${esc((p.title + ' ' + (p.domain || '') + ' ' + (p.address || '')).toLowerCase())}"><button type="button" class="location-card-main" data-action="map-focus" data-id="${p.id}"><div class="location-cover">${p.images?.[0] ? `<img src="${esc(p.images[0])}" alt="" loading="lazy">` : `<span>${pinSymbol(p)}</span>`}<span class="tag">${esc(typeName(p))}</span></div><div><h3>${esc(p.title)}</h3><p>${esc(p.address || p.domain || 'Um lugar na história da campanha.')}</p><span class="location-meta">${(p.npcs || []).length} NPCs · ${(p.images || []).length} imagens</span></div></button><footer>${button('Dossiê do local', 'map-detail', `data-id="${p.id}"`, 'button ghost')}${canEdit(ctx, p) ? button('Editar', 'map-pin-edit', `data-id="${p.id}"`, 'text-button') : ''}</footer></article>`).join('') || empty('O primeiro lugar espera por um nome.', 'Toque em Marcar local e escolha uma posição no mapa.')}</div>`
+      : empty(
+          ctx.admin() ? 'Seu atlas começa aqui.' : 'Nenhum mapa foi liberado ainda.',
+          ctx.admin()
+            ? 'Use uma imagem da sua campanha ou um mapa geográfico navegável.'
+            : 'O narrador escolhe os mapas disponíveis nesta campanha.',
+          ctx.admin() ? button('Adicionar primeiro mapa', 'map-upload', '', 'button primary') : ''
+        )
+  }`;
 }
 function mapDialog(ctx, m) {
   const mode = m?.mode || 'image',
@@ -443,6 +458,12 @@ export function bindAtlas(ctx) {
       });
     } else atlas = new Atlas(ctx, m, atlasOptions(ctx, m));
   }
+  const mobileMap = $('[name=mobile-map]');
+  if (mobileMap)
+    mobileMap.onchange = () => {
+      ctx.state.mapId = mobileMap.value;
+      ctx.draw();
+    };
   const character = $('[name=map-character]');
   if (character)
     character.onchange = () => {
@@ -460,6 +481,18 @@ export function bindAtlas(ctx) {
 }
 export async function atlasAction(action, data, ctx) {
   if (await personalMapAction(action, data, ctx)) return true;
+  if (action === 'map-jump') {
+    $('#atlas-map')?.scrollIntoView({
+      block: 'start',
+      behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'
+    });
+    return true;
+  }
+  if (action === 'map-tools') {
+    ctx.state.mapToolsOpen = !ctx.state.mapToolsOpen;
+    ctx.draw();
+    return true;
+  }
   if (action === 'map-upload') {
     mapDialog(ctx);
     return true;

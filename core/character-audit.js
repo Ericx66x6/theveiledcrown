@@ -46,6 +46,11 @@ export function characterChanges(before, after, game) {
     if (before.status?.[key] !== value)
       changes.push(`${labels[key] || key}: ${before.status?.[key]} → ${value}`);
   if (before.biography !== after.biography) changes.push('História atualizada');
+  for (const key of ['ambition', 'desire'])
+    if (before.aspirations?.[key] !== after.aspirations?.[key])
+      changes.push(`${key === 'ambition' ? 'Ambição' : 'Desejo'} atualizado`);
+  if (JSON.stringify(before.portrait_frame) !== JSON.stringify(after.portrait_frame))
+    changes.push('Enquadramento do retrato atualizado');
   if (before.profilepicture !== after.profilepicture) changes.push('Retrato atualizado');
   if (JSON.stringify(before.moralityes) !== JSON.stringify(after.moralityes))
     changes.push('Convicções atualizadas');

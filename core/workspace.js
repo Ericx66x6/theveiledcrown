@@ -441,7 +441,7 @@ export function playerExport(root, account) {
   own.memberships = Object.fromEntries(campaigns.map((c) => [c.id, memberships[c.id]]));
   return {
     format: 'coroa-hub-v2',
-    schema_version: 8,
+    schema_version: 9,
     revision: root.revision,
     updated_at: timestamp(),
     default_game: clone(root.default_game),

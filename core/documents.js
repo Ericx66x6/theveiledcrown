@@ -5,7 +5,7 @@ export function workspaceDocuments(root) {
     docs = Object.create(null),
     manifest = {
       format: 'coroa-document-set-v4',
-      schema_version: 8,
+      schema_version: 9,
       revision,
       default_game: clone(root.default_game),
       active_campaign_id: root.active_campaign_id,
@@ -143,7 +143,7 @@ export function assembleDocuments(documents) {
   const accounts = get(manifest.accounts_file),
     root = {
       format: 'coroa-hub-v2',
-      schema_version: 8,
+      schema_version: 9,
       revision: manifest.revision,
       default_game: clone(manifest.default_game),
       active_campaign_id: manifest.active_campaign_id,

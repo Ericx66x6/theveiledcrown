@@ -1,5 +1,6 @@
 import { clone, newId, timestamp } from './model.js';
 import { gameSettings } from './settings.js';
+import { migrateAspirations } from './aspirations.js';
 export const emptyMap = () => ({ image: '', width: 0, height: 0, pins: [] });
 export function normalizeCampaign(source) {
   const c = clone(source);
@@ -56,7 +57,7 @@ export function normalizeCampaign(source) {
 }
 export function normalizeRoot(source) {
   const root = clone(source);
-  root.schema_version = 8;
+  root.schema_version = 9;
   root.deleted_accounts ??= [];
   root.default_game ??= clone(root.campaigns[0]?.game);
   root.active_campaign_id ??= root.campaigns[0]?.id || null;
@@ -64,6 +65,9 @@ export function normalizeRoot(source) {
   for (const a of root.accounts) {
     a.preferences = {
       audio_enabled: a.preferences?.ui_sound !== false,
+      music_enabled: false,
+      sfx_volume: 80,
+      music_volume: 35,
       animations: true,
       social_mood: 'chat',
       social_note: '',
@@ -77,11 +81,15 @@ export function normalizeRoot(source) {
   for (const c of root.campaigns) {
     const imported = new Set(c.notes.map((n) => n.id));
     for (const p of c.characters) {
+      migrateAspirations(p, c.notes);
+      c.notes = c.notes.filter(
+        (n) => !(n.id?.startsWith(`legacy-${p.id}-goals-`) && n.character_id === p.id)
+      );
       const owner = root.accounts.find(
         (a) => a.role === 'player' && a.memberships?.[c.id]?.includes(p.id)
       );
       if (!owner) continue;
-      for (const kind of ['notes', 'goals']) {
+      for (const kind of ['notes']) {
         for (const [index, row] of (p[kind] || []).entries()) {
           const fingerprint = JSON.stringify([
             row.id ?? index,

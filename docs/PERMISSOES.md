@@ -1,4 +1,4 @@
-# Permissões · Coroa Velada 8
+# Permissões · Coroa Velada 9
 
 | Recurso | Narrador | Jogador |
 |---|---|---|
@@ -43,7 +43,7 @@ O login persiste por cookie HttpOnly, com verificação de origem nas alteraçõ
 | Informação ainda velada | Cadastra/edita/apaga e consulta conteúdo | Vê apresentação e preço |
 | Compra de informação | Administra o catálogo | Confirma pagamento completo com uma ficha própria |
 | Informação revelada | Consulta e administra | Todos da campanha consultam, com identificação do comprador |
-| Catálogo de legados | Libera/restringe disciplinas | Adquire as permitidas por 10 XP, no nível 0 |
+| Catálogo de legados | Libera/restringe disciplinas | Adquire as permitidas pelo custo configurado, no nível 0 |
 | Marcador pessoal | Vê todas as posições | Move seus personagens e decide compartilhar ou reservar |
 | Escala por imagem | Calibra | Usa para medir a distância |
 | Histórico de ficha | Pode apagar e acrescentar mensagem ao editar | Consulta; evoluções e gastos são registrados pelo servidor |
@@ -51,3 +51,5 @@ O login persiste por cookie HttpOnly, com verificação de origem nas alteraçõ
 | Mensagens entre outras contas | Sem acesso pelas rotas normais | Sem acesso |
 
 As cópias administrativas completas continuam contendo dados de recuperação. A restrição de mensagens e anotações privadas se refere às telas e rotas normais de consulta. Notas pessoais acompanham seu autor; o círculo de relações continua exclusivo do personagem e não é o cadastro de NPCs dos mapas.
+
+Ambição e desejo pertencem à ficha: o jogador altera e encerra os próprios objetivos; o narrador pode administrar a ficha. Outros jogadores não têm acesso a esses textos pelas rotas normais. Conclusão/desistência conserva o registro no histórico, cuja exclusão continua exclusiva do narrador. Enquadramento do retrato segue a mesma propriedade. O narrador define preço geral e preço individual dos legados; jogadores confirmam o custo que o servidor confere antes de cobrar.

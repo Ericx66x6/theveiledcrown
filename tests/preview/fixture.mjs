@@ -26,7 +26,11 @@ export async function previewFixture() {
       cla: 'Sangue antigo',
       xp,
       money: 1200,
-      biography: 'Uma história criada exclusivamente para conferir a interface.'
+      biography: 'Uma história criada exclusivamente para conferir a interface.',
+      aspirations: {
+        ambition: 'Conquistar um lugar no conselho da cidade.',
+        desire: 'Descobrir quem deixou a carta no refúgio.'
+      }
     });
     p.atributes[0].value = 3;
     await request('/api/admin/characters', 'POST', {

@@ -24,7 +24,14 @@ import {
   xpCost
 } from './model.js';
 import { hashPassword, checkPassword } from './passwords.js';
-const EDITABLE = new Set([...collections, 'status', 'biography', 'profilepicture']);
+const EDITABLE = new Set([
+  ...collections.filter((k) => k !== 'goals'),
+  'status',
+  'biography',
+  'profilepicture',
+  'portrait_frame',
+  'aspirations'
+]);
 export function accountRecord(data, passwordHash) {
   return {
     id: newId(),
@@ -35,7 +42,15 @@ export function accountRecord(data, passwordHash) {
     _campaign_member: true,
     avatar: '',
     bio: '',
-    preferences: { audio_enabled: true, animations: true, social_mood: 'chat', social_note: '' },
+    preferences: {
+      audio_enabled: true,
+      music_enabled: false,
+      sfx_volume: 80,
+      music_volume: 35,
+      animations: true,
+      social_mood: 'chat',
+      social_note: ''
+    },
     active: true,
     session_version: 0,
     password_hash: passwordHash
@@ -435,7 +450,20 @@ export class CharacterService {
       const next = clone(p);
       let label = 'Ficha atualizada',
         details = '';
-      if (action === 'upgrade') {
+      if (action === 'aspiration') {
+        if (method !== 'POST' || data.confirmed !== true)
+          fail('Confirme antes de encerrar este objetivo.');
+        if (
+          !['ambition', 'desire'].includes(data.kind) ||
+          !['complete', 'abandon'].includes(data.outcome)
+        )
+          fail('Objetivo inválido.');
+        const previous = next.aspirations[data.kind];
+        if (!previous) fail('Este objetivo já está vazio.', 409);
+        next.aspirations[data.kind] = '';
+        label = `${data.kind === 'ambition' ? 'Ambição' : 'Desejo'} ${data.outcome === 'complete' ? (data.kind === 'ambition' ? 'concluída' : 'concluído') : data.kind === 'ambition' ? 'abandonada' : 'abandonado'}`;
+        details = previous;
+      } else if (action === 'upgrade') {
         const quote = upgradeQuote(next, gameSettings(doc.game), data.key, data.id, data.target);
         if (!quote.affordable) fail(`XP insuficiente. São necessários ${quote.cost} XP.`);
         if (doc.game.progression?.require_confirmation !== false && data.confirmed !== true)

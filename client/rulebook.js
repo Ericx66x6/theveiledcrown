@@ -273,8 +273,11 @@ export function bindRulebook(ctx) {
   if (search)
     search.oninput = () => {
       ctx.state.ruleQuery = search.value;
-      ctx.draw();
-      $('#rulebook-search').focus();
+      const markup = ruleCatalog(ctx, ctx.state.ruleCatalog || 'disciplines');
+      const template = document.createElement('template');
+      template.innerHTML = markup;
+      $('.rulebook-catalog-grid').innerHTML =
+        template.content.querySelector('.rulebook-catalog-grid').innerHTML;
     };
   const creation = $('#creation-config');
   if (creation)

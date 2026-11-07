@@ -2,6 +2,7 @@ import { fold } from '../core/power-tests.js';
 import { labels } from '../shared/rules.js';
 import { $, esc, icon, button, modal, closeModal, empty } from '../shared/ui.js';
 import { openEvolution } from './evolution.js';
+import { openConsultation } from './consultation.js';
 const catalogs = [
   'atributes',
   'talents',
@@ -26,6 +27,17 @@ export function searchEntries(state, query) {
       search: (e.nivels || []).map((n) => n.subname + ' ' + n.description).join(' ')
     }))
   );
+  for (const d of state.game.disciplines || [])
+    for (const [index, n] of (d.nivels || []).entries())
+      rows.push({
+        id: d.id,
+        key: 'disciplines',
+        index,
+        kind: 'power',
+        category: d.name + ' · nível ' + n.nivel,
+        title: n.subname,
+        body: n.description
+      });
   for (const c of state.game.rulebook || [])
     for (const e of c.entries)
       rows.push({
@@ -96,7 +108,7 @@ function resultHTML(state, query) {
         button(
           `<span>${icon(r.kind === 'catalog' ? 'rules' : r.kind === 'map' ? 'map' : r.kind === 'character' ? 'profile' : 'search')}</span><span><small>${esc(r.category)}</small><strong>${esc(r.title)}</strong><p>${esc((r.body || 'Consultar informações').slice(0, 160))}</p></span>${icon('arrow')}`,
           'search-open',
-          `data-kind="${r.kind}" data-id="${esc(r.id)}" data-key="${esc(r.key || '')}"`,
+          `data-kind="${r.kind}" data-index="${r.index ?? ''}" data-id="${esc(r.id)}" data-key="${esc(r.key || '')}"`,
           'search-result'
         )
       )
@@ -124,8 +136,16 @@ export async function searchAction(action, data, ctx) {
   if (action !== 'search-open') return false;
   closeModal();
   const s = ctx.state;
+  if (data.kind === 'power') {
+    await openConsultation(ctx, 'disciplines', data.id, data.index);
+    return true;
+  }
   if (data.kind === 'catalog') {
     const e = s.game[data.key].find((e) => e.id === Number(data.id));
+    if (['disciplines', 'rituals', 'caracteristics'].includes(data.key)) {
+      await openConsultation(ctx, data.key, e.id);
+      return true;
+    }
     if (ctx.player() && !['rituals', 'caracteristics'].includes(data.key)) {
       await openEvolution(
         ctx,

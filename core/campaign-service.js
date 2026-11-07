@@ -192,11 +192,14 @@ export class CampaignService extends CharacterService {
         if (data.preferences) {
           const preferences = data.preferences;
           a.preferences = { ...a.preferences };
-          for (const key of ['audio_enabled', 'animations'])
+          for (const key of ['audio_enabled', 'music_enabled', 'animations'])
             if (preferences[key] !== undefined) {
               if (typeof preferences[key] !== 'boolean') fail('Preferência inválida.');
               a.preferences[key] = preferences[key];
             }
+          for (const key of ['sfx_volume', 'music_volume'])
+            if (preferences[key] !== undefined)
+              a.preferences[key] = number(preferences[key], 'Volume', 0, 100);
           if (preferences.social_mood !== undefined) {
             if (!['chat', 'chill', 'busy'].includes(preferences.social_mood))
               fail('Status social inválido.');

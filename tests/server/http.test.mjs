@@ -266,7 +266,7 @@ test('HTTP: arquivos privados, origem indevida e controle de tempo são recusado
     404
   );
 });
-test('HTTP: frontend compilado é a versão 8 online', async (t) => {
+test('HTTP: frontend compilado é a versão 9 online', async (t) => {
   const f = await fixture(t),
     r = await f.request('/');
   assert.equal(r.status, 200);
@@ -395,4 +395,25 @@ test('HTTP: presença informa só participantes da campanha', async (t) => {
   const isolated = await f.call('/api/social', { token: admin.token, campaign: next.id });
   assert.equal(isolated.members.length, 1);
   assert.equal(isolated.members[0].id, admin.account.id);
+});
+
+test('HTTP v9: favicon, ícones, imagem social e manifesto estão públicos sem login', async (t) => {
+  const f = await fixture(t);
+  for (const [path, mime] of [
+    ['/favicon.svg', 'image/svg+xml'],
+    ['/favicon.ico', 'image/x-icon'],
+    ['/apple-touch-icon.png', 'image/png'],
+    ['/assets/images/coroa-share.jpg', 'image/jpeg'],
+    ['/site.webmanifest', 'application/manifest+json'],
+    ['/robots.txt', 'text/plain']
+  ]) {
+    const r = await f.request(path);
+    assert.equal(r.status, 200, path);
+    assert.ok(r.headers.get('content-type').startsWith(mime), path);
+  }
+  const html = (await f.request('/')).body;
+  assert.match(html, /og:title/);
+  assert.match(html, /og:image/);
+  assert.match(html, /twitter:card/);
+  assert.match(html, /manifest-src/);
 });

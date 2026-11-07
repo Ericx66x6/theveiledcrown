@@ -40,7 +40,7 @@ export function mechanics(description, explicit = {}) {
 }
 export function gameSettings(source) {
   const g = clone(source);
-  g.schema_version = 8;
+  g.schema_version = 9;
   g._revision ??= 0;
   g.status_rules ??= {};
   for (const [key, max] of Object.entries(statusMax))
@@ -98,7 +98,7 @@ export function gameSettings(source) {
     disciplines: null,
     ...g.character_creation.budgets
   };
-  g.discipline_market = { allowed_ids: [], ...g.discipline_market };
+  g.discipline_market = { allowed_ids: [], default_cost: 10, costs: {}, ...g.discipline_market };
   g.rulebook ??= [];
   g.labels ??= {};
   g.disciplines = (g.disciplines || []).map((d) => ({
@@ -113,6 +113,15 @@ export function gameSettings(source) {
 export function validateSettings(g) {
   number(g._revision, 'Revisão das regras');
   const allowed = g.discipline_market.allowed_ids;
+  number(g.discipline_market.default_cost, 'Custo geral dos legados', 0, 1000000);
+  const costs = g.discipline_market.costs;
+  if (!costs || typeof costs !== 'object' || Array.isArray(costs))
+    fail('Custos de legados inválidos.');
+  for (const [id, cost] of Object.entries(costs)) {
+    if (!g.disciplines.some((d) => String(d.id) === id))
+      fail('Disciplina desconhecida nos custos dos legados.');
+    number(cost, 'Custo do legado', 0, 1000000);
+  }
   if (
     !Array.isArray(allowed) ||
     new Set(allowed).size !== allowed.length ||

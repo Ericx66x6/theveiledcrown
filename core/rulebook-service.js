@@ -33,6 +33,7 @@ export async function deleteCatalogEntry(service, key, id, data, token) {
     g[key] = g[key].filter((e) => e.id !== id);
     if (key === 'disciplines')
       g.discipline_market.allowed_ids = g.discipline_market.allowed_ids.filter((x) => x !== id);
+    delete g.discipline_market.costs[id];
     g._revision++;
     d.game = validateSettings(gameSettings(g));
     d.snapshots.push({ id: newId(), at: timestamp(), kind: 'game', data: previous });

@@ -3,6 +3,7 @@ import { imageData } from './image-data.js';
 import { commit } from './service.js';
 import { publicIntel, validateIntel } from './intel-state.js';
 import { notification, notifyCampaign } from './notifications.js';
+import { legacyCost } from './legacy-cost.js';
 const admin = (a) => {
   if (a.role !== 'admin') fail('Somente o narrador cadastra informações.', 403);
 };
@@ -38,9 +39,12 @@ export async function commerceRequest(service, path, method, data, token, doc, a
       const def = d.game.disciplines.find((e) => e.id === disciplineId);
       if (!def) fail('Disciplina não encontrada.', 404);
       revision(p, data.character_revision);
-      if (p.xp < 10) fail('Você precisa de 10 XP para despertar este legado.');
+      const cost = legacyCost(d.game, disciplineId);
+      if (data.quoted_cost !== cost)
+        fail('O preço deste legado mudou. Confira o valor e confirme novamente.', 409);
+      if (p.xp < cost) fail(`Você precisa de ${cost} XP para despertar este legado.`);
       const next = clone(p);
-      next.xp -= 10;
+      next.xp -= cost;
       next.disciplines.push({
         id: disciplineId,
         nivel: 0,
@@ -54,13 +58,13 @@ export async function commerceRequest(service, path, method, data, token, doc, a
         next,
         a,
         'Legado desperto',
-        `${def.name} adquirida no nível 0 · −10 XP · saldo ${next.xp} XP.`
+        `${def.name} adquirida no nível 0 · −${cost} XP · saldo ${next.xp} XP.`
       );
       notification(d, {
         audience: 'account',
         recipient_id: a.id,
         title: 'Um novo legado: ' + def.name,
-        message: `${p.char} adquiriu a disciplina por 10 XP. Evolua o nível 0 usando as regras da campanha.`,
+        message: `${p.char} adquiriu a disciplina por ${cost} XP. Evolua o nível 0 usando as regras da campanha.`,
         kind: 'legacy',
         target: String(disciplineId),
         created_by: a.id

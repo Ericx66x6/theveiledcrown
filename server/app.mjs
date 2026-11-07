@@ -14,7 +14,11 @@ const MIME = {
   '.jpg': 'image/jpeg',
   '.png': 'image/png',
   '.svg': 'image/svg+xml',
-  '.webp': 'image/webp'
+  '.webp': 'image/webp',
+  '.ico': 'image/x-icon',
+  '.webmanifest': 'application/manifest+json',
+  '.txt': 'text/plain; charset=utf-8',
+  '.xml': 'application/xml; charset=utf-8'
 };
 const routes = [
   [/^\/auth\/(bootstrap|login|logout|password)$/, ['POST']],
@@ -42,7 +46,7 @@ const routes = [
   [/^\/api\/characters\/\d+$/, ['GET', 'PATCH', 'DELETE']],
   [/^\/api\/characters\/\d+\/upgrade-preview$/, ['GET']],
   [/^\/api\/characters\/\d+\/full$/, ['POST', 'PUT']],
-  [/^\/api\/characters\/\d+\/(upgrade|xp|full|archive|money|roll|assign)$/, ['POST']],
+  [/^\/api\/characters\/\d+\/(upgrade|xp|full|archive|money|roll|assign|aspiration)$/, ['POST']],
   [/^\/api\/admin\/accounts$/, ['GET', 'POST']],
   [/^\/api\/admin\/accounts\/[^/]+$/, ['PATCH', 'DELETE']],
   [/^\/api\/admin\/xp\/distribute$/, ['POST']],
@@ -179,13 +183,13 @@ export function createPortalServer({
         res.writeHead(200, {
           'Content-Type': MIME[extname(file)],
           'Cache-Control': 'no-cache',
-          'Content-Security-Policy': `default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://tiles.openfreemap.org; font-src 'self'; connect-src 'self' https://tiles.openfreemap.org; worker-src 'self'; media-src blob:; frame-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors ${allowSameOriginFrames ? "'self'" : "'none'"}; form-action 'self'`
+          'Content-Security-Policy': `default-src 'none'; manifest-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://tiles.openfreemap.org; font-src 'self'; connect-src 'self' https://tiles.openfreemap.org; worker-src 'self'; media-src blob:; frame-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors ${allowSameOriginFrames ? "'self'" : "'none'"}; form-action 'self'`
         });
         res.end(req.method === 'HEAD' ? undefined : data);
         return;
       }
       if (url.pathname === '/api/health') {
-        respond(200, { status: 'ok', version: '8.0.0' });
+        respond(200, { status: 'ok', version: '9.0.0' });
         return;
       }
       const ip = trustProxy

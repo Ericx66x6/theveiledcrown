@@ -1,3 +1,4 @@
+import { publicOrigin, socialMetadata } from './site-metadata.mjs';
 import { themeCSS, themeVariables } from './theme-css.mjs';
 import { build } from 'esbuild';
 import { cp, mkdir, rm, writeFile, readFile } from 'node:fs/promises';
@@ -26,7 +27,38 @@ await rm(out, { recursive: true, force: true });
 await mkdir(resolve(out, 'assets/styles'), { recursive: true });
 await mkdir(resolve(out, 'assets/scripts'), { recursive: true });
 await cp(resolve(root, 'public/images'), resolve(out, 'assets/images'), { recursive: true });
-for (const name of ['base', 'theme', 'hub', 'experience', 'updates', 'expansion'])
+await cp(resolve(root, 'public/branding'), out, { recursive: true });
+const siteOrigin = publicOrigin(process.env);
+await writeFile(
+  resolve(out, 'site.webmanifest'),
+  JSON.stringify({
+    id: '/',
+    name: 'A Coroa Velada',
+    short_name: 'Coroa Velada',
+    lang: 'pt-BR',
+    start_url: '/',
+    scope: '/',
+    display: 'standalone',
+    background_color: '#08090c',
+    theme_color: '#d92343',
+    description: 'Suas campanhas e personagens, além do véu.',
+    icons: [
+      { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+      { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' }
+    ]
+  })
+);
+await writeFile(
+  resolve(out, 'robots.txt'),
+  'User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /auth/\n' +
+    (siteOrigin ? 'Sitemap: ' + siteOrigin + '/sitemap.xml\n' : '')
+);
+if (siteOrigin)
+  await writeFile(
+    resolve(out, 'sitemap.xml'),
+    `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>${siteOrigin}/</loc></url></urlset>`
+  );
+for (const name of ['base', 'theme', 'hub', 'experience', 'updates', 'expansion', 'beta'])
   await writeFile(
     resolve(out, 'assets/styles', name + '.css'),
     themeCSS(await readFile(resolve(root, 'client', name + '.css'), 'utf8'))
@@ -66,9 +98,11 @@ await writeFile(
   'window.COROA_CONFIG={apiBase:window.location.origin};\n'
 );
 const csp = `default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://tiles.openfreemap.org; font-src 'self'; connect-src 'self' https://tiles.openfreemap.org; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'`;
-const html = (await readFile(resolve(root, 'client/index.html'), 'utf8')).replace(
-  '<meta name="description"',
-  `<meta http-equiv="Content-Security-Policy" content="${csp}"><meta name="description"`
-);
+const html = (await readFile(resolve(root, 'client/index.html'), 'utf8'))
+  .replace(/<meta name="description"[^>]*>/, socialMetadata(siteOrigin))
+  .replace(
+    '<meta name="description"',
+    `<meta http-equiv="Content-Security-Policy" content="${csp}; manifest-src 'self'"><meta name="description"`
+  );
 await writeFile(resolve(out, 'index.html'), html);
-console.log('Coroa Velada 8 online compilada em dist/.');
+console.log('Coroa Velada 9 online compilada em dist/.');

@@ -1,3 +1,5 @@
+import { legacyCost } from '../core/legacy-cost.js';
+import { openConsultation } from './consultation.js';
 import {
   $,
   esc,
@@ -120,11 +122,11 @@ export function legaciesPage(ctx) {
     allowed = s.game.discipline_market.allowed_ids,
     p = ctx.player(),
     defs = s.game.disciplines.filter((d) => ctx.admin() || allowed.includes(d.id));
-  return `<section class="chapter-hero legacy-hero"><div><span class="eyebrow">UM DOM NÃO PRECISA SER UM DESTINO</span><h1>Legados do Sangue</h1><p>Há ecos de outras linhagens esperando para despertar. ${ctx.admin() ? 'Escolha quais disciplinas podem ser adquiridas pelos jogadores.' : 'Desperte um legado autorizado pelo narrador e faça dele parte da sua história.'}</p><div class="legacy-price"><strong>10</strong><span>XP PARA DESPERTAR<small>Nível inicial 0 · evolução pelas regras da campanha</small></span></div></div><div class="chapter-sigil" aria-hidden="true">${icon('blood')}<i></i><i></i></div></section>${ctx.admin() ? '<p class="hint">A seleção vale apenas para esta campanha. Disciplinas já adquiridas permanecem nas fichas quando saem do catálogo.</p><form id="legacy-catalog-form">' : ''}<div class="legacy-grid">${
+  return `<section class="chapter-hero legacy-hero"><div><span class="eyebrow">UM DOM NÃO PRECISA SER UM DESTINO</span><h1>Legados do Sangue</h1><p>Há ecos de outras linhagens esperando para despertar. ${ctx.admin() ? 'Escolha quais disciplinas podem ser adquiridas pelos jogadores.' : 'Desperte um legado autorizado pelo narrador e faça dele parte da sua história.'}</p><div class="legacy-price"><strong>${s.game.discipline_market.default_cost}</strong><span>XP · CUSTO GERAL<small>Nível inicial 0 · evolução pelas regras da campanha</small></span></div></div><div class="chapter-sigil" aria-hidden="true">${icon('blood')}<i></i><i></i></div></section>${ctx.admin() ? `<p class="hint">Defina o custo geral e deixe o preço de uma disciplina vazio para herdar esse valor. Zero permite aquisição gratuita. A evolução dos níveis continua separada.</p><form id="legacy-catalog-form"><div class="legacy-default-cost">${field('default_cost', 'Custo geral em XP', s.game.discipline_market.default_cost, 'number', 'required min="0" max="1000000" step="1"')}<p>O preço individual tem prioridade sobre o custo geral.</p></div>` : ''}<div class="legacy-grid">${
     defs
       .map((d) => {
         const known = p?.disciplines.find((e) => e.id === d.id);
-        return `<article class="legacy-card ${known ? 'known' : ''}"><div class="legacy-mark">${icon('powers')}</div><div><span class="eyebrow">${known ? 'LEGADO DESPERTO · NÍVEL ' + known.nivel : 'UMA NOVA HERANÇA'}</span><h2>${esc(d.name)}</h2><p>${esc(d.short_description || d.description?.slice(0, 220) || 'Um dom que pode abrir novos caminhos para o personagem.')}</p></div>${ctx.admin() ? `<label class="legacy-allow"><input type="checkbox" name="allowed" value="${d.id}" ${allowed.includes(d.id) ? 'checked' : ''}><span>Liberar aquisição por 10 XP</span></label>` : known ? button('Ver evolução', 'legacy-evolve', `data-id="${d.id}"`, 'button ghost') : button('Despertar · 10 XP', 'legacy-acquire', `data-id="${d.id}"`, 'button primary')}</article>`;
+        return `<article class="legacy-card ${known ? 'known' : ''}"><div class="legacy-mark">${icon('powers')}</div><div><span class="eyebrow">${known ? 'LEGADO DESPERTO · NÍVEL ' + known.nivel : 'UMA NOVA HERANÇA'}</span><h2>${esc(d.name)}</h2><p>${esc(d.short_description || d.description?.slice(0, 220) || 'Um dom que pode abrir novos caminhos para o personagem.')}</p></div>${ctx.admin() ? `<label class="legacy-allow"><input type="checkbox" name="allowed" value="${d.id}" ${allowed.includes(d.id) ? 'checked' : ''}><span>Liberar aquisição</span></label>${field('cost:' + d.id, 'Preço individual em XP', s.game.discipline_market.costs[d.id] ?? '', 'number', `min="0" max="1000000" step="1" placeholder="Herdar custo geral"`)}` : known ? button('Consultar poderes', 'legacy-consult', `data-id="${d.id}"`, 'button ghost') : button('Despertar · ' + legacyCost(s.game, d.id) + ' XP', 'legacy-acquire', `data-id="${d.id}"`, 'button primary')}</article>`;
       })
       .join('') ||
     empty(
@@ -179,7 +181,7 @@ export async function commerceAction(action, data, ctx) {
     const requestId = newId();
     modal(
       intel ? 'Investigar este eco?' : 'Despertar este legado?',
-      `<div class="purchase-heading">${icon(intel ? 'search' : 'blood')}<h3>${esc(intel ? entry.title : entry.name)}</h3><p>${intel ? 'Um único personagem paga o custo completo. A descoberta será revelada para toda a mesa.' : 'A disciplina entra na ficha com nível 0. Depois, você evolui normalmente com XP.'}</p><div class="price-row"><span><strong>${intel ? entry.xp_cost : 10}</strong> XP</span>${intel && entry.money_cost ? `<span>${currency(entry.money_cost)}</span>` : ''}</div></div><div class="form-grid">${payerFields(ctx)}<label class="checkbox full"><input type="checkbox" required> Conferi o personagem e confirmo o gasto.</label></div>`,
+      `<div class="purchase-heading">${icon(intel ? 'search' : 'blood')}<h3>${esc(intel ? entry.title : entry.name)}</h3><p>${intel ? 'Um único personagem paga o custo completo. A descoberta será revelada para toda a mesa.' : 'A disciplina entra na ficha com nível 0. Depois, você evolui normalmente com XP.'}</p><div class="price-row"><span><strong>${intel ? entry.xp_cost : legacyCost(ctx.state.game, entry.id)}</strong> XP</span>${intel && entry.money_cost ? `<span>${currency(entry.money_cost)}</span>` : ''}</div></div><div class="form-grid">${payerFields(ctx)}<label class="checkbox full"><input type="checkbox" required> Conferi o personagem e confirmo o gasto.</label></div>`,
       async (form) => {
         const p = activeCharacters(ctx).find((p) => p.id === Number(form.get('character_id')));
         const result = await api(
@@ -191,6 +193,7 @@ export async function commerceAction(action, data, ctx) {
               character_revision: p._revision,
               revision: entry._revision,
               quoted_xp: entry.xp_cost,
+              quoted_cost: intel ? undefined : legacyCost(ctx.state.game, entry.id),
               quoted_money: entry.money_cost,
               confirmed: true,
               request_id: requestId
@@ -202,9 +205,18 @@ export async function commerceAction(action, data, ctx) {
         if (intel) setTimeout(() => openIntel(ctx, result.information), 0);
         else toast(entry.name + ' despertou no nível 0.');
       },
-      { wide: true, saveLabel: intel ? 'Pagar e revelar para a mesa' : 'Despertar por 10 XP' }
+      {
+        wide: true,
+        saveLabel: intel
+          ? 'Pagar e revelar para a mesa'
+          : 'Despertar por ' + legacyCost(ctx.state.game, entry.id) + ' XP'
+      }
     );
     bindPayer(ctx);
+    return true;
+  }
+  if (action === 'legacy-consult') {
+    await openConsultation(ctx, 'disciplines', data.id);
     return true;
   }
   if (action === 'legacy-evolve') {
@@ -232,7 +244,14 @@ export function bindCommerce(ctx) {
       event.preventDefault();
       ctx.safe(async () => {
         const g = clone(ctx.state.game);
-        g.discipline_market.allowed_ids = new FormData(form).getAll('allowed').map(Number);
+        const f = new FormData(form);
+        g.discipline_market.allowed_ids = f.getAll('allowed').map(Number);
+        g.discipline_market.default_cost = Number(f.get('default_cost'));
+        g.discipline_market.costs = Object.fromEntries(
+          g.disciplines
+            .filter((d) => f.get('cost:' + d.id) !== '')
+            .map((d) => [d.id, Number(f.get('cost:' + d.id))])
+        );
         g._expected_revision = g._revision;
         await api('/api/game', { method: 'PUT', data: g });
         form.dataset.dirty = 'false';

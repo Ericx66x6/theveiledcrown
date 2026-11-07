@@ -1,8 +1,12 @@
+import { NavigationTrail } from './navigation.js';
+import { aspirationsPage, aspirationAction } from './aspirations.js';
+import { portraitDialog, portraitStyle } from './portrait.js';
+import { consultationPage, consultationAction, openConsultation } from './consultation.js';
 import { intelPage, legaciesPage, commerceAction, bindCommerce } from './commerce.js';
 import { configureSound, soundButton, renderSoundControls, playSound } from './audio.js';
 import { applyCampaignTheme } from './campaign-theme.js';
 import { searchAction } from './search.js';
-import { powerPool, powerAction } from './power-pool.js';
+import { powerAction } from './power-pool.js';
 import { socialPage, communityAction, bindCommunity } from './community.js';
 import { lifecycleAction } from './lifecycle.js';
 import { xpDistribution } from './xp.js';
@@ -38,7 +42,6 @@ import {
   bindFeatureViews
 } from './features.js';
 import { mapPage, networkPage, bindCanvas, canvasAction } from './canvas.js';
-import { upgradeQuote, mechanics } from '../core/settings.js';
 import { readImage, currency, animateMoney, diceSound } from './media.js';
 import {
   traitsPage,
@@ -119,6 +122,7 @@ worldTypes.favours = {
 };
 const nav = [
   ['overview', 'Visão geral'],
+  ['aspirations', 'Ambição e desejo'],
   ['attributes', 'Atributos e habilidades'],
   ['powers', 'Sangue e poderes'],
   ['world', 'Influência e favores'],
@@ -152,11 +156,13 @@ const adminNav = [
 ];
 const internalNav = [
   ['evolution', 'Evoluir personagem'],
+  ['power-detail', 'Consultar poder'],
   ['proposal-editor', 'Criar proposta'],
   ['review-submission', 'Avaliar proposta']
 ];
 const sheetViews = [
   'overview',
+  'aspirations',
   'attributes',
   'powers',
   'world',
@@ -265,14 +271,22 @@ function initShell() {
   document.body.classList.remove('login-page');
   document.querySelector('.skip-link')?.setAttribute('href', '#main-content');
   $('#app').innerHTML =
-    `<aside id="sidebar" class="sidebar"><a href="#campaigns" class="brand"><span class="brand-crest">${crown}</span><span>A COROA VELADA<small>ONDE AS HISTÓRIAS VIVEM</small></span></a><button type="button" data-action="close-menu" class="icon-button drawer-close" aria-label="Fechar navegação">${icon('close')}</button><div data-nav-root></div><div class="sidebar-footer"><p>O sangue lembra.<br><span>A noite nunca esquece.</span></p><span class="version">PORTAL ONLINE · V8</span></div></aside><div class="workspace"><header class="topbar"><div class="breadcrumb"><button data-action="menu" class="icon-button mobile-menu" aria-label="Abrir navegação">${icon('menu')}</button><span class="campaign-breadcrumb"></span><i>/</i><strong id="breadcrumb-current"></strong></div><div class="topbar-right">${button(icon('search'), 'global-search', 'aria-label="Pesquisar em toda a campanha" title="Pesquisar"', 'icon-button')}${soundButton()}${button(icon('download') + ' <span>Salvar JSON</span>', 'backup-table', 'aria-label="Salvar JSONs do portal"', 'button ghost top-export')}<button type="button" class="icon-button notification-button" data-action="nav-notifications" aria-label="Notificações">${icon('notes')}<span data-notification-count hidden></span></button><button type="button" class="user-button" data-action="nav-profile" aria-label="Abrir meu perfil" title="Meu perfil"><span class="avatar small" data-user-avatar></span><span data-user-name></span></button><button class="icon-button" data-action="logout" aria-label="Sair">${icon('logout')}</button></div></header><div class="connection-banner"><span>${icon('save')} <span data-sync-label></span></span><span>Atualização automática da campanha</span></div><div id="xp-hud"></div><main id="main-content" tabindex="-1"></main><footer class="app-footer"><span>A COROA VELADA</span><span>Suas histórias, além do véu.</span><span>◇</span></footer></div><button type="button" class="drawer-backdrop" data-action="close-menu" aria-label="Fechar menu"></button><nav class="mobile-bottom" aria-label="Navegação principal"></nav>`;
+    `<aside id="sidebar" class="sidebar"><a href="#campaigns" class="brand"><span class="brand-crest">${crown}</span><span>A COROA VELADA<small>ONDE AS HISTÓRIAS VIVEM</small></span></a><button type="button" data-action="close-menu" class="icon-button drawer-close" aria-label="Fechar navegação">${icon('close')}</button><div data-nav-root></div><div class="sidebar-footer"><p>O sangue lembra.<br><span>A noite nunca esquece.</span></p><span class="version">PORTAL ONLINE · V9 BETA</span></div></aside><div class="workspace"><header class="topbar"><div class="breadcrumb"><button data-action="menu" class="icon-button mobile-menu" aria-label="Abrir navegação">${icon('menu')}</button><span class="campaign-breadcrumb"></span><i>/</i><strong id="breadcrumb-current"></strong></div><div class="topbar-right">${button(icon('search'), 'global-search', 'aria-label="Pesquisar em toda a campanha" title="Pesquisar"', 'icon-button')}${soundButton()}${button(icon('download') + ' <span>Salvar JSON</span>', 'backup-table', 'aria-label="Salvar JSONs do portal"', 'button ghost top-export')}<button type="button" class="icon-button notification-button" data-action="nav-notifications" aria-label="Notificações">${icon('notes')}<span data-notification-count hidden></span></button><button type="button" class="user-button" data-action="nav-profile" aria-label="Abrir meu perfil" title="Meu perfil"><span class="avatar small" data-user-avatar></span><span data-user-name></span></button><button class="icon-button" data-action="logout" aria-label="Sair">${icon('logout')}</button></div></header><div class="connection-banner"><span>${icon('save')} <span data-sync-label></span></span><span>Atualização automática da campanha</span></div><div class="route-toolbar" aria-label="Navegação da página"><button type="button" class="button ghost" data-action="route-back"><span class="back-arrow">${icon('arrow')}</span> Voltar</button><span data-route-label></span><button type="button" class="text-button" data-action="route-home">Início</button></div><div id="xp-hud"></div><main id="main-content" tabindex="-1"></main><footer class="app-footer"><span>A COROA VELADA</span><span>Suas histórias, além do véu.</span><span>◇</span></footer></div><button type="button" class="drawer-backdrop" data-action="close-menu" aria-label="Fechar menu"></button><nav class="mobile-bottom" aria-label="Navegação principal"></nav>`;
   document.addEventListener('click', handleClick, { signal: events.signal });
   document.addEventListener('submit', handleSubmit, { signal: events.signal });
+  document.addEventListener(
+    'change',
+    (e) => {
+      if (e.target.closest('#dice-form')) captureDice(e.target.closest('form'));
+    },
+    { signal: events.signal }
+  );
   document.addEventListener(
     'input',
     (event) => {
       const form = event.target.closest('form');
       if (form) form.dataset.dirty = 'true';
+      if (form?.id === 'dice-form') captureDice(form);
     },
     { signal: events.signal }
   );
@@ -346,6 +360,10 @@ function context() {
     refresh: refreshAll,
     safe: run,
     go,
+    back: async (fallback) => {
+      if (trail.canBack) history.back();
+      else await go(fallback || 'campaigns');
+    },
     reloadCampaign,
     draw: render,
     editProposal
@@ -416,11 +434,12 @@ function render() {
     : esc(state.account.display_name.slice(0, 1));
   $('[data-user-name]').innerHTML =
     `${esc(state.account.display_name)}<small>${admin() ? 'Narrador' : 'Jogador'}</small>`;
+  document.body.dataset.page = state.view;
   applyCampaignTheme(state.campaign);
-  configureSound(state.account.preferences?.audio_enabled !== false, async (enabled) => {
+  configureSound(state.account.preferences || {}, async (preferences) => {
     const account = await api('/api/profile', {
       method: 'PATCH',
-      data: { preferences: { audio_enabled: enabled } },
+      data: { preferences },
       silent: true
     });
     state.account = account;
@@ -463,6 +482,8 @@ function render() {
       network: networkPage,
       attributes: traitsPage,
       evolution: evolutionPage,
+      aspirations: aspirationsPage,
+      'power-detail': consultationPage,
       dashboard: narratorDashboard,
       'my-characters': myCharactersView,
       submissions: submissionsView,
@@ -525,6 +546,16 @@ function render() {
   $('#main-content').innerHTML = html;
   if (state.view === 'characters') bindSearch();
   if (state.view === 'new-player' || state.view === 'proposal-editor') state.editor?.bind();
+  if (state.view === 'dice' && state.diceDraft?.character === player()?.id) {
+    const form = $('#dice-form');
+    for (const [name, value] of Object.entries(state.diceDraft.fields)) {
+      const el = form?.elements[name];
+      if (el) {
+        if (el.type === 'checkbox') el.checked = !!value;
+        else el.value = value;
+      }
+    }
+  }
   bindEvolution(ctx);
   bindRulebook(ctx);
   bindFeatureViews(ctx);
@@ -532,13 +563,15 @@ function render() {
   bindCommerce(ctx);
   bindCanvas(ctx);
   document.title = `${state.campaign?.title || 'Portal'} · A Coroa Velada`;
+  if (!navigating && trail.current) trail.update(routePoint());
+  updateRouteControls();
 }
 function overview() {
   const p = player();
   const experience = admin()
     ? `<span class="metric-label">RECOMPENSAS DA MESA</span>${button('Distribuir XP ' + icon('arrow'), 'distribute-xp', '', 'button primary')}<p class="hint">Escolha vários personagens e conceda a recompensa de uma vez.</p>`
     : `<span class="metric-label">Experiência disponível</span><strong>${p.xp}<small>XP</small></strong>${button('Evoluir traços ' + icon('arrow'), 'nav-attributes', '', 'text-button')}`;
-  return `<div class="welcome-row"><span class="eyebrow">O LIVRO DA NOITE · FICHA #${p.id}</span><span class="save-state">${icon('save')} ${p.updated_at ? 'Salvo em ' + date(p.updated_at) : 'Ficha carregada'} ${button(icon('refresh'), 'refresh', 'aria-label="Atualizar ficha"', 'icon-button')}</span></div><section class="character-hero"><div class="hero-lines" aria-hidden="true"></div><div class="character-avatar" data-action="view-portrait" role="button" tabindex="0" aria-label="Ver retrato ampliado">${p.profilepicture?.startsWith('data:image/') ? `<img src="${esc(p.profilepicture)}" alt="Retrato de ${esc(p.char)}" loading="lazy" referrerpolicy="no-referrer">` : `<span>${esc(p.char.slice(0, 1))}</span>`}<span class="portrait-caption">RETRATO DO PERSONAGEM</span><span class="avatar-diamond">◇</span></div><div class="character-identity"><div class="hero-tags"><span class="tag red">${esc(p.cla)}</span><span class="tag">${p.generation}ª GERAÇÃO</span>${p.archived ? '<span class="tag red">ARQUIVADO</span>' : ''}</div><h1>${esc(p.char)}</h1><p>Interpretado por <strong>${esc(p.player)}</strong></p></div><div class="hero-emblem" aria-hidden="true">${crown}</div><div class="hero-actions">${button(icon('edit') + ' Retrato', 'portrait', '', 'button ghost')}${button(icon('download') + ' Salvar JSON', 'export', '', 'button ghost')}${admin() ? button(icon('edit') + ' Editar ficha', 'identity', '', 'button ghost') : ''}</div></section><div class="overview-grid"><section class="panel vitae-panel"><div class="panel-heading"><span class="eyebrow">A ESSÊNCIA DO PERSONAGEM</span><span class="tiny-diamond">◇</span></div><div class="vitae-numbers"><div>${experience}</div><div><span class="metric-label">Potência do sangue</span><strong>${p.bloodpotency}<small>NÍVEL</small></strong>${dots(p.bloodpotency, 10)}</div></div><div class="panel-bottom">A experiência molda o monstro. O sangue revela seu poder.</div></section><section class="panel ambition-panel"><span class="eyebrow">SEU CADERNO DA CRÔNICA</span><h2>As pistas ficam. As histórias continuam.</h2><p>Anotações pessoais e compartilhadas, reunidas em um único lugar.</p>${button('Abrir anotações ' + icon('arrow'), 'nav-notes', '', 'text-button')}</section></div>${sectionHead('Entre a humanidade e a besta', 'Ajuste os recursos. A confirmação aparece após uma breve pausa.')}${pendingStatus ? `<div class="pending-status" role="status">${icon('clock')} Prévia de alteração · aguardando confirmação ${button('Desfazer', 'cancel-status', '', 'button ghost compact')}</div>` : ''}<div class="status-grid">${Object.entries(
+  return `<div class="welcome-row"><span class="eyebrow">O LIVRO DA NOITE · FICHA #${p.id}</span><span class="save-state">${icon('save')} ${p.updated_at ? 'Salvo em ' + date(p.updated_at) : 'Ficha carregada'} ${button(icon('refresh'), 'refresh', 'aria-label="Atualizar ficha"', 'icon-button')}</span></div><section class="character-hero"><div class="hero-lines" aria-hidden="true"></div><div class="character-avatar" data-action="view-portrait" role="button" tabindex="0" aria-label="Ver retrato ampliado">${p.profilepicture?.startsWith('data:image/') ? `<img src="${esc(p.profilepicture)}" alt="Retrato de ${esc(p.char)}" style="${portraitStyle(p)}" loading="lazy" referrerpolicy="no-referrer">` : `<span>${esc(p.char.slice(0, 1))}</span>`}<span class="portrait-caption">RETRATO DO PERSONAGEM</span><span class="avatar-diamond">◇</span></div><div class="character-identity"><div class="hero-tags"><span class="tag red">${esc(p.cla)}</span><span class="tag">${p.generation}ª GERAÇÃO</span>${p.archived ? '<span class="tag red">ARQUIVADO</span>' : ''}</div><h1>${esc(p.char)}</h1><p>Interpretado por <strong>${esc(p.player)}</strong></p></div><div class="hero-emblem" aria-hidden="true">${crown}</div><div class="hero-actions">${button(icon('edit') + ' Retrato', 'portrait', '', 'button ghost')}${button(icon('download') + ' Salvar JSON', 'export', '', 'button ghost')}${admin() ? button(icon('edit') + ' Editar ficha', 'identity', '', 'button ghost') : ''}</div></section><div class="overview-grid"><section class="panel vitae-panel"><div class="panel-heading"><span class="eyebrow">A ESSÊNCIA DO PERSONAGEM</span><span class="tiny-diamond">◇</span></div><div class="vitae-numbers"><div>${experience}</div><div><span class="metric-label">Potência do sangue</span><strong>${p.bloodpotency}<small>NÍVEL</small></strong>${dots(p.bloodpotency, 10)}</div></div><div class="panel-bottom">A experiência molda o monstro. O sangue revela seu poder.</div></section><section class="panel ambition-panel"><span class="eyebrow">SEU CADERNO DA CRÔNICA</span><h2>As pistas ficam. As histórias continuam.</h2><p>Anotações pessoais e compartilhadas, reunidas em um único lugar.</p>${button('Abrir anotações ' + icon('arrow'), 'nav-notes', '', 'text-button')}${button('Ambição e desejo ' + icon('arrow'), 'nav-aspirations', '', 'button ghost')}</section></div>${sectionHead('Entre a humanidade e a besta', 'Ajuste os recursos. A confirmação aparece após uma breve pausa.')}${pendingStatus ? `<div class="pending-status" role="status">${icon('clock')} Prévia de alteração · aguardando confirmação ${button('Desfazer', 'cancel-status', '', 'button ghost compact')}</div>` : ''}<div class="status-grid">${Object.entries(
     state.game.status_rules
   )
     .map(([key, rule]) => {
@@ -744,10 +777,6 @@ function recordForm(key, recordId) {
     await patch({ [key]: list }, revision, data.get('log_message') || '');
   });
 }
-function powerBadges(n) {
-  const m = mechanics(n.description, n.mechanics).mechanics;
-  return `<div class="power-badges"><span class="power-badge ${m.rouse_check ? 'required' : 'quiet'}" title="${m.rouse_check === null ? 'Teste de Despertar não informado' : m.rouse_check ? 'Exige Teste de Despertar' : 'Não exige Teste de Despertar'}">${icon('blood')} ${m.rouse_check === null ? 'Despertar não informado' : m.rouse_check ? 'Teste de Despertar' : 'Sem despertar'}</span><span class="power-badge ${m.test ? 'required' : 'quiet'}" title="${esc(m.test || 'Não exige teste de habilidade')}">${icon('test')} ${esc(m.test || 'Sem teste')}</span></div>`;
-}
 function queueStatus(key, delta) {
   if (player().archived) throw new Error('Esta ficha está arquivada.');
   if (!pendingStatus)
@@ -789,18 +818,6 @@ function queueStatus(key, delta) {
   }, state.game.interface.status_confirmation_seconds * 1000);
 }
 
-function loreModal(key, id) {
-  if (key === 'disciplines') {
-    openEvolution(context(), key, id, 'powers');
-    return;
-  }
-  const def = state.game[key].find((x) => x.id === id);
-  modal(
-    def.name,
-    `<span class="tag">${esc(def.type || 'NÍVEL ' + def.nivel)}</span><p class="prose modal-description">${esc(def.description)}</p>`,
-    null
-  );
-}
 function grantModal(key) {
   const p = player(),
     revision = p._revision;
@@ -903,6 +920,17 @@ async function handleClick(event) {
       await go(action.slice(4));
       return;
     }
+    if (action === 'route-back') {
+      if ($('#modal').open) closeModal();
+      else if (trail.canBack) history.back();
+      return;
+    }
+    if (action === 'route-home') {
+      await go(admin() ? 'dashboard' : 'my-characters');
+      return;
+    }
+    if (await aspirationAction(action, control.dataset, context())) return;
+    if (await consultationAction(action, control.dataset, context())) return;
     if (await searchAction(action, control.dataset, context())) return;
     if (await commerceAction(action, control.dataset, context())) return;
     if (await powerAction(action, control.dataset, context())) return;
@@ -913,6 +941,7 @@ async function handleClick(event) {
     }
     if (action === 'dice-clear-preset') {
       state.preparedRoll = null;
+      state.diceDraft = null;
       render();
       return;
     }
@@ -999,9 +1028,7 @@ async function handleClick(event) {
         break;
       case 'open-world':
         state.world = key;
-        state.view = 'world';
-        location.hash = 'world';
-        render();
+        await go('world');
         break;
       case 'world-tab':
         state.world = key;
@@ -1019,18 +1046,8 @@ async function handleClick(event) {
         break;
       }
       case 'portrait': {
-        const p = player(),
-          revision = p._revision;
-        modal(
-          'Um rosto para a noite',
-          '<label class="field"><span>Imagem local (PNG, JPEG ou WebP, até 5 MB)</span><input type="file" name="file" accept="image/png,image/jpeg,image/webp"></label><label class="checkbox"><input type="checkbox" name="remove"> Apagar o retrato atual</label><p class="hint">O retrato é salvo no Storage privado da campanha.</p>',
-          async (data) => {
-            if (!data.has('remove') && !data.get('file')?.size)
-              throw new Error('Selecione um retrato ou marque Apagar.');
-            const image = data.has('remove') ? '' : (await readImage(data.get('file'))).image;
-            await patch({ profilepicture: image }, revision);
-          }
-        );
+        const revision = player()._revision;
+        portraitDialog(player(), (data) => patch(data, revision));
         break;
       }
       case 'view-portrait':
@@ -1078,13 +1095,6 @@ async function handleClick(event) {
         );
         break;
       }
-      case 'goal-complete':
-        await patch({
-          goals: player().goals.map((x) =>
-            String(x.id) === record ? { ...x, completed: !x.completed } : x
-          )
-        });
-        break;
       case 'money': {
         const p = player(),
           before = p.money,
@@ -1177,7 +1187,7 @@ async function handleClick(event) {
         break;
       }
       case 'lore':
-        loreModal(key, Number(id));
+        await openConsultation(context(), key, Number(id));
         break;
       case 'grant':
         grantModal(key);
@@ -1191,9 +1201,7 @@ async function handleClick(event) {
         break;
       case 'open-character':
         await loadPlayer(Number(id));
-        state.view = 'overview';
-        location.hash = 'overview';
-        render();
+        await go('overview');
         break;
       case 'create-character':
         state.editor = null;
@@ -1299,6 +1307,19 @@ function importModal(game) {
     },
     { saveLabel: 'Validar e importar' }
   );
+}
+function captureDice(form) {
+  state.diceDraft = {
+    character: player()?.id,
+    fields: Object.fromEntries(
+      ['attribute', 'skill', 'modifier', 'difficulty', 'hunger'].map((name) => [
+        name,
+        form.elements[name].type === 'checkbox'
+          ? form.elements[name].checked
+          : form.elements[name].value
+      ])
+    )
+  };
 }
 function handleSubmit(event) {
   if (event.target.id !== 'dice-form') return;
@@ -1415,25 +1436,123 @@ async function editFull(p) {
   await makeEditor(p);
   await go('new-player');
 }
-async function go(view, fromHash = false) {
-  if (
-    !state.campaigns?.length &&
-    !['campaigns', 'profile', 'storage', 'trash', 'notifications'].includes(view)
-  )
-    view = 'campaigns';
-  if (view !== state.view) clearPending();
-  if (adminNav.some(([key]) => key === view) && !admin() && view !== 'submissions')
-    view = 'my-characters';
-  state.view = view;
-  if (view === 'accounts') state.accounts = await api('/api/admin/accounts');
-  if (view === 'social') state.social = await api('/api/social');
-  if (view === 'storage') state.storageMarkup = await storageView();
-  if (view === 'trash') state.trash = await api('/api/admin/trash');
-  if (view === 'new-player' && !state.editor) await makeEditor();
-  if (!fromHash && location.hash !== `#${view}`) location.hash = view;
-  render();
-  window.scrollTo({ top: 0, behavior: 'instant' });
+const routeKeys = [
+  'world',
+  'query',
+  'archived',
+  'traitCategory',
+  'traitQuery',
+  'ruleCatalog',
+  'ruleQuery',
+  'rulePane',
+  'powerDetail',
+  'mapId',
+  'mapCharacterId',
+  'intelQuery',
+  'intelFilter',
+  'historyLimit',
+  'reviewId',
+  'evolution',
+  'preparedRoll',
+  'diceDraft'
+];
+let trail = new NavigationTrail(),
+  navigating = false,
+  restoring = false;
+function routePoint() {
+  return {
+    view: state.view,
+    campaign: state.campaign?.id,
+    character: player()?.id,
+    scroll: window.scrollY,
+    editor: state.editor,
+    route: Object.fromEntries(
+      routeKeys.map((k) => [k, state[k] === undefined ? undefined : structuredClone(state[k])])
+    )
+  };
 }
+function updateRouteControls() {
+  const back = $('[data-action=route-back]');
+  if (back) {
+    back.disabled = !trail.canBack;
+    back.title = trail.canBack ? 'Voltar à tela anterior' : 'Você está no início desta navegação';
+  }
+  const label = $('[data-route-label]');
+  if (label) label.textContent = $('#breadcrumb-current')?.textContent || '';
+}
+async function restoreRoute(point) {
+  restoring = true;
+  navigating = true;
+  closeModal();
+  try {
+    if (point.campaign && point.campaign !== state.campaign?.id) {
+      await api(`/api/campaigns/${point.campaign}/select`, { method: 'POST', data: {} });
+      state.player = null;
+      await loadFeatureState(state);
+    }
+    Object.assign(state, structuredClone(point.route));
+    state.editor = point.editor;
+    if (point.character) {
+      try {
+        await loadPlayer(point.character);
+      } catch {
+        state.player = null;
+      }
+    } else state.player = null;
+    state.view = point.view;
+    clearPending();
+    render();
+    requestAnimationFrame(() => window.scrollTo({ top: point.scroll || 0, behavior: 'instant' }));
+  } finally {
+    navigating = false;
+    restoring = false;
+    updateRouteControls();
+  }
+}
+function rememberRoutePosition() {
+  if (trail.current) {
+    trail.current.point.scroll = window.scrollY;
+    for (const key of ['traitQuery', 'ruleQuery', 'intelQuery', 'query', 'diceDraft'])
+      trail.current.point.route[key] = state[key];
+  }
+}
+async function go(view, options = {}) {
+  if (options === true) options = { replace: true };
+  rememberRoutePosition();
+  const previousView = state.view;
+  navigating = true;
+  try {
+    if (
+      !state.campaigns?.length &&
+      !['campaigns', 'profile', 'storage', 'trash', 'notifications'].includes(view)
+    )
+      view = 'campaigns';
+    if (view !== state.view) clearPending();
+    if (adminNav.some(([key]) => key === view) && !admin() && view !== 'submissions')
+      view = 'my-characters';
+    if (options.route) Object.assign(state, options.route);
+    state.view = view;
+    if (view === 'accounts') state.accounts = await api('/api/admin/accounts');
+    if (view === 'social') state.social = await api('/api/social');
+    if (view === 'storage') state.storageMarkup = await storageView();
+    if (view === 'trash') state.trash = await api('/api/admin/trash');
+    if (view === 'new-player' && !state.editor) await makeEditor();
+    closeModal();
+    render();
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    if (previousView !== state.view || options.route) {
+      const marker = trail.push(routePoint());
+      history[options.replace ? 'replaceState' : 'pushState'](marker, '', `#${state.view}`);
+    } else {
+      trail.update(routePoint());
+      history.replaceState(trail.marker(), '', `#${state.view}`);
+    }
+  } finally {
+    navigating = false;
+    updateRouteControls();
+  }
+}
+
 let syncTimer;
 export function stopPortal() {
   configureSound(undefined, null);
@@ -1448,6 +1567,8 @@ export function stopPortal() {
   state.players = [];
   state.accounts = [];
   state.rolls = [];
+  state.diceDraft = null;
+  state.preparedRoll = null;
   state.socialDraft = {};
   state.socialRecipient = '';
 }
@@ -1473,6 +1594,7 @@ export async function startPortal() {
   if (state.view === 'accounts' && admin()) state.accounts = await api('/api/admin/accounts');
   if (state.view === 'storage' && admin()) state.storageMarkup = await storageView();
   if (state.view === 'trash' && admin()) state.trash = await api('/api/admin/trash');
+  trail = new NavigationTrail();
   initShell();
   document.addEventListener(
     'keydown',
@@ -1536,9 +1658,27 @@ export async function startPortal() {
     },
     { signal: events.signal }
   );
+  trail.start(routePoint());
+  history.replaceState(trail.marker(), '', `#${state.view}`);
+  updateRouteControls();
+  window.addEventListener(
+    'popstate',
+    (event) =>
+      run(async () => {
+        rememberRoutePosition();
+        const point = trail.select(event.state);
+        if (point) await restoreRoute(point);
+        else if (!restoring) await go(location.hash.slice(1) || 'campaigns', { replace: true });
+      }),
+    { signal: events.signal }
+  );
   window.addEventListener(
     'hashchange',
-    () => run(() => go(location.hash.slice(1) || 'campaigns', true)),
+    () => {
+      const view = location.hash.slice(1);
+      if (!restoring && view !== state.view && view !== 'main-content')
+        run(() => go(view || 'campaigns', { replace: true }));
+    },
     { signal: events.signal }
   );
   window.addEventListener(

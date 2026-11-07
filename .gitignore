@@ -1,0 +1,19 @@
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+.env.*
+!.env.render.example
+!.env.vercel.example
+.local-data/
+dist/
+.openai/
+*.zip
+*.patch
+desktop.ini
+Thumbs.db
+
+# Isolated preview state; never ship as the application.
+.qa/
