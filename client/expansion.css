@@ -1181,6 +1181,18 @@ body,
   display: block;
   overflow: visible;
 }
+.atlas-stage {
+  position: relative;
+}
+.atlas-stage > .map-status-note {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 1000;
+  margin: 0;
+  pointer-events: none;
+}
 .atlas-marker > .character-pin-face {
   transform: none;
   position: relative;
@@ -1673,4 +1685,15 @@ body,
   max-width: 100% !important;
   max-height: 100% !important;
   object-fit: cover;
+}
+.atlas-marker {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.character-point-popup .button {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 8px;
 }

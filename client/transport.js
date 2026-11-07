@@ -6,14 +6,17 @@ export class RemoteClient {
     this.base = url.origin;
     this.token = null;
     this.campaignId = null;
+    this.playerTestId = null;
     this.store = { remoteRevision: 0 };
   }
   clear() {
     this.token = null;
     this.campaignId = null;
+    this.playerTestId = null;
   }
 
   async request(path, { method = 'GET', data, token, signal } = {}) {
+    const playerTestId = this.playerTestId;
     const url = new URL(this.base + path);
     if (method === 'GET' && data) url.searchParams.set('data', JSON.stringify(data));
     const headers = {
@@ -22,6 +25,7 @@ export class RemoteClient {
     };
     if (token) headers.Authorization = 'Bearer ' + token;
     if (this.campaignId) headers['X-Campaign-ID'] = this.campaignId;
+    if (playerTestId) headers['X-Player-Test'] = playerTestId;
     let response;
     try {
       response = await fetch(url, {
@@ -45,9 +49,14 @@ export class RemoteClient {
     } catch {
       throw new Error('A API retornou uma resposta incompatível.');
     }
+    if (this.playerTestId !== playerTestId)
+      throw Object.assign(new Error('A visão do portal foi alterada.'), {
+        code: 'PLAYER_TEST_CONTEXT_CHANGED'
+      });
     if (!response.ok) {
       const error = new Error(result.error || 'Não foi possível concluir a ação.');
       error.status = response.status;
+      error.code = result.code;
       throw error;
     }
     const revision = Number(response.headers.get('X-Portal-Revision'));

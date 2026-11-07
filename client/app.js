@@ -1,7 +1,7 @@
 import { installSound } from './audio.js';
 import { api, initialize, session, saveSession, clearSession } from './api.js';
 import { showLogin } from './login.js';
-import { startPortal, stopPortal } from './portal.js';
+import { startPortal, stopPortal, restartPortal } from './portal.js';
 import { initializeFiles } from './files.js';
 import { esc } from '../shared/ui.js';
 export async function startApp({ identity } = {}) {
@@ -27,6 +27,24 @@ export async function startApp({ identity } = {}) {
   }
   window.addEventListener('portal:signout', leave);
   window.addEventListener('session:expired', leave);
+  let restoringNarrator = false;
+  window.addEventListener('player-test:expired', async () => {
+    const current = session();
+    if (restoringNarrator || !current?.player_test) return;
+    restoringNarrator = true;
+    try {
+      await restartPortal('dashboard', {
+        ...current,
+        mode: 'online',
+        player_test: null,
+        campaign_id: current.player_test.source_campaign_id
+      });
+    } catch {
+      // The blocked portal offers a reload; never retry a test mutation in the real campaign.
+    } finally {
+      restoringNarrator = false;
+    }
+  });
   try {
     await initialize();
     await initializeFiles();

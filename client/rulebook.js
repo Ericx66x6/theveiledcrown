@@ -4,6 +4,7 @@ import { labels } from '../shared/rules.js';
 import { api } from './api.js';
 import { clone, newId } from '../core/model.js';
 import { ruleConfig } from './features.js';
+import { showRuleContent } from './rule-content.js';
 const catalogs = [
   'atributes',
   'talents',
@@ -27,9 +28,10 @@ export function rulebookPage(ctx) {
   let content = '';
   if (pane === 'catalog') content = ruleCatalog(ctx, key);
   else if (pane === 'chapters')
-    content = `<div class="list-toolbar"><p class="muted">História do mundo, facções, regras da casa ou qualquer assunto da sua campanha.</p>${button(icon('plus') + ' Novo capítulo', 'rule-chapter-add', '', 'button primary')}</div><div class="rulebook-chapters">${g.rulebook.map((section) => `<section class="panel rulebook-chapter"><header><div><span class="eyebrow">CAPÍTULO DA CAMPANHA</span><h2>${esc(section.title)}</h2><p>${esc(section.description || '')}</p></div>${button('Editar capítulo', 'rule-chapter-edit', `data-id="${section.id}"`, 'button ghost')}${button('Remover', 'rule-chapter-delete', `data-id="${section.id}"`, 'text-button danger')}</header><div class="rulebook-free-entries">${section.entries.map((e) => `<article><h3>${esc(e.title)}</h3><p class="prose">${esc(e.body)}</p><footer>${button('Editar', 'rule-text-edit', `data-chapter="${section.id}" data-id="${e.id}"`, 'text-button')}${button('Remover', 'rule-text-delete', `data-chapter="${section.id}" data-id="${e.id}"`, 'text-button danger')}</footer></article>`).join('') || '<p class="muted">Este capítulo está pronto para receber seu primeiro texto.</p>'}</div>${button(icon('plus') + ' Acrescentar informação', 'rule-text-add', `data-chapter="${section.id}"`, 'button ghost')}</section>`).join('') || empty('O livro também é seu.', 'Crie capítulos livres e acrescente tudo o que a campanha precisar.', button('Criar primeiro capítulo', 'rule-chapter-add', '', 'button primary'))}</div>`;
-  else content = `${creationSettings(ctx)}${ruleConfig(ctx)}`;
-  return `<div class="page-intro"><span class="eyebrow">O CONHECIMENTO DA CAMPANHA</span><h1>Escreva as regras do seu universo.</h1><p>Crie, edite e organize os catálogos e as informações que a sua mesa precisa.</p></div><div class="rulebook-panes">${Object.entries(
+    content = `<div class="list-toolbar"><p class="muted">História do mundo, facções, regras da casa ou qualquer assunto da sua campanha.</p>${s.ruleEditing ? button(icon('plus') + ' Novo capítulo', 'rule-chapter-add', '', 'button primary') : ''}</div><div class="rulebook-chapters">${g.rulebook.map((section) => `<section class="panel rulebook-chapter"><header><div><span class="eyebrow">CAPÍTULO DA CAMPANHA</span><h2>${esc(section.title)}</h2><p>${esc(section.description || '')}</p></div>${s.ruleEditing ? button('Editar capítulo', 'rule-chapter-edit', `data-id="${section.id}"`, 'button ghost') + button('Remover', 'rule-chapter-delete', `data-id="${section.id}"`, 'text-button danger') : ''}</header><div class="rulebook-free-entries">${section.entries.map((e) => `<article><h3>${esc(e.title)}</h3><p class="prose">${esc(e.body)}</p>${s.ruleEditing ? `<footer>${button('Editar', 'rule-text-edit', `data-chapter="${section.id}" data-id="${e.id}"`, 'text-button')}${button('Remover', 'rule-text-delete', `data-chapter="${section.id}" data-id="${e.id}"`, 'text-button danger')}</footer>` : ''}</article>`).join('') || '<p class="muted">Este capítulo está pronto para receber seu primeiro texto.</p>'}</div>${s.ruleEditing ? button(icon('plus') + ' Acrescentar informação', 'rule-text-add', `data-chapter="${section.id}"`, 'button ghost') : ''}</section>`).join('') || empty('O livro também é seu.', 'Crie capítulos livres e acrescente tudo o que a campanha precisar.', s.ruleEditing ? button('Criar primeiro capítulo', 'rule-chapter-add', '', 'button primary') : '')}</div>`;
+  else
+    content = s.ruleEditing ? `${creationSettings(ctx)}${ruleConfig(ctx)}` : creationSummary(ctx);
+  return `<div class="page-intro"><span class="eyebrow">O CONHECIMENTO DA CAMPANHA</span><h1>${s.ruleEditing ? 'Escreva as regras do seu universo.' : 'O livro da sua crônica.'}</h1><p>${s.ruleEditing ? 'Crie, edite e organize o conteúdo da campanha.' : 'Consulte poderes, antecedentes e características sem abrir a edição.'}</p></div><div class="rulebook-view-switch">${button('Consultar', 'rule-mode', `data-mode="read" aria-pressed="${!s.ruleEditing}"`, 'button ' + (!s.ruleEditing ? 'primary' : 'ghost'))}${button(icon('edit') + ' Gerenciar livro', 'rule-mode', `data-mode="edit" aria-pressed="${!!s.ruleEditing}"`, 'button ' + (s.ruleEditing ? 'primary' : 'ghost'))}</div><div class="rulebook-panes">${Object.entries(
     paneLabels
   )
     .map(([id, label]) =>
@@ -42,25 +44,65 @@ export function rulebookPage(ctx) {
     )
     .join(
       ''
-    )}</div>${content}<div class="rulebook-advanced panel"><div><h2>Ferramentas do game-data</h2><p>O livro inteiro continua em JSON, com importação e edição dos campos avançados.</p></div>${button(icon('download') + ' Exportar', 'export-game', '', 'button ghost')}${button('Importar game-data', 'import-game', '', 'button ghost')}${button('Editar JSON completo', 'rule-game-json', '', 'button ghost')}</div>`;
+    )}</div>${content}<div class="rulebook-advanced panel"><div><h2>Ferramentas do game-data</h2><p>O livro inteiro continua em JSON, com importação e edição dos campos avançados.</p></div>${button(icon('download') + ' Exportar', 'export-game', '', 'button ghost')}${s.ruleEditing ? button('Importar game-data', 'import-game', '', 'button ghost') + button('Editar JSON completo', 'rule-game-json', '', 'button ghost') : ''}</div>`;
+}
+function creationSummary(ctx) {
+  const c = ctx.state.game.character_creation,
+    r = c.guided;
+  return `<section class="panel"><span class="eyebrow">CRIAÇÃO DE PERSONAGENS · CONSULTA</span><h2>As regras para chegar à mesa.</h2><div class="creation-policy-summary"><p>Atributos começam em ${r.attribute_base}: distribua mais ${r.initial.atributes}, até ${r.initial_max.atributes}.</p><p>Habilidades compartilham ${r.initial.skills} pontos, até ${r.initial_max.skills}. Antecedentes: ${r.initial.precedents}. Disciplinas: ${r.initial.disciplines} entre os três dons do clã.</p><p>${r.bonus_points} pontos bônus. Custos por nível: atributo ${r.bonus_costs.atributes}, habilidade ${r.bonus_costs.skills}, disciplina ${r.bonus_costs.disciplines}, antecedente ${r.bonus_costs.precedents}. Limite final ${r.max_level}; até ${r.max_flaws} defeitos.</p><p>Geração: ${r.generation_base} menos os pontos no antecedente, até a ${r.generation_min}ª. Recursos define o capital inicial. Todas as propostas precisam da aprovação do narrador.</p></div><details><summary>Disciplinas dos clãs</summary><div class="creation-policy-summary">${r.clans.map((c) => `<p><strong>${esc(c.name)}</strong>: ${esc(c.disciplines.map((id) => ctx.state.game.disciplines.find((d) => d.id === id)?.name || 'Disciplina não cadastrada').join(', '))}</p>`).join('')}</div></details></section>`;
 }
 function creationSettings(ctx) {
-  const c = ctx.state.game.character_creation;
-  return `<section class="panel creation-config"><span class="eyebrow">PORTA DE ENTRADA DA MESA</span><h2>Criação de personagens pelos jogadores</h2><p class="hint">As fichas sempre passam pela aprovação do narrador. Orçamentos vazios deixam a pontuação para avaliação manual.</p><form id="creation-config" class="form-grid"><label class="checkbox full"><input name="enabled" type="checkbox" ${c.enabled ? 'checked' : ''}> Permitir que jogadores enviem novos personagens</label>${field('starting_xp', 'XP inicial', c.starting_xp, 'number', 'required min="0" max="1000000" step="1"')}${field('starting_money', 'Dinheiro inicial', c.starting_money, 'number', 'required min="0" max="1000000000" step="0.01"')}${field('max_characters', 'Máximo de personagens e propostas por jogador', c.max_characters_per_player, 'number', 'required min="1" max="100" step="1"')}${Object.entries(
+  const c = ctx.state.game.character_creation,
+    r = c.guided;
+  return `<section class="panel creation-config"><span class="eyebrow">PORTA DE ENTRADA DA MESA</span><h2>Criação de personagens pelos jogadores</h2><p class="hint">Pontos iniciais e bônus são reservas separadas. Alterações não refazem fichas já aprovadas. As propostas sempre exigem aprovação.</p><form id="creation-config" class="form-grid"><label class="checkbox full"><input name="enabled" type="checkbox" ${c.enabled ? 'checked' : ''}> Permitir novas propostas</label><label class="checkbox full"><input name="guided" type="checkbox" ${r.enabled ? 'checked' : ''}> Usar criação guiada com conferência de pontos</label>${field('starting_xp', 'XP inicial após a criação', c.starting_xp, 'number', 'required min="0" max="1000000" step="1"')}${field('starting_money', 'Dinheiro extra além de Recursos', c.starting_money, 'number', 'required min="0" max="1000000000" step="0.01"')}${field('max_characters', 'Máximo de personagens e propostas por jogador', c.max_characters_per_player, 'number', 'required min="1" max="100" step="1"')}${field('bonus_points', 'Pontos bônus iniciais', r.bonus_points, 'number', 'required min="0" max="100" step="1"')}${field('max_flaws', 'Máximo de defeitos por ficha', r.max_flaws, 'number', 'required min="0" max="10" step="1"')}${Object.entries(
+    r.initial
+  )
+    .map(([key, value]) =>
+      field(
+        'initial:' + key,
+        'Pontos iniciais · ' + (labels[key] || key),
+        value,
+        'number',
+        'required min="0" max="200" step="1"'
+      )
+    )
+    .join('')}${Object.entries(r.initial_max)
+    .map(([key, value]) =>
+      field(
+        'initial_max:' + key,
+        'Limite inicial · ' + (labels[key] || key),
+        value,
+        'number',
+        'required min="0" max="5" step="1"'
+      )
+    )
+    .join('')}${Object.entries(r.bonus_costs)
+    .map(([key, value]) =>
+      field(
+        'bonus_costs:' + key,
+        'Custo por nível · ' + (labels[key] || key),
+        value,
+        'number',
+        'required min="1" max="100" step="1"'
+      )
+    )
+    .join(
+      ''
+    )}<details class="full"><summary>Limites para fichas sem assistente</summary><p class="hint">Aplicados às propostas antigas ou de transcrição manual. Campos vazios deixam a conferência ao narrador.</p><div class="form-grid">${Object.entries(
     c.budgets
   )
     .map(([key, value]) =>
       field(
         'budget:' + key,
-        'Pontos totais · ' + labels[key],
+        'Total · ' + labels[key],
         value ?? '',
         'number',
-        'min="0" max="1000" step="1" placeholder="Avaliação manual"'
+        'min="0" max="1000" step="1"'
       )
     )
     .join(
       ''
-    )}<button type="submit" class="button primary full">${icon('save')} Salvar regras de criação</button></form></section>`;
+    )}</div></details><button type="submit" class="button primary full">${icon('save')} Salvar regras de criação</button></form></section>`;
 }
 async function saveGame(ctx, g) {
   await api('/api/game', { method: 'PUT', data: { ...g, _expected_revision: g._revision } });
@@ -116,6 +158,7 @@ function catalogDialog(ctx, key, entry) {
       if (key === 'caracteristics') {
         next.type = form.get('type');
         next.value = Number(form.get('value'));
+        next.point_values = [Math.abs(next.value)];
       }
       const index = g[key].findIndex((e) => e.id === id);
       if (index < 0) g[key].push(next);
@@ -141,6 +184,17 @@ export async function rulebookAction(action, data, ctx) {
     key = data.key,
     g = clone(s.game),
     chapter = g.rulebook.find((c) => c.id === (data.chapter || data.id));
+  if (action === 'rule-mode') {
+    s.ruleEditing = data.mode === 'edit';
+    ctx.draw();
+    return true;
+  }
+  if (action === 'rule-view') {
+    const entry = g[key]?.find((d) => d.id === Number(data.id));
+    if (!entry) throw new Error('Conteúdo não encontrado.');
+    showRuleContent(entry, key, s.game);
+    return true;
+  }
   if (action === 'rule-pane') {
     s.rulePane = data.pane;
     ctx.draw();
@@ -287,6 +341,13 @@ export function bindRulebook(ctx) {
         const f = new FormData(creation),
           g = clone(ctx.state.game);
         g.character_creation.enabled = f.has('enabled');
+        const guide = g.character_creation.guided;
+        guide.enabled = f.has('guided');
+        guide.bonus_points = Number(f.get('bonus_points'));
+        guide.max_flaws = Number(f.get('max_flaws'));
+        for (const group of ['initial', 'initial_max', 'bonus_costs'])
+          for (const key of Object.keys(guide[group]))
+            guide[group][key] = Number(f.get(group + ':' + key));
         g.character_creation.starting_xp = Number(f.get('starting_xp'));
         g.character_creation.starting_money = Number(f.get('starting_money'));
         g.character_creation.max_characters_per_player = Number(f.get('max_characters'));
@@ -313,5 +374,5 @@ function ruleCatalog(ctx, key) {
     'Catálogo',
     catalogs.map((k) => ({ value: k, label: labels[k] })),
     key
-  )}<label class="search-field">${icon('search')}<input type="search" id="rulebook-search" placeholder="Pesquisar em todos os catálogos" aria-label="Buscar conteúdo em todos os catálogos" value="${esc(query)}"></label>${button(icon('plus') + ' Novo conteúdo', 'rule-add', `data-key="${key}"`, 'button primary')}</div>${query ? '<p class="hint">Resultados em todos os catálogos do livro.</p>' : ''}<div class="rulebook-catalog-grid">${entries.map((d) => `<article class="rulebook-entry"><div><span class="eyebrow">${labels[d.key]} ${d.nivel ? '· NÍVEL ' + d.nivel : ''}</span><h2>${esc(d.name)}</h2><p class="prose">${esc((d.description || d.short_description || 'Sem descrição.').slice(0, 500))}</p>${d.key === 'disciplines' ? `<span class="tag">${d.nivels.length} poderes cadastrados</span>` : ''}</div><footer>${button(icon('edit') + ' Editar', 'rule-edit', `data-key="${d.key}" data-id="${d.id}"`, 'button ghost')}${button('JSON', 'rule-json', `data-key="${d.key}" data-id="${d.id}"`, 'text-button')}${button('Remover', 'rule-delete', `data-key="${d.key}" data-id="${d.id}"`, 'text-button danger')}</footer></article>`).join('') || empty('Nada com esse nome.', 'Tente outra palavra ou acrescente conteúdo ao livro.')}</div>`;
+  )}<label class="search-field">${icon('search')}<input type="search" id="rulebook-search" placeholder="Pesquisar em todos os catálogos" aria-label="Buscar conteúdo em todos os catálogos" value="${esc(query)}"></label>${ctx.state.ruleEditing ? button(icon('plus') + ' Novo conteúdo', 'rule-add', `data-key="${key}"`, 'button primary') : ''}</div>${query ? '<p class="hint">Resultados em todos os catálogos do livro.</p>' : ''}<div class="rulebook-catalog-grid">${entries.map((d) => `<article class="rulebook-entry"><div><span class="eyebrow">${labels[d.key]} ${d.nivel ? '· NÍVEL ' + d.nivel : ''}</span><h2>${esc(d.name)}</h2><p class="prose">${esc((d.description || d.short_description || 'Sem descrição.').slice(0, 500))}</p>${d.key === 'disciplines' ? `<span class="tag">${d.nivels.length} poderes cadastrados</span>` : ''}</div><footer>${button(icon('rules') + ' Visualizar', 'rule-view', `data-key="${d.key}" data-id="${d.id}"`, 'button primary')}${ctx.state.ruleEditing ? button(icon('edit') + ' Editar', 'rule-edit', `data-key="${d.key}" data-id="${d.id}"`, 'button ghost') + button('JSON', 'rule-json', `data-key="${d.key}" data-id="${d.id}"`, 'text-button') + button('Remover', 'rule-delete', `data-key="${d.key}" data-id="${d.id}"`, 'text-button danger') : ''}</footer></article>`).join('') || empty('Nada com esse nome.', 'Tente outra palavra ou acrescente conteúdo ao livro.')}</div>`;
 }

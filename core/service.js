@@ -479,6 +479,15 @@ export class CharacterService {
           next[key].push(entry);
         }
         entry[field] = data.target;
+        if (key === 'disciplines') {
+          for (const [parent, primary] of Object.entries(next.primary_paths || {})) {
+            if (Number(parent) !== data.id && primary !== data.id) continue;
+            for (const linked of [Number(parent), primary]) {
+              const row = next.disciplines.find((d) => d.id === linked);
+              if (row) row.nivel = data.target;
+            }
+          }
+        }
         next.xp -= quote.cost;
         label = 'Evolução';
         const name =

@@ -1,4 +1,4 @@
-# The Veiled Crown · A Coroa Velada 9 · Beta
+# The Veiled Crown · A Coroa Velada 9.2 · Beta
 
 Portal de RPG exclusivamente online: **Vercel → API Node.js no Render → Supabase**.
 
@@ -14,6 +14,8 @@ Já usa a versão 6, 7 ou 8? Siga **[ATUALIZAR.md](ATUALIZAR.md)** para preserva
 - Ecos do Véu: informações com custo em XP/dinheiro, pagamento único e descoberta para toda a mesa.
 - Legados do Sangue: disciplinas autorizadas pelo narrador, com custo geral e individual definido pelo narrador, começando no nível 0.
 - Tema e capa por campanha, efeitos e trilha ambiente com controles próprios, busca global e testes automáticos das disciplinas.
+- Narrador posiciona qualquer personagem ativo; jogador move apenas os seus. A privacidade permanece sob controle do jogador. Reposicionamento por toque ou dois toques e arraste.
+- Modo **Testar como jogador** no acesso do narrador: ficha temporária, regras e mapas da campanha, compras e interações isoladas. Nada altera as fichas reais; voltar descarta o teste.
 - Marcadores pessoais com privacidade e distância em quilômetros, com escala por imagem ou coordenadas.
 - Anotações centralizadas; ambição e desejo em área própria, com confirmação e animações de conquista/desistência.
 - Consulta de disciplinas antes da evolução, busca por poderes/rituais e navegação Voltar/Avançar preservando o contexto.
@@ -55,3 +57,5 @@ O SQL cria a nova estrutura sem apagar os buckets anteriores. A chave privada fi
 [Permissões](docs/PERMISSOES.md) · [API](docs/API.md) · [Validação](VALIDACAO.md)
 
 Os motores de mapa são carregados conforme a necessidade: Leaflet para imagens e OpenLayers para a base vetorial, sem exigir WebGL. Os créditos dos dados e provedores permanecem visíveis no mapa.
+
+A versão 9.2 inclui consulta sem edição no livro e criação guiada com pontos iniciais, bônus, clãs, linhas, geração e capital. Veja [docs/CRIACAO.md](docs/CRIACAO.md) e [ATUALIZAR.md](ATUALIZAR.md).

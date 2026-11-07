@@ -349,14 +349,12 @@ test('v8: marcador pessoal é privado inicialmente, narrador vê todos e jogador
       f.call(`/api/maps/${m.id}/characters/234567`, 'PATCH', { x: 0.8, revision: 1 }, f.two.token),
     403
   );
-  await denied(
-    () => f.call(`/api/maps/${m.id}/characters/234567`, 'PATCH', { x: 0.8, revision: 1 }),
-    403
-  );
+  await f.call(`/api/maps/${m.id}/characters/234567`, 'PATCH', { x: 0.8, revision: 1 });
+  assert.equal((await f.call('/api/maps/' + m.id)).character_markers[0].visibility, 'private');
   await f.call(
     `/api/maps/${m.id}/characters/234567`,
     'PATCH',
-    { visibility: 'campaign', revision: 1 },
+    { visibility: 'campaign', revision: 2 },
     f.one.token
   );
   const marker = (await f.call('/api/campaign', 'GET', {}, f.two.token)).maps[0]

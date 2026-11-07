@@ -108,3 +108,27 @@ O conjunto de documentos conserva o formato `coroa-document-set-v4`; a revisão 
 `POST /api/characters/:id/aspiration` recebe `revision`, `kind: "ambition" | "desire"`, `outcome: "complete" | "abandon"` e `confirmed: true`. Limpa apenas aquele objetivo, conserva seu texto no histórico e não altera XP. Repetições e revisões antigas são recusadas. Narrador pode administrar a ficha; outro jogador não pode encerrá-la.
 
 Navegação, filtros e rascunho de rolagem ficam na memória do cliente. O histórico do navegador contém apenas identificadores opacos das entradas, sem JSON de ficha, imagens ou credenciais.
+
+## Jogador de testes (9.1)
+
+- `POST /api/player-test`: sessão real de narrador obrigatória. Campos opcionais: `campaign_id`, `character_id` (cópia de ficha ativa), `xp` (padrão 100), `money` (padrão 1000), `include_maps` (padrão true). Retorna conta temporária de jogador, `campaign_id` temporário e `player_test.id`. Não altera a sessão autenticada ou o repositório real.
+- As solicitações do teste incluem `X-Player-Test: <player_test.id>` e o `X-Campaign-ID` temporário, além do cookie ou Bearer normal do narrador. O identificador sozinho não autentica nem concede acesso; o servidor exige o mesmo narrador e a mesma sessão que criaram o teste.
+- `DELETE /api/player-test`: encerra o teste corrente e retorna a conta normal do narrador. Pode informar o `campaign_id` original.
+- `410 / PLAYER_TEST_EXPIRED`: não repita a operação na campanha real. O cliente bloqueia a tela do teste e retorna ao narrador.
+- O teste é um workspace JSON temporário na memória da API, com limite de sessões e expiração por inatividade, sem gravação no Supabase. Reiniciar a API o descarta.
+- `POST /auth/logout` continua encerrando a sessão real, inclusive durante o teste. Alteração de senha e novo login são bloqueados dentro do contexto de teste.
+
+## Posição de personagens (9.1)
+
+Em `PUT/PATCH/DELETE /api/maps/:map/characters/:character`, narradores podem posicionar ou remover qualquer personagem ativo da campanha; jogadores só os próprios. `revision` da posição é obrigatória. O narrador mantém a visibilidade existente; uma posição criada por ele começa privada. Só o jogador altera `visibility` entre `private` e `campaign`. Coordenadas e acesso ao mapa continuam validados.
+
+
+## Criação guiada 9.2
+
+`POST /api/submissions` e `PATCH /api/submissions/:id` conservam o contrato `{character, revision}`. A ficha do assistente inclui `character.creation`: `version:1`, `clan`, três IDs em `disciplines`, `primary_paths`, seleções `traits` e mapas `initial`/`bonus`. As categorias usam os mesmos nomes dos catálogos, incluindo `atributes` e `precedents`. Em atributos, o mapa inicial contém o nível absoluto; nos bônus, contém quantos níveis adicionais foram comprados.
+
+Para jogadores, a API reconstrói todos os traços pelo plano, recalcula geração, potência, XP inicial e capital e recusa distribuições inválidas. `caracteristics` recebe as seleções e detalhes aprováveis; os custos vêm do catálogo, não do cliente. A conta dona e o nome do jogador são determinados pela autenticação. Os campos narrativos continuam opcionais.
+
+O relatório contém `issues`, `warnings`, `totals` das reservas e `derived` para geração/capital. Propostas antigas sem plano são mantidas, com exigência de revisão manual quando o assistente está ativo. A aprovação continua exclusiva do narrador, com revisão obrigatória; divergências exigem `override:true` e justificativa em `reason`. A aprovação repetida é recusada, sem duplicar ficha ou capital.
+
+Depois de aprovada, `creation` serve de registro das escolhas. `primary_paths` liga disciplina e linha primária; evoluir qualquer uma pela rota normal atualiza ambas e cobra a cotação uma única vez. Adquirir novas linhas, aplicar efeitos situacionais e editar fichas antigas continuam sob as regras normais da campanha.

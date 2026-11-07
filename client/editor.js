@@ -97,7 +97,7 @@ export class SheetEditor {
             ]
               .map((def) => {
                 const entry = p[key].find((x) => x.id === def.id);
-                return `<div class="catalog-row" data-catalog-name="${esc(def.name.toLowerCase())}"><label class="checkbox"><input name="power:${key}:${def.id}" type="checkbox" ${entry ? 'checked' : ''}><span><strong>${esc(def.name)}</strong><small>${esc(def.type || def.short_description || def.description?.slice(0, 110) || '')}${key === 'rituals' ? ' · Nível ' + def.nivel : ''}</small></span></label>${key === 'disciplines' ? `<label class="power-level-input"><span>Nível</span><input type="number" name="power-level:${def.id}" value="${entry?.nivel ?? 1}" min="${this.mode === 'proposal' ? 1 : 0}" max="${max}" step="1" inputmode="numeric" aria-label="Nível de ${esc(def.name)}" ${entry ? '' : 'disabled'}></label>` : ''}</div>`;
+                return `<div class="catalog-row" data-catalog-name="${esc(def.name.toLowerCase())}"><label class="checkbox"><input name="power:${key}:${def.id}" type="checkbox" ${entry ? 'checked' : ''}><span><strong>${esc(def.name)}</strong><small>${esc(def.type || def.short_description || def.description?.slice(0, 110) || '')}${key === 'rituals' ? ' · Nível ' + def.nivel : ''}</small></span></label>${key === 'disciplines' ? `<label class="power-level-input"><span>Nível</span><input type="number" name="power-level:${def.id}" value="${entry?.nivel ?? 0}" min="0" max="${max}" step="1" inputmode="numeric" aria-label="Nível de ${esc(def.name)}" ${entry ? '' : 'disabled'}></label>` : ''}</div>`;
               })
               .join('')}</div></section>`
         )

@@ -525,6 +525,54 @@
   accent-color: var(--campaign-accent);
   flex-shrink: 0;
 }
+.narrator-test-control {
+  margin: 12px 0;
+}
+.narrator-test-control .button {
+  width: 100%;
+  min-height: 44px;
+  justify-content: flex-start;
+}
+.player-test-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 26px;
+  background: linear-gradient(110deg, #32101d, #170c17);
+  border-block: 1px solid var(--campaign-accent);
+  color: #ffe1e8;
+}
+.player-test-banner strong {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.player-test-banner svg {
+  width: 18px;
+  height: 18px;
+}
+.player-test-banner span {
+  display: block;
+  font-size: 11px;
+  margin-top: 5px;
+}
+.player-test-banner .button {
+  min-height: 44px;
+  flex-shrink: 0;
+}
+@media (max-width: 800px) {
+  .player-test-banner {
+    padding: 12px 14px;
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .player-test-banner .button {
+    width: 100%;
+  }
+}
 .mobile-map-switcher,
 .map-tools-toggle {
   display: none;

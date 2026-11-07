@@ -182,6 +182,25 @@ export function validatePlayer(source, game) {
       }
     }
   }
+  if (p.primary_paths !== undefined) {
+    if (
+      !p.primary_paths ||
+      typeof p.primary_paths !== 'object' ||
+      Array.isArray(p.primary_paths) ||
+      Object.keys(p.primary_paths).length > 20
+    )
+      fail('Linhas primárias inválidas.');
+    for (const [parent, path] of Object.entries(p.primary_paths)) {
+      if (
+        !p.disciplines.some((d) => String(d.id) === parent) ||
+        !p.disciplines.some((d) => d.id === path) ||
+        !game.disciplines
+          .find((d) => d.id === path)
+          ?.parent_discipline_ids?.includes(Number(parent))
+      )
+        fail('Linha primária não corresponde à disciplina.');
+    }
+  }
   if (p.moralityes.length > 30) fail('Máximo de 30 convicções.');
   for (const row of p.moralityes) {
     number(row?.id, 'ID da convicção');

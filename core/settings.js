@@ -1,4 +1,6 @@
 import { clone, fail, number } from './model.js';
+import { configureCreation, validateCreationConfig } from './creation-config.js';
+import { creationConstraints } from './character-creation.js';
 export const traitKeys = [
   'atributes',
   'talents',
@@ -108,9 +110,10 @@ export function gameSettings(source) {
       ...mechanics(level.description, level.mechanics)
     }))
   }));
-  return g;
+  return configureCreation(g);
 }
 export function validateSettings(g) {
+  validateCreationConfig(g);
   number(g._revision, 'Revisão das regras');
   const allowed = g.discipline_market.allowed_ids;
   number(g.discipline_market.default_cost, 'Custo geral dos legados', 0, 1000000);
@@ -211,7 +214,14 @@ export function upgradeQuote(p, g, key, id, target) {
     key === 'bloodpotency'
       ? g.bloodpotency_generation[p.generation].max
       : g.maxvalue_generation[p.generation];
-  const max = Math.min(generationMax, rule.max_level ?? generationMax);
+  const personal = creationConstraints({ traits: p.caracteristics || [] }, g);
+  const attributeLimit =
+    key === 'atributes' ? (personal.attribute_set[id] ?? personal.attribute_caps[id]) : undefined;
+  const max = Math.min(
+    generationMax,
+    rule.max_level ?? generationMax,
+    attributeLimit ?? generationMax
+  );
   number(target, 'Nível desejado', current + 1, max);
   const steps = [];
   let cost = 0;

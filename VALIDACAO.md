@@ -1,10 +1,16 @@
-# Validação · A Coroa Velada 9.0.0 · Beta
+# Validação · A Coroa Velada 9.2.0 · Beta
 
 Verificação em 07/11/2026. Código para frontend Vercel, API Node.js 24 no Render e documentos JSONB/imagens privadas no Supabase. Nenhum serviço ou dado de produção do usuário foi alterado.
 
 ## Testes automatizados
 
-`npm run test:all` passou com **162 testes, sem falhas**. O comando compila o frontend, executa regras, domínio, gestos, áudio, API HTTP, SQL e Storage e confere sintaxe e referências aos assets.
+`npm run test:all` passou com **192 testes, sem falhas**. O comando compila o frontend, executa regras, domínio, gestos, áudio, API HTTP, SQL e Storage e confere sintaxe e referências aos assets.
+
+- O narrador cria, move e remove posições de personagens ativos em mapas por imagem e geográficos. A visibilidade definida pelo jogador é preservada; outros jogadores continuam impedidos de alterar a posição alheia. Revisões concorrentes e mapas sem acesso são recusados.
+- Gestos conferem o ponteiro principal, ignoram um segundo dedo e cancelam sem salvar ao perder a captura. A posição final considera as coordenadas ao soltar, mesmo sem o último evento de movimento. Arraste simples não muda a posição salva.
+- O modo de jogador do narrador usa as mesmas regras e rotas de jogador, em documentos temporários separados. Compra, dinheiro, anotações, relações, mensagens e mapas não gravam no repositório real. Notas privadas, murais e contas reais não são copiados.
+- A API HTTP confere o narrador e sua sessão em cada requisição de teste. Testes de outra sessão, cabeçalho forjado, acesso administrativo e contextos expirados são recusados. Uma segunda aba permanece no acesso normal. Logout encerra o login real; sair do teste conserva o cookie do narrador.
+- Respostas de requisições antigas são ignoradas após trocar de visão. A troca bloqueia os controles antigos antes de carregar a nova campanha; uma falha de carregamento oferece recarregar, sem repetir uma alteração de teste na campanha real.
 
 - Ambição e desejo em campos separados: edição pela própria conta, confirmação obrigatória, revisão e propriedade. Concluir/desistir limpa só o objetivo escolhido, preserva o texto no histórico e não concede XP automaticamente. Repetições são recusadas.
 - Migração de `goals` e das notas automáticas da versão 8 para os objetivos da ficha. Notas manuais permanecem; textos anteriores conflitantes são preservados no histórico. A migração repetida não duplica conteúdo.
@@ -20,9 +26,26 @@ Verificação em 07/11/2026. Código para frontend Vercel, API Node.js 24 no Ren
 
 As migrações SQL e funções foram executadas em PostgreSQL via PGlite, com transações, conflito de revisão, RLS e recusa das permissões `anon`/`authenticated`. O adaptador Supabase usa transporte REST simulado com funções SQL reais. O adaptador de imagens usa Storage simulado para conferir upload privado, reconstituição, deduplicação e falhas. **Não houve conexão ao Supabase do usuário.**
 
+## Criação e consulta da versão 9.2
+
+- As treze listas de clã passaram pelas mesmas contagens e validação da ficha, incluindo as combinações fornecidas para Toreador, Ravnos e Tzimisce.
+- Atributos em 1 + 15 pontos, habilidades com reserva compartilhada de 27, antecedentes 5 e disciplinas 3. A segunda reserva usa 15 bônus, os custos 4/2/6/1 e limite final 5.
+- Nível 0 permanece nas disciplinas. Linhas primárias são escolhidas, conferidas contra a disciplina e ligadas sem dupla contagem. Evolução com XP de uma disciplina primária atualiza a linha e cobra uma vez.
+- Testes de Geração 13–8 e todos os níveis de Recursos; capital inicial recalculado pelo servidor, sem duplicação na aprovação. Valores de dinheiro, XP, geração e estado adulterados pelo cliente não substituem o cálculo.
+- Qualidades e defeitos usam preço do catálogo, limite de quatro defeitos, grupos de versões, requisitos e efeitos estruturados. Testes cobrem Monstruoso, Criança, Líder Nato e as concessões de Beijo de Procuração.
+- Clã personalizado com três disciplinas, revisão obrigatória, recusa de pontos excedidos, aprovação repetida, registros legados e exportação/importação das escolhas em documentos separados.
+- Remover antecedente não faz o normalizador recriá-lo. Renomear Geração/Recursos conserva o cálculo pelo metadado do efeito.
+- A consulta do livro omite edição, JSON editável e exclusão. O leitor mostra o texto integral e os poderes; Gerenciar livro habilita as alterações.
+
 ## Navegador e mobile
 
 A revisão usou navegador real e API HTTP com contas e dados fictícios. A prévia é descartável; `npm start` continua exigindo Supabase. A pasta `.qa/` gerada não acompanha o ZIP nem o build de produção.
+
+Na versão 9.2, a revisão no navegador criou uma ficha Tremere do início ao fim no layout móvel: escolheu Linha do Sangue, distribuiu 15/15 atributos, 27/27 habilidades, 5/5 antecedentes e 3/3 disciplinas, gastou 17/17 bônus após um defeito e duas qualidades, acrescentou história/ambição/convicções, enviou e confirmou a proposta. O narrador recebeu a ficha no painel e a aprovou. Ao entrar novamente pelo jogador, o novo personagem apareceu com 0 XP e 11ª geração; o inventário mostrou R$ 50.000,00. Dominação permaneceu em 0 e Taumaturgia/Linha do Sangue em 3.
+
+A digitação de `concentração` letra por letra preservou a ordem e encontrou a qualidade. A revisão foi conferida em 360 px sem transbordamento horizontal (largura e conteúdo de 345 px, descontada a barra do navegador da prévia). O fluxo também foi usado em 390 px. O livro abriu uma disciplina em Somente consulta, com poderes expansíveis e sem campos de edição. Não houve erro da aplicação nos registros do navegador durante esse fluxo. Fotos e trilhas de áudio não foram alteradas nesta versão.
+
+Na versão 9.1, foram conferidos o posicionamento pelo narrador, criação de marcador para outro personagem no layout de 390 px, seleção de ficha para copiar, entrada com 100 XP, compra de informação fictícia e retorno ao painel. A ficha original continuou com 65 XP. Em 360 e 390 px, o formulário de testes e o aviso de jogador ficaram utilizáveis, sem transbordamento horizontal. A troca de visão retorna ao início da página. O duplo clique com arraste moveu o marcador no navegador com layout de 390 px; o aviso apareceu sobre o mapa e a posição/altura da área interativa permaneceu estável durante o fluxo.
 
 - Digitação de `força` letra por letra manteve o texto na ordem certa, com o resultado Força. O campo permanece no DOM durante a filtragem.
 - Disciplina abriu na consulta, com abas por poder. Percepção da Aura mostrou Raciocínio 2 + Empatia 3 = 5 dados; Preparar rolagem levou à parada preenchida e Voltar retornou ao mesmo poder.
@@ -40,7 +63,7 @@ Não houve ensaio de carga nem teste em celular físico. Presença e novidades u
 
 ## Publicação
 
-Siga **[ATUALIZAR.md](ATUALIZAR.md)**. Não há SQL, bucket ou variável obrigatória nova. Faça backup, envie o conteúdo completo do ZIP, publique primeiro a API no Render e confira `/api/health` com versão 9.0.0; depois publique no Vercel.
+Siga **[ATUALIZAR.md](ATUALIZAR.md)**. Não há SQL, bucket ou variável obrigatória nova. Faça backup, envie o conteúdo completo do ZIP, publique primeiro a API no Render e confira `/api/health` com versão 9.2.0; depois publique no Vercel.
 
 Favicon e imagem social foram gerados e servidos pela prévia. A miniatura real no WhatsApp depende da publicação no domínio final e da leitura/cache do serviço. A origem padrão do Vercel é detectada automaticamente; domínio próprio pode ser indicado em `COROA_SITE_URL` no Vercel.
 

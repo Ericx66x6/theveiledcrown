@@ -10,6 +10,10 @@ export const store = {
 };
 export const saveSession = (data) => {
   activeSession = data;
+  if (transport) {
+    transport.playerTestId = data?.player_test?.id || null;
+    if (data && Object.hasOwn(data, 'campaign_id')) transport.campaignId = data.campaign_id;
+  }
   if (transport && data?.token) {
     transport.token = data.token;
     transport.campaignId = data.campaign_id || transport.campaignId;
@@ -49,6 +53,8 @@ export async function api(
     if (method !== 'GET') window.dispatchEvent(new CustomEvent('portal:saved'));
     return result;
   } catch (error) {
+    if (error.code === 'PLAYER_TEST_EXPIRED')
+      window.dispatchEvent(new CustomEvent('player-test:expired'));
     if (
       !allowUnauthorized &&
       error.status === 401 &&

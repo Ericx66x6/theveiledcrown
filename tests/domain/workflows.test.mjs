@@ -13,7 +13,10 @@ const game = gameSettings(
   ),
   image = 'data:image/jpeg;base64,/9j/2Q==';
 async function fixture() {
-  const store = new CampaignStore(documentSeed(game)),
+  // This suite keeps covering the narrator-managed legacy proposal workflow.
+  const legacy = clone(game);
+  legacy.character_creation.guided.enabled = false;
+  const store = new CampaignStore(documentSeed(legacy)),
     service = new PortalService(store),
     admin = await service.request('/auth/bootstrap', {
       method: 'POST',

@@ -1,6 +1,6 @@
-# Atualizar para A Coroa Velada 9 · Beta
+# Atualizar para A Coroa Velada 9.2 · Beta
 
-A versão 9 usa seus serviços atuais: GitHub, API Node.js 24 no Render, Supabase e Vercel. **Não há SQL, bucket ou variável obrigatória nova.** Para domínio próprio, há uma variável pública opcional para o compartilhamento. As contas, fichas, campanhas e imagens atuais continuam no mesmo Supabase.
+A versão 9.2 usa seus serviços atuais: GitHub, API Node.js 24 no Render, Supabase e Vercel. **Não há SQL, bucket ou variável obrigatória nova.** Para domínio próprio, há uma variável pública opcional para o compartilhamento. As contas, fichas, campanhas e imagens atuais continuam no mesmo Supabase.
 
 ## 1. Faça um backup e envie o código completo
 
@@ -15,7 +15,7 @@ Esta entrega tem mais de 100 arquivos; o GitHub limita o upload pelo navegador a
 3. Abra a pasta clonada pelo **Show in Explorer**.
 4. Copie todo o conteúdo extraído de `theveiledcrown` para essa pasta e confirme a substituição. Inclua os arquivos iniciados por ponto, como `.gitignore` e `.env.render.example`.
 5. Apague um eventual **`vercel.json` antigo**. O projeto usa somente **`vercel.mjs`**. Não apague a pasta `.git` do checkout.
-6. No Desktop, revise as alterações, escreva `Beta 9 — consulta rápida, ambição e desejo`, faça **Commit to main** e depois **Push origin**.
+6. No Desktop, revise as alterações, escreva `Beta 9.2 — posições no mapa e jogador de testes`, faça **Commit to main** e depois **Push origin**.
 
 Se preferir o navegador, envie primeiro `client`, `core`, `shared`, `server`, `tools` e `data` em um commit; depois envie os outros arquivos e pastas. Faça os deploys finais somente depois que o pacote inteiro estiver no GitHub. Não envie o ZIP fechado, `node_modules`, `dist`, `.qa`, `.git` ou um arquivo `.env` com credenciais.
 
@@ -33,7 +33,7 @@ Mantenha o serviço existente e confira:
 
 Mantenha suas variáveis atuais: `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_IMAGE_BUCKET`, `BOOTSTRAP_TOKEN`, `NODE_ENV`, `NODE_VERSION`, `TRUST_PROXY` e `ALLOWED_ORIGINS`. A chave privada continua somente no Render. Confira `TRUST_PROXY=1` e o domínio de produção do Vercel em `ALLOWED_ORIGINS`.
 
-Use **Manual Deploy → Deploy latest commit** se o deploy automático estiver desligado. Aguarde **Live** e abra a URL do Render seguida de `/api/health`. A resposta precisa conter **`"version":"9.0.0"`**.
+Use **Manual Deploy → Deploy latest commit** se o deploy automático estiver desligado. Aguarde **Live** e abra a URL do Render seguida de `/api/health`. A resposta precisa conter **`"version":"9.2.0"`**.
 
 ## 3. Atualize o frontend no Vercel
 
@@ -48,9 +48,9 @@ Mantenha `vercel.mjs` e a variável **`COROA_API_BASE` com a URL HTTPS atual do 
 | Output | `dist` |
 | Node | 24.x |
 
-Após a API 9 ficar Live, publique o commit completo no Vercel. Se o Vercel compilou um upload incompleto ou publicou antes do Render terminar, faça **Redeploy**. Um aviso de que `engines` escolheu Node 24 em vez da versão configurada no painel não é erro; selecionar 24.x no painel deixa as configurações alinhadas.
+Após a API 9.2 ficar Live, publique o commit completo no Vercel. Se o Vercel compilou um upload incompleto ou publicou antes do Render terminar, faça **Redeploy**. Um aviso de que `engines` escolheu Node 24 em vez da versão configurada no painel não é erro; selecionar 24.x no painel deixa as configurações alinhadas.
 
-Não crie outro narrador e não importe o backup para efetuar a atualização. Abra seu domínio normal e confira o indicador **V9 BETA**. Se houver um erro de rota nova, confira primeiro se o Render já informa versão 9.
+Não crie outro narrador e não importe o backup para efetuar a atualização. Abra seu domínio normal e confira o indicador **V9.2 BETA**. Se houver um erro de rota nova, confira primeiro se o Render já informa versão 9.2.0.
 
 ## 4. Personalize sua campanha
 
@@ -80,7 +80,7 @@ O catálogo começa sem permissões automáticas na atualização: o narrador es
 
 ## 7. Posicione personagens e calibre o mapa
 
-Cada jogador escolhe seu personagem no painel do mapa e usa **Marcar minha posição / Mudar minha posição**. O marcador tem retrato e nome. Por padrão, só o jogador responsável e o narrador veem a posição; o jogador pode compartilhar com a campanha ou voltar a reservar. O narrador vê todos, mas cada jogador controla seus próprios marcadores.
+Cada jogador escolhe seu personagem no painel do mapa e usa **Marcar minha posição / Mudar minha posição**. O marcador tem retrato e nome. Por padrão, só o jogador responsável e o narrador veem a posição; o jogador pode compartilhar com a campanha ou voltar a reservar. O narrador vê e posiciona todos os personagens; cada jogador controla somente os seus. A decisão de compartilhar continua sendo do jogador.
 
 Para mover um marcador diretamente, dê **dois toques/cliques e arraste no segundo**. Um arraste simples não altera a posição salva. Também existe o posicionamento deliberado por botão e toque no mapa.
 
@@ -135,3 +135,39 @@ Depois de publicar, compartilhe a URL pública da apresentação no WhatsApp e c
 Abra dois acessos em navegadores ou dispositivos diferentes. Confira login, ambição/desejo, enquadramento, Voltar depois de uma rolagem preparada, preços dos legados, som, capa, compra de informação, marcador reservado/compartilhado e histórico. O relatório [VALIDACAO.md](VALIDACAO.md) distingue os testes executados da conferência que depende dos seus serviços publicados.
 
 Referências: [GitHub — envio de arquivos](https://docs.github.com/pt/repositories/working-with-files/managing-files/adding-a-file-to-a-repository) · [Áudio no navegador](https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Autoplay). A instalação do zero continua em [TUTORIAL.md](TUTORIAL.md).
+
+## Testar as correções da versão 9.2
+
+1. No acesso do narrador, abra **Mapa da campanha → Posição e distância**. Escolha um personagem e use **Marcar posição** ou **Mudar posição**, depois toque no destino no mapa. Também pode abrir a bolha de um personagem e tocar em **Mover personagem**.
+2. Para arrastar, toque duas vezes e arraste no segundo toque. Um deslize simples não move o personagem. A mudança é salva ao soltar; se falhar, o marcador volta à posição anterior.
+3. O narrador pode posicionar ou remover marcadores. A escolha de compartilhar ou reservar a posição continua sendo do jogador.
+4. No menu do narrador, toque em **Testar como jogador**. Crie uma ficha temporária ou copie uma ficha ativa, escolhendo o XP e dinheiro para os testes. Os mapas compartilhados podem ser copiados.
+5. O aviso **Visão de jogador · teste** confirma que está no teste. Compras, dinheiro, anotações, mensagens e posições não alteram a campanha real. As permissões são de jogador, sem acesso administrativo ou aos murais e notas pessoais dos jogadores reais.
+6. Use **Voltar ao narrador** para descartar o teste. Recarregar a página retorna ao acesso normal. O teste também expira após 30 minutos sem atividade ou quando a API reinicia; o login normal permanece válido.
+
+Não exige SQL, buckets, contas ou variáveis novas. Atualize o **Render antes do Vercel**, pois o novo botão depende da nova API.
+
+
+## Criação guiada da versão 9.2
+
+O jogador usa **Meus personagens → Criar personagem**. A ficha é montada em quatro telas: identidade e clã, distribuição inicial, pontos bônus e revisão. Ambição, desejo, história e convicções são opcionais. A ficha só entra no jogo depois de **Avaliar fichas → Aprovar personagem**.
+
+- Atributos começam em 1, com mais 15 pontos e limite inicial 4.
+- Talentos, perícias e conhecimentos compartilham 27 pontos, com limite inicial 3.
+- Antecedentes recebem 5 pontos. Disciplinas recebem 3 pontos entre os três dons do clã; nível 0 é conservado.
+- Há 15 pontos bônus: atributo custa 4 por nível, habilidade 2, disciplina 6 e antecedente 1. O limite final é 5, respeitando restrições de características.
+- Até 4 defeitos concedem seus valores em pontos bônus; qualidades gastam o preço do catálogo. Não se usa XP. Versões incompatíveis e pré-requisitos cadastrados são conferidos.
+- Geração começa em 13 e diminui um por ponto no antecedente, até 8. Recursos fornece o capital inicial uma única vez: 0 → R$ 0; 1 → R$ 1.000; 2 → R$ 8.000; 3 → R$ 50.000; 4 → R$ 500.000; 5 → R$ 5.000.000. Não há renda periódica automática.
+- Giovanni escolhe a linha inicial de Necromancia; Tremere escolhe a de Taumaturgia. A linha acompanha a pontuação na criação, sem consumir a reserva duas vezes. Na evolução com XP, disciplina e linha primária permanecem vinculadas e a compra é cobrada uma vez.
+- **Clã personalizado** permite digitar o nome e escolher três disciplinas cadastradas. A escolha fica sinalizada para a aprovação manual do narrador. As combinações da lista seguem as regras da mesa, inclusive Toreador com Potência.
+- Pontos bônus restantes são avisados na confirmação. Enviar sem gastá-los encerra a distribuição; eles não se convertem em XP. Retirar um defeito depois de usar seus pontos exige ajustar as compras antes de enviar.
+
+Em **Livro de regras**, o modo inicial é **Consultar**. Use **Visualizar** para abrir o texto inteiro e os poderes sem formulário de edição. **Gerenciar livro** exibe as ferramentas de alteração. Em **Regras e criação de fichas**, o narrador pode ajustar reservas, limites, custos e máximo de defeitos. Campos avançados e clãs permanecem em `character_creation.guided` no game-data.
+
+### Atualizar o livro de uma campanha que já existe
+
+Atualizar o código não substitui automaticamente os catálogos personalizados no Supabase. Depois de fazer backup, importe o JSON de regras entregue em **Livro de regras → Gerenciar livro → Importar game-data**. O arquivo separado mantém as configurações do game-data que serviu de origem e acrescenta os antecedentes e a criação; confira os preços de legados e suas configurações antes de aplicar. O `data/game_data.json` do projeto é o modelo para novas instalações, com configuração inicial neutra.
+
+A importação é somente do **game-data**; não importe um portal completo para atualizar regras. Fichas já aprovadas não recebem dinheiro de novo nem têm geração ou traços recalculados. IDs anteriores dos catálogos foram preservados. Uma proposta antiga sem distribuição por etapas continua visível e exige conferência e justificativa de aprovação manual.
+
+Os efeitos estruturados são mostrados na consulta e conferidos no envio. Monstruoso fixa Aparência; Criança impõe os limites e requisito; as versões do Beijo de Procuração concedem os pontos indicados. Bônus situacionais de testes, acontecimentos do roleplay e efeitos ainda descritos como manuais continuam sob aplicação do narrador. Consulte **docs/CRIACAO.md** para os campos e limites desta versão.

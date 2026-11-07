@@ -1,4 +1,5 @@
 import { NavigationTrail } from './navigation.js';
+import { playerTestAction, playerTestBanner } from './player-test.js';
 import { aspirationsPage, aspirationAction } from './aspirations.js';
 import { portraitDialog, portraitStyle } from './portrait.js';
 import { consultationPage, consultationAction, openConsultation } from './consultation.js';
@@ -11,6 +12,7 @@ import { socialPage, communityAction, bindCommunity } from './community.js';
 import { lifecycleAction } from './lifecycle.js';
 import { xpDistribution } from './xp.js';
 import { SheetEditor } from './editor.js';
+import { CreationWizard } from './creation-wizard.js';
 import { storageView, fileAction, exportPlayer, compactSyncLabel } from './files.js';
 import {
   $,
@@ -223,9 +225,14 @@ function renderNavigation() {
       )
       .join('');
   $('[data-nav-root]').innerHTML =
-    `<nav class="portal-navigation" aria-label="Portal">${navButtons([...personal, ['campaigns', 'Minhas campanhas']])}</nav>${admin() && !p ? '<div class="narrator-sidebar-note">Abra uma ficha em Personagens para consultar os dados do jogador.</div>' : `<div class="sidebar-caption">${admin() ? 'FICHA DE JOGADOR ABERTA' : 'SEU PERSONAGEM'}</div><div class="character-select"><select id="character-select" aria-label="Selecionar personagem"></select>${admin() ? button('Fechar ficha', 'close-character', '', 'text-button') : ''}</div>`}${p ? `<div class="sidebar-caption">FICHA DE ${esc(p.char)}</div><nav aria-label="Ficha do personagem">${navButtons(nav.filter(([k]) => sheetViews.includes(k) && (k !== 'network' || !admin())))}</nav>` : ''}${state.campaigns?.length ? `<div class="sidebar-caption">A CAMPANHA</div><nav aria-label="Ferramentas da campanha">${navButtons(campaignViews)}</nav>` : ''}${admin() ? `<div class="sidebar-caption admin-caption">ADMINISTRAÇÃO</div><nav aria-label="Administração">${navButtons(adminNav.filter(([k]) => k !== 'dashboard' && (state.campaigns?.length || ['storage', 'trash'].includes(k))))}</nav>` : ''}`;
+    `<nav class="portal-navigation" aria-label="Portal">${navButtons([...personal, ['campaigns', 'Minhas campanhas']])}</nav>${admin() ? `<div class="narrator-test-control">${button(icon('dice') + ' Testar como jogador', 'player-test-start', '', 'button ghost')}</div>` : ''}${admin() && !p ? '<div class="narrator-sidebar-note">Abra uma ficha em Personagens para consultar os dados do jogador.</div>' : `<div class="sidebar-caption">${admin() ? 'FICHA DE JOGADOR ABERTA' : 'SEU PERSONAGEM'}</div><div class="character-select"><select id="character-select" aria-label="Selecionar personagem"></select>${admin() ? button('Fechar ficha', 'close-character', '', 'text-button') : ''}</div>`}${p ? `<div class="sidebar-caption">FICHA DE ${esc(p.char)}</div><nav aria-label="Ficha do personagem">${navButtons(nav.filter(([k]) => sheetViews.includes(k) && (k !== 'network' || !admin())))}</nav>` : ''}${state.campaigns?.length ? `<div class="sidebar-caption">A CAMPANHA</div><nav aria-label="Ferramentas da campanha">${navButtons(campaignViews)}</nav>` : ''}${admin() ? `<div class="sidebar-caption admin-caption">ADMINISTRAÇÃO</div><nav aria-label="Administração">${navButtons(adminNav.filter(([k]) => k !== 'dashboard' && (state.campaigns?.length || ['storage', 'trash'].includes(k))))}</nav>` : ''}`;
   updateSelect();
   const select = $('#character-select');
+  if (session()?.player_test)
+    $('[data-nav-root]').insertAdjacentHTML(
+      'afterbegin',
+      `<div class="narrator-test-control">${button('Voltar ao narrador', 'player-test-end', '', 'button ghost')}</div>`
+    );
   if (select)
     select.onchange = (event) =>
       run(async () => {
@@ -271,8 +278,9 @@ function initShell() {
   document.body.classList.remove('login-page');
   document.querySelector('.skip-link')?.setAttribute('href', '#main-content');
   $('#app').innerHTML =
-    `<aside id="sidebar" class="sidebar"><a href="#campaigns" class="brand"><span class="brand-crest">${crown}</span><span>A COROA VELADA<small>ONDE AS HISTÓRIAS VIVEM</small></span></a><button type="button" data-action="close-menu" class="icon-button drawer-close" aria-label="Fechar navegação">${icon('close')}</button><div data-nav-root></div><div class="sidebar-footer"><p>O sangue lembra.<br><span>A noite nunca esquece.</span></p><span class="version">PORTAL ONLINE · V9 BETA</span></div></aside><div class="workspace"><header class="topbar"><div class="breadcrumb"><button data-action="menu" class="icon-button mobile-menu" aria-label="Abrir navegação">${icon('menu')}</button><span class="campaign-breadcrumb"></span><i>/</i><strong id="breadcrumb-current"></strong></div><div class="topbar-right">${button(icon('search'), 'global-search', 'aria-label="Pesquisar em toda a campanha" title="Pesquisar"', 'icon-button')}${soundButton()}${button(icon('download') + ' <span>Salvar JSON</span>', 'backup-table', 'aria-label="Salvar JSONs do portal"', 'button ghost top-export')}<button type="button" class="icon-button notification-button" data-action="nav-notifications" aria-label="Notificações">${icon('notes')}<span data-notification-count hidden></span></button><button type="button" class="user-button" data-action="nav-profile" aria-label="Abrir meu perfil" title="Meu perfil"><span class="avatar small" data-user-avatar></span><span data-user-name></span></button><button class="icon-button" data-action="logout" aria-label="Sair">${icon('logout')}</button></div></header><div class="connection-banner"><span>${icon('save')} <span data-sync-label></span></span><span>Atualização automática da campanha</span></div><div class="route-toolbar" aria-label="Navegação da página"><button type="button" class="button ghost" data-action="route-back"><span class="back-arrow">${icon('arrow')}</span> Voltar</button><span data-route-label></span><button type="button" class="text-button" data-action="route-home">Início</button></div><div id="xp-hud"></div><main id="main-content" tabindex="-1"></main><footer class="app-footer"><span>A COROA VELADA</span><span>Suas histórias, além do véu.</span><span>◇</span></footer></div><button type="button" class="drawer-backdrop" data-action="close-menu" aria-label="Fechar menu"></button><nav class="mobile-bottom" aria-label="Navegação principal"></nav>`;
+    `<aside id="sidebar" class="sidebar"><a href="#campaigns" class="brand"><span class="brand-crest">${crown}</span><span>A COROA VELADA<small>ONDE AS HISTÓRIAS VIVEM</small></span></a><button type="button" data-action="close-menu" class="icon-button drawer-close" aria-label="Fechar navegação">${icon('close')}</button><div data-nav-root></div><div class="sidebar-footer"><p>O sangue lembra.<br><span>A noite nunca esquece.</span></p><span class="version">PORTAL ONLINE · V9.2 BETA</span></div></aside><div class="workspace"><header class="topbar"><div class="breadcrumb"><button data-action="menu" class="icon-button mobile-menu" aria-label="Abrir navegação">${icon('menu')}</button><span class="campaign-breadcrumb"></span><i>/</i><strong id="breadcrumb-current"></strong></div><div class="topbar-right">${button(icon('search'), 'global-search', 'aria-label="Pesquisar em toda a campanha" title="Pesquisar"', 'icon-button')}${soundButton()}${button(icon('download') + ' <span>Salvar JSON</span>', 'backup-table', 'aria-label="Salvar JSONs do portal"', 'button ghost top-export')}<button type="button" class="icon-button notification-button" data-action="nav-notifications" aria-label="Notificações">${icon('notes')}<span data-notification-count hidden></span></button><button type="button" class="user-button" data-action="nav-profile" aria-label="Abrir meu perfil" title="Meu perfil"><span class="avatar small" data-user-avatar></span><span data-user-name></span></button><button class="icon-button" data-action="logout" aria-label="Sair">${icon('logout')}</button></div></header><div class="connection-banner"><span>${icon('save')} <span data-sync-label></span></span><span>Atualização automática da campanha</span></div><div class="route-toolbar" aria-label="Navegação da página"><button type="button" class="button ghost" data-action="route-back"><span class="back-arrow">${icon('arrow')}</span> Voltar</button><span data-route-label></span><button type="button" class="text-button" data-action="route-home">Início</button></div><div id="xp-hud"></div><main id="main-content" tabindex="-1"></main><footer class="app-footer"><span>A COROA VELADA</span><span>Suas histórias, além do véu.</span><span>◇</span></footer></div><button type="button" class="drawer-backdrop" data-action="close-menu" aria-label="Fechar menu"></button><nav class="mobile-bottom" aria-label="Navegação principal"></nav>`;
   document.addEventListener('click', handleClick, { signal: events.signal });
+  document.querySelector('.route-toolbar').insertAdjacentHTML('beforebegin', playerTestBanner());
   document.addEventListener('submit', handleSubmit, { signal: events.signal });
   document.addEventListener(
     'change',
@@ -316,7 +324,7 @@ async function run(task) {
   try {
     await task();
   } catch (error) {
-    toast(error.message, true);
+    if (error.code !== 'PLAYER_TEST_CONTEXT_CHANGED') toast(error.message, true);
   }
 }
 async function mutate(path, data, method = 'POST') {
@@ -359,6 +367,7 @@ function context() {
     recordCard,
     refresh: refreshAll,
     safe: run,
+    restartPortal,
     go,
     back: async (fallback) => {
       if (trail.canBack) history.back();
@@ -447,7 +456,9 @@ function render() {
   });
   renderSoundControls();
   $('#xp-hud').innerHTML =
-    !admin() && player()
+    !admin() &&
+    player() &&
+    !['proposal-editor', 'review-submission', 'new-player'].includes(state.view)
       ? `<div class="xp-hud"><span>${icon('powers')}<span>SEU XP DISPONÍVEL<small>${esc(player().char)}</small></span></span><strong>${player().xp}<small>XP</small></strong>${button('Evoluir ' + icon('arrow'), 'nav-attributes', '', 'button ghost')}</div>`
       : '';
   document.body.classList.toggle(
@@ -524,6 +535,7 @@ function render() {
           'Peça ao narrador para vincular uma ficha ao seu login.',
           admin() ? button('Cadastrar jogador', 'create-character', '', 'button primary') : ''
         );
+  else if (state.view === 'rules') html = rulebookPage(ctx);
   else {
     const [title, description] = headings[state.view];
     html = `<div class="page-intro"><span class="eyebrow">${adminNav.some(([k]) => k === state.view) ? 'CONSELHO DO NARRADOR' : 'A SUA CRÔNICA'}</span><h1>${title}</h1><p>${description}</p></div>`;
@@ -915,6 +927,7 @@ async function handleClick(event) {
   if (!control || control.disabled) return;
   const { action, key, id, record } = control.dataset;
   await run(async () => {
+    if (await playerTestAction(action, control.dataset, context())) return;
     if (action.startsWith('nav-')) {
       closeModal();
       await go(action.slice(4));
@@ -982,6 +995,7 @@ async function handleClick(event) {
         );
         break;
       case 'password':
+        if (session()?.player_test) throw new Error('Volte ao narrador para alterar sua senha.');
         modal(
           'Alterar sua senha',
           field(
@@ -1408,7 +1422,13 @@ async function makeEditor(character) {
 }
 async function editProposal(record) {
   const id = record?.character.id ?? (await api('/api/characters/new-id')).id;
-  state.editor = new SheetEditor({
+  const Editor =
+    !admin() &&
+    state.game.character_creation.guided.enabled &&
+    (!record || record.character.creation)
+      ? CreationWizard
+      : SheetEditor;
+  state.editor = new Editor({
     game: state.game,
     character: record?.character,
     id,
@@ -1572,12 +1592,33 @@ export function stopPortal() {
   state.socialDraft = {};
   state.socialRecipient = '';
 }
+export async function restartPortal(view, nextSession) {
+  stopPortal();
+  closeModal();
+  $('#app').innerHTML =
+    '<main class="loading-screen" role="status"><div class="loading-orbit" aria-hidden="true"><i></i><span>◇</span></div><h1>Atravessando o véu…</h1></main>';
+  if (nextSession) saveSession(nextSession);
+  state.archived = false;
+  state.mapCharacterId = null;
+  state.mapToolsOpen = false;
+  history.replaceState(null, '', '#' + view);
+  try {
+    await startPortal();
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  } catch (error) {
+    $('#app').innerHTML =
+      `<main class="loading-screen"><h1>Não foi possível trocar de visão.</h1><p>${esc(error.message)}</p><button type="button" class="button primary" id="reload-portal">Reabrir o portal</button></main>`;
+    $('#reload-portal').onclick = () => location.reload();
+    throw error;
+  }
+}
 export async function startPortal() {
   events.abort();
   events = new AbortController();
   state.editor = null;
   state.player = null;
   await loadFeatureState(state);
+  saveSession({ ...session(), account: state.account });
   state.evolution = null;
   state.reviewId = null;
   state.mapId = null;
@@ -1637,7 +1678,10 @@ export async function startPortal() {
           render();
         }
       } catch (error) {
-        if (error.status !== 401)
+        if (
+          error.status !== 401 &&
+          !['PLAYER_TEST_CONTEXT_CHANGED', 'PLAYER_TEST_EXPIRED'].includes(error.code)
+        )
           document
             .querySelectorAll('[data-sync-label]')
             .forEach((el) => (el.textContent = 'Sem atualização automática · confira sua conexão'));

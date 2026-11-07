@@ -25,16 +25,23 @@ export async function mapsRequest(service, path, method, data, token, doc, accou
           a
         ),
         id = Number(personal[2]);
-      if (a.role !== 'player' || !a.character_ids.includes(id))
-        fail('Cada jogador controla o próprio marcador.', 403);
+      if (a.role !== 'admin' && (a.role !== 'player' || !a.character_ids.includes(id)))
+        fail('Você só pode posicionar os seus personagens.', 403);
       const character = d.characters.find((p) => p.id === id && !p.archived);
       if (!character) fail('Personagem indisponível.', 404);
       m.character_markers ??= [];
       const old = m.character_markers.find((p) => p.character_id === id);
       if (data.revision !== (old?._revision || 0)) fail('Sua posição mudou. Atualize o mapa.', 409);
+      if (
+        a.role === 'admin' &&
+        data.visibility !== undefined &&
+        data.visibility !== (old?.visibility || 'private')
+      )
+        fail('O jogador decide se a posição é compartilhada com a mesa.', 403);
       if (method === 'DELETE') {
         m.character_markers = m.character_markers.filter((p) => p.character_id !== id);
         m._revision++;
+        m.updated_at = timestamp();
         return { status: 'deleted' };
       }
       const next = {
@@ -44,7 +51,8 @@ export async function mapsRequest(service, path, method, data, token, doc, accou
         y: data.y ?? old?.y,
         visibility: data.visibility ?? old?.visibility ?? 'private',
         _revision: (old?._revision || 0) + 1,
-        updated_at: timestamp()
+        updated_at: timestamp(),
+        updated_by: a.id
       };
       if (m.mode === 'geographic') {
         next.lat = data.lat ?? old?.lat;

@@ -43,7 +43,7 @@ export function mapPage(ctx) {
           'Mapa aberto',
           maps.map((item) => ({ value: item.id, label: item.title })),
           m.id
-        )}</div><div class="map-gallery" aria-label="Mapas da campanha">${maps.map((item) => `<button type="button" class="map-gallery-card ${item.id === m.id ? 'selected' : ''}" data-action="map-select" data-id="${item.id}" aria-pressed="${item.id === m.id}">${item.mode === 'geographic' ? '<span class="geographic-thumb">' + icon('map') + '</span>' : `<img src="${esc(item.image)}" alt="">`}<span><strong>${esc(item.title)}</strong><small>${item.mode === 'geographic' ? 'MAPA GEOGRÁFICO' : 'MUNDO DA CAMPANHA'} · ${ctx.admin() ? (item.player_access ? 'COMPARTILHADO' : 'NARRADOR') : item.pins.length + ' LOCAIS'}</small></span>${item.id === m.id ? icon('test') : ''}</button>`).join('')}</div><section class="atlas-map-heading"><div><span class="eyebrow">${m.mode === 'geographic' ? 'AS RUAS DO MUNDO REAL' : 'CARTOGRAFIA DA CRÔNICA'}</span><h2>${esc(m.title)}</h2><p>${esc(m.description)}</p></div>${ctx.admin() ? button(icon('edit') + ' Configurar mapa', 'map-edit', `data-id="${m.id}"`, 'button ghost') : ''}</section><div class="canvas-toolbar">${button(icon('pin') + ' Marcar local', 'map-place', '', 'button primary')}<label class="map-location-search">${icon('search')}<input type="search" id="map-location-search" aria-label="Buscar locais cadastrados" placeholder="Buscar locais cadastrados"></label><div class="canvas-zoom">${button('−', 'canvas-zoom-out', 'aria-label="Diminuir zoom"', 'icon-button')}${button('Enquadrar', 'canvas-fit', '', 'button ghost')}${button('+', 'canvas-zoom-in', 'aria-label="Aumentar zoom"', 'icon-button')}</div></div><div class="map-tools-toggle">${button(icon('profile') + ' Posição e distância', 'map-tools', `aria-expanded="${!!ctx.state.mapToolsOpen}"`, 'button ghost')}</div><div class="map-tools ${ctx.state.mapToolsOpen ? 'is-open' : ''}">${personalMapPanel(ctx, m)}</div><div id="map-measurement" hidden></div><p class="map-status-note" id="map-status-note" role="status" hidden></p><div id="atlas-map" class="atlas-leaflet ${m.mode === 'geographic' ? 'geographic' : 'illustrated'}" role="region" aria-label="Mapa interativo da campanha"></div><p class="atlas-instructions">Arraste para explorar · aproxime com dois dedos · toque para consultar · para mover um marcador, dê dois toques e arraste no segundo.</p><div class="location-directory">${m.pins.map((p) => `<article class="location-card" data-location-search="${esc((p.title + ' ' + (p.domain || '') + ' ' + (p.address || '')).toLowerCase())}"><button type="button" class="location-card-main" data-action="map-focus" data-id="${p.id}"><div class="location-cover">${p.images?.[0] ? `<img src="${esc(p.images[0])}" alt="" loading="lazy">` : `<span>${pinSymbol(p)}</span>`}<span class="tag">${esc(typeName(p))}</span></div><div><h3>${esc(p.title)}</h3><p>${esc(p.address || p.domain || 'Um lugar na história da campanha.')}</p><span class="location-meta">${(p.npcs || []).length} NPCs · ${(p.images || []).length} imagens</span></div></button><footer>${button('Dossiê do local', 'map-detail', `data-id="${p.id}"`, 'button ghost')}${canEdit(ctx, p) ? button('Editar', 'map-pin-edit', `data-id="${p.id}"`, 'text-button') : ''}</footer></article>`).join('') || empty('O primeiro lugar espera por um nome.', 'Toque em Marcar local e escolha uma posição no mapa.')}</div>`
+        )}</div><div class="map-gallery" aria-label="Mapas da campanha">${maps.map((item) => `<button type="button" class="map-gallery-card ${item.id === m.id ? 'selected' : ''}" data-action="map-select" data-id="${item.id}" aria-pressed="${item.id === m.id}">${item.mode === 'geographic' ? '<span class="geographic-thumb">' + icon('map') + '</span>' : `<img src="${esc(item.image)}" alt="">`}<span><strong>${esc(item.title)}</strong><small>${item.mode === 'geographic' ? 'MAPA GEOGRÁFICO' : 'MUNDO DA CAMPANHA'} · ${ctx.admin() ? (item.player_access ? 'COMPARTILHADO' : 'NARRADOR') : item.pins.length + ' LOCAIS'}</small></span>${item.id === m.id ? icon('test') : ''}</button>`).join('')}</div><section class="atlas-map-heading"><div><span class="eyebrow">${m.mode === 'geographic' ? 'AS RUAS DO MUNDO REAL' : 'CARTOGRAFIA DA CRÔNICA'}</span><h2>${esc(m.title)}</h2><p>${esc(m.description)}</p></div>${ctx.admin() ? button(icon('edit') + ' Configurar mapa', 'map-edit', `data-id="${m.id}"`, 'button ghost') : ''}</section><div class="canvas-toolbar">${button(icon('pin') + ' Marcar local', 'map-place', '', 'button primary')}<label class="map-location-search">${icon('search')}<input type="search" id="map-location-search" aria-label="Buscar locais cadastrados" placeholder="Buscar locais cadastrados"></label><div class="canvas-zoom">${button('−', 'canvas-zoom-out', 'aria-label="Diminuir zoom"', 'icon-button')}${button('Enquadrar', 'canvas-fit', '', 'button ghost')}${button('+', 'canvas-zoom-in', 'aria-label="Aumentar zoom"', 'icon-button')}</div></div><div class="map-tools-toggle">${button(icon('profile') + ' Posição e distância', 'map-tools', `aria-expanded="${!!ctx.state.mapToolsOpen}"`, 'button ghost')}</div><div class="map-tools ${ctx.state.mapToolsOpen ? 'is-open' : ''}">${personalMapPanel(ctx, m)}</div><div id="map-measurement" hidden></div><div class="atlas-stage"><p class="map-status-note" id="map-status-note" role="status" hidden></p><div id="atlas-map" class="atlas-leaflet ${m.mode === 'geographic' ? 'geographic' : 'illustrated'}" role="region" aria-label="Mapa interativo da campanha"></div></div><p class="atlas-instructions">Arraste para explorar · aproxime com dois dedos · toque para consultar · para mover um marcador, dê dois toques e arraste no segundo.</p><div class="location-directory">${m.pins.map((p) => `<article class="location-card" data-location-search="${esc((p.title + ' ' + (p.domain || '') + ' ' + (p.address || '')).toLowerCase())}"><button type="button" class="location-card-main" data-action="map-focus" data-id="${p.id}"><div class="location-cover">${p.images?.[0] ? `<img src="${esc(p.images[0])}" alt="" loading="lazy">` : `<span>${pinSymbol(p)}</span>`}<span class="tag">${esc(typeName(p))}</span></div><div><h3>${esc(p.title)}</h3><p>${esc(p.address || p.domain || 'Um lugar na história da campanha.')}</p><span class="location-meta">${(p.npcs || []).length} NPCs · ${(p.images || []).length} imagens</span></div></button><footer>${button('Dossiê do local', 'map-detail', `data-id="${p.id}"`, 'button ghost')}${canEdit(ctx, p) ? button('Editar', 'map-pin-edit', `data-id="${p.id}"`, 'text-button') : ''}</footer></article>`).join('') || empty('O primeiro lugar espera por um nome.', 'Toque em Marcar local e escolha uma posição no mapa.')}</div>`
       : empty(
           ctx.admin() ? 'Seu atlas começa aqui.' : 'Nenhum mapa foi liberado ainda.',
           ctx.admin()
@@ -419,9 +419,9 @@ function markerHTML(p) {
   const color = /^#[a-f\d]{6}$/i.test(p.color || '') ? p.color : '#df345b';
   return `<span style="--pin-color:${color}">${pinSymbol(p)}</span>`;
 }
-function popupHTML(p) {
+function popupHTML(p, ctx) {
   if (p.personal)
-    return `<div class="character-point-popup"><span class="eyebrow">PERSONAGEM NO MAPA</span><h3>${esc(p.title)}</h3><p>${esc(p.character.player)}</p><small>${p.visibility === 'campaign' ? 'Posição compartilhada com a mesa' : 'Posição reservada ao jogador e narrador'}</small>${button('Medir distância a partir daqui', 'map-distance-from', `data-id="${p.id}"`, 'button primary')}</div>`;
+    return `<div class="character-point-popup"><span class="eyebrow">PERSONAGEM NO MAPA</span><h3>${esc(p.title)}</h3><p>${esc(p.character.player)}</p><small>${p.visibility === 'campaign' ? 'Posição compartilhada com a mesa' : 'Posição reservada ao jogador e narrador'}</small>${canMoveCharacter(ctx, p.character_id) ? button('Mover personagem', 'map-character-position', `data-character-id="${p.character_id}"`, 'button primary') : ''}${button('Medir distância a partir daqui', 'map-distance-from', `data-id="${p.id}"`, 'button ghost')}</div>`;
 
   return `<div class="location-popup">${p.images?.[0] ? `<img src="${esc(p.images[0])}" alt="${esc(p.title)}">` : ''}<span class="eyebrow">${esc(typeName(p))}</span><h3>${esc(p.title)}</h3><p>${esc((p.description || p.address || p.domain || 'Um lugar na história.').slice(0, 180))}</p><small>${(p.npcs || []).length} NPCs · ${(p.images || []).length} imagens</small>${button('Abrir dossiê', 'map-detail', `data-id="${p.id}"`, 'button primary')}${button('Medir distância a partir daqui', 'map-distance-from', `data-id="${p.id}"`, 'button ghost')}</div>`;
 }
@@ -598,20 +598,27 @@ function mapPoints(m) {
 }
 function ownMapCharacter(ctx) {
   const owned = ctx.state.players.filter((p) => !p.archived);
-  return owned.find((p) => p.id === ctx.state.mapCharacterId) || ctx.player() || owned[0];
+  return (
+    owned.find((p) => p.id === ctx.state.mapCharacterId) ||
+    owned.find((p) => p.id === ctx.player()?.id) ||
+    owned[0]
+  );
+}
+function canMoveCharacter(ctx, id) {
+  return ctx.admin() || ctx.state.account.character_ids.includes(id);
 }
 function personalMapPanel(ctx, m) {
-  const character = !ctx.admin() ? ownMapCharacter(ctx) : null,
+  const character = ownMapCharacter(ctx),
     my = (m.character_markers || []).find((p) => p.character_id === character?.id);
   const people = m.character_markers || [];
   return `<section class="panel personal-map-panel"><div class="personal-map-heading"><div><span class="eyebrow">PRESENÇAS NA CIDADE</span><h3>${ctx.admin() ? 'Os personagens, no mapa.' : 'Onde a sua história está agora?'}</h3><p>Posições informadas pelos jogadores. O mapa mede só a linha reta; o caminho faz parte do roleplay.</p></div>${button(icon('map') + ' Medir distância', 'map-distance', '', 'button ghost')}${ctx.admin() && m.mode !== 'geographic' ? button('Calibrar escala', 'map-calibrate', '', 'button ghost') : ''}</div>${
-    !ctx.admin() && character
+    character
       ? `<div class="personal-map-controls">${select(
           'map-character',
-          'Seu personagem',
+          ctx.admin() ? 'Personagem para posicionar' : 'Seu personagem',
           ctx.state.players.filter((p) => !p.archived).map((p) => ({ value: p.id, label: p.char })),
           character.id
-        )}${button(my ? 'Mudar minha posição' : 'Marcar minha posição', 'map-my-position', '', 'button primary')}${my ? button(my.visibility === 'campaign' ? 'Ocultar dos outros jogadores' : 'Compartilhar com os jogadores', 'map-share-position', '', 'button ghost') + button('Remover posição', 'map-remove-position', '', 'text-button danger') : ''}</div><p class="hint">${my?.visibility === 'campaign' ? 'Sua posição está visível para toda a campanha.' : 'Sua posição fica reservada a você e ao narrador até você compartilhar.'}</p>`
+        )}${button(my ? (ctx.admin() ? 'Mudar posição' : 'Mudar minha posição') : ctx.admin() ? 'Marcar posição' : 'Marcar minha posição', 'map-my-position', '', 'button primary')}${my ? (!ctx.admin() ? button(my.visibility === 'campaign' ? 'Ocultar dos outros jogadores' : 'Compartilhar com os jogadores', 'map-share-position', '', 'button ghost') : '') + button('Remover posição', 'map-remove-position', '', 'text-button danger') : ''}</div><p class="hint">${ctx.admin() ? 'Escolha o personagem e toque no mapa para posicioná-lo. A decisão de compartilhar a posição continua com o jogador.' : my?.visibility === 'campaign' ? 'Sua posição está visível para toda a campanha.' : 'Sua posição fica reservada a você e ao narrador até você compartilhar.'}</p>`
       : ''
   }<div class="map-character-roster">${people.map((p) => button(`<span class="avatar small">${p.character.profilepicture?.startsWith('data:image/') ? `<img src="${esc(p.character.profilepicture)}" alt="">` : esc(p.character.char.slice(0, 1))}</span><span><strong>${esc(p.character.char)}</strong><small>${p.visibility === 'private' ? 'RESERVADO' : 'COMPARTILHADO'}</small></span>`, 'map-focus', `data-id="character-${p.character_id}"`, 'map-character-card')).join('') || '<span class="hint">Nenhum personagem marcou sua posição neste mapa ainda.</span>'}</div>${m.mode === 'geographic' ? '<p class="map-scale-hint">Base geográfica · distâncias pelas coordenadas.</p>' : m.scale ? `<p class="map-scale-hint">Escala: ${m.scale.pixels.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} pixels da imagem = ${m.scale.meters.toLocaleString('pt-BR')} metros.</p>` : '<p class="map-scale-hint">O narrador precisa calibrar a escala da imagem para medir quilômetros.</p>'}</section>`;
 }
@@ -619,11 +626,8 @@ function atlasOptions(ctx, m) {
   return {
     points: mapPoints(m),
     markerHTML,
-    popupHTML,
-    editable: (p) =>
-      p.personal
-        ? !ctx.admin() && ctx.state.account.character_ids.includes(p.character_id)
-        : canEdit(ctx, p),
+    popupHTML: (p) => popupHTML(p, ctx),
+    editable: (p) => (p.personal ? canMoveCharacter(ctx, p.character_id) : canEdit(ctx, p)),
     onPoint: (p) => {
       if (!pickState) return false;
       pickMapPoint(ctx, p);
@@ -642,11 +646,11 @@ function atlasOptions(ctx, m) {
     }
   };
 }
-function showMeasureHTML(html) {
+function showMeasureHTML(html, closeLabel = 'Fechar medição') {
   const box = $('#map-measurement');
   if (box) {
     box.hidden = false;
-    box.innerHTML = `<div class="measurement-info">${html}${button('Fechar medição', 'map-measure-close', '', 'button ghost')}</div>`;
+    box.innerHTML = `<div class="measurement-info">${html}${button(closeLabel, 'map-measure-close', '', 'button ghost')}</div>`;
   }
 }
 function beginMapPick(kind, message, extras = {}) {
@@ -657,7 +661,14 @@ function beginMapPick(kind, message, extras = {}) {
   atlas.notice(message);
   atlas.map.closePopup?.();
   if (atlas.popup) atlas.popup.hidden = true;
-  showMeasureHTML(`<span>${icon('pin')} ${esc(message)}</span>`);
+  showMeasureHTML(
+    `<span>${icon('pin')} ${esc(message)}</span>`,
+    ['position', 'reposition'].includes(kind) ? 'Cancelar posicionamento' : 'Cancelar medição'
+  );
+  $('#atlas-map')?.scrollIntoView({
+    block: 'center',
+    behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'
+  });
 }
 function clearMapPick() {
   pickState = null;
@@ -754,7 +765,9 @@ function pickMapPoint(ctx, point) {
             y: point.y,
             ...(m.mode === 'geographic' ? { lat: point.lat, lng: point.lng } : {}),
             revision: old?._revision || 0,
-            ...(task.kind === 'position' ? { visibility: old?.visibility || 'private' } : {})
+            ...(task.kind === 'position' && !ctx.admin()
+              ? { visibility: old?.visibility || 'private' }
+              : {})
           }
         }
       );
@@ -770,6 +783,7 @@ async function personalMapAction(action, data, ctx) {
       'map-distance-from',
       'map-calibrate',
       'map-my-position',
+      'map-character-position',
       'map-share-position',
       'map-remove-position',
       'map-measure-close',
@@ -819,11 +833,14 @@ async function personalMapAction(action, data, ctx) {
     });
     return true;
   }
-  const character = ownMapCharacter(ctx);
-  if (ctx.admin() || !character)
-    throw new Error('Cada jogador posiciona seus próprios personagens.');
+  const character =
+    action === 'map-character-position'
+      ? ctx.state.players.find((p) => p.id === Number(data.characterId) && !p.archived)
+      : ownMapCharacter(ctx);
+  if (!character || !canMoveCharacter(ctx, character.id))
+    throw new Error('Escolha um personagem que você possa posicionar.');
   const position = (m.character_markers || []).find((p) => p.character_id === character.id);
-  if (action === 'map-my-position') {
+  if (action === 'map-my-position' || action === 'map-character-position') {
     clearMapPick();
     beginMapPick('position', 'Toque onde ' + character.char + ' está neste mapa.', {
       characterId: character.id
@@ -832,6 +849,7 @@ async function personalMapAction(action, data, ctx) {
   }
   if (!position) throw new Error('Marque sua posição primeiro.');
   if (action === 'map-share-position') {
+    if (ctx.admin()) throw new Error('O jogador decide se a posição é compartilhada.');
     await api('/api/maps/' + m.id + '/characters/' + character.id, {
       method: 'PATCH',
       data: {
@@ -848,7 +866,7 @@ async function personalMapAction(action, data, ctx) {
     return true;
   }
   modal(
-    'Remover sua posição?',
+    ctx.admin() ? 'Remover a posição deste personagem?' : 'Remover sua posição?',
     `<p>O marcador de ${esc(character.char)} sai deste mapa. Você pode posicioná-lo novamente depois.</p>`,
     async () => {
       await api('/api/maps/' + m.id + '/characters/' + character.id, {

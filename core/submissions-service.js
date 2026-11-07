@@ -10,30 +10,23 @@ import {
   text
 } from './model.js';
 import { notification, requireAdmin, assertRevision } from './management-service.js';
-export function creationReport(p, game) {
-  const issues = [],
-    totals = {};
-  for (const [key, budget] of Object.entries(game.character_creation.budgets)) {
-    const total = (p[key] || []).reduce(
-      (sum, row) => sum + (row[key === 'disciplines' ? 'nivel' : 'value'] || 0),
-      0
-    );
-    totals[key] = { used: total, budget };
-    if (budget !== null && total > budget)
-      issues.push({ key, message: `${key}: ${total} pontos usados para um limite de ${budget}.` });
-  }
-  return { issues, totals };
-}
+import { creationReport, evaluateCreation } from './character-creation.js';
+export { creationReport };
 function own(s, a) {
   if (a.role !== 'admin' && s.created_by !== a.id)
     fail('Esta proposta pertence a outro jogador.', 403);
 }
 function sanitizeCharacter(source, d, account, narrator = false) {
+  if (source?.creation && !narrator) {
+    const result = evaluateCreation({ ...source, player: account.display_name }, d.game);
+    if (result.report.issues.length) fail(result.report.issues[0].message);
+    source = result.character;
+  }
   const p = validatePlayer(source, d.game);
   p.player = account.display_name;
   if (!narrator) {
     p.xp = d.game.character_creation.starting_xp;
-    p.money = d.game.character_creation.starting_money;
+    if (!p.creation) p.money = d.game.character_creation.starting_money;
   }
   p.archived = false;
   p.owner_id = account.id;

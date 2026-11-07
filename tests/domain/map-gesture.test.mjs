@@ -16,9 +16,9 @@ class Marker extends EventTarget {
   releasePointerCapture(id) {
     this.captured.delete(id);
   }
-  emit(type, x, y, detail = 0) {
+  emit(type, x, y, detail = 0, pointerId = 1) {
     const event = new Event(type, { cancelable: true });
-    Object.assign(event, { clientX: x, clientY: y, pointerId: 1, button: 0, detail });
+    Object.assign(event, { clientX: x, clientY: y, pointerId, button: 0, detail });
     this.dispatchEvent(event);
   }
 }
@@ -85,4 +85,70 @@ test('gesto do mapa: marcador de outro jogador continua sem arraste, mesmo com d
   assert.equal(moves, 0);
   assert.equal(saves, 0);
   abort.abort();
+});
+test('gesto do mapa: outro dedo não substitui o arraste; cancelamento não salva', () => {
+  const e = new Marker(),
+    abort = new AbortController();
+  let saves = 0,
+    cancels = 0,
+    moves = 0;
+  guardedMarker(e, {
+    editable: () => true,
+    onTap() {},
+    onMove() {
+      moves++;
+    },
+    onEnd() {
+      saves++;
+    },
+    onCancel() {
+      cancels++;
+    },
+    signal: abort.signal
+  });
+  e.emit('pointerdown', 10, 10, 2);
+  e.emit('pointerdown', 100, 100, 2, 2);
+  e.emit('pointermove', 200, 200, 2, 2);
+  e.emit('pointerup', 200, 200, 2, 2);
+  assert.equal(moves, 0);
+  assert.equal(saves, 0);
+  e.emit('pointermove', 50, 50);
+  e.emit('pointercancel', 50, 50);
+  assert.equal(moves, 1);
+  assert.equal(cancels, 1);
+  assert.equal(saves, 0);
+  abort.abort();
+});
+test('gesto do mapa: soltar usa o destino final; perder captura ou sair da página cancela', () => {
+  const e = new Marker(),
+    abort = new AbortController();
+  let last,
+    saves = 0,
+    cancels = 0;
+  guardedMarker(e, {
+    editable: () => true,
+    onTap() {},
+    onMove(event) {
+      last = event.clientX;
+    },
+    onEnd(moved) {
+      if (moved) saves++;
+    },
+    onCancel() {
+      cancels++;
+    },
+    signal: abort.signal
+  });
+  e.emit('pointerdown', 10, 10, 2);
+  e.emit('pointermove', 30, 30);
+  e.emit('pointerup', 50, 50);
+  assert.equal(last, 50);
+  assert.equal(saves, 1);
+  e.emit('pointerdown', 50, 50, 2);
+  e.emit('lostpointercapture', 50, 50);
+  assert.equal(cancels, 1);
+  e.emit('pointerdown', 50, 50, 2);
+  abort.abort();
+  assert.equal(cancels, 2);
+  assert.equal(saves, 1);
 });

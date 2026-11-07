@@ -5,6 +5,7 @@ import { resolve, extname, sep } from 'node:path';
 import { CampaignStore } from '../core/store.js';
 import { PortalService } from '../core/portal-service.js';
 import { publicAccount } from '../core/model.js';
+import { PlayerTestSessions } from './player-test.mjs';
 const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
@@ -28,6 +29,7 @@ const routes = [
   [/^\/api\/campaigns\/[^/]+$/, ['PATCH', 'DELETE']],
   [/^\/api\/campaign$/, ['GET']],
   [/^\/api\/portal-state$/, ['GET']],
+  [/^\/api\/player-test$/, ['POST', 'DELETE']],
   [/^\/api\/members\/[^/]+$/, ['GET']],
   [/^\/api\/social$/, ['GET', 'POST']],
   [/^\/api\/social\/[^/]+\/respond$/, ['POST']],
@@ -117,6 +119,7 @@ export function createPortalServer({
     throw new Error('BOOTSTRAP_TOKEN precisa ter pelo menos 32 caracteres.');
   const directory = staticDir && resolve(staticDir);
   const presence = new Map();
+  const playerTests = new PlayerTestSessions();
   const attempts = new Map(),
     limits = new Map();
   let queue = Promise.resolve();
@@ -154,7 +157,7 @@ export function createPortalServer({
         res.setHeader('Vary', 'Origin');
         res.setHeader(
           'Access-Control-Allow-Headers',
-          'Authorization, Content-Type, X-Campaign-ID, X-Portal-Session'
+          'Authorization, Content-Type, X-Campaign-ID, X-Portal-Session, X-Player-Test'
         );
         res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
         res.setHeader('Access-Control-Expose-Headers', 'X-Portal-Revision');
@@ -189,7 +192,7 @@ export function createPortalServer({
         return;
       }
       if (url.pathname === '/api/health') {
-        respond(200, { status: 'ok', version: '9.0.0' });
+        respond(200, { status: 'ok', version: '9.2.0' });
         return;
       }
       const ip = trustProxy
@@ -271,12 +274,63 @@ export function createPortalServer({
           store.root.accounts.find(
             (a) => a.id === active.account && a.active && a.session_version === active.version
           );
+        const testId = req.headers['x-player-test'];
+        if (url.pathname === '/api/player-test') {
+          const actor = service.auth(await store.get(), bearer);
+          playerTests.requireNarrator(actor);
+          if (req.method === 'POST')
+            return {
+              response: await playerTests.start(
+                loaded.root,
+                user,
+                bearer,
+                data,
+                testId ? active.campaign_id : req.headers['x-campaign-id'] || active.campaign_id
+              ),
+              revision: 0
+            };
+          playerTests.end(testId, actor, bearer);
+          const requested = data.campaign_id || active.campaign_id;
+          const selected =
+            store.root.campaigns.find((c) => c.id === requested) || store.root.campaigns[0];
+          if (selected) store.root.active_campaign_id = selected.id;
+          return {
+            response: {
+              account: publicAccount(service.auth(await store.get(), bearer)),
+              campaign_id: selected?.id || null,
+              mode: 'online',
+              player_test: null
+            },
+            revision: loaded.revision
+          };
+        }
+        if (testId && url.pathname !== '/auth/logout') {
+          const actor = service.auth(await store.get(), bearer);
+          return playerTests.request(
+            testId,
+            actor,
+            bearer,
+            url.pathname +
+              (url.searchParams.has('character_id')
+                ? '?character_id=' + encodeURIComponent(url.searchParams.get('character_id'))
+                : ''),
+            { method: req.method, data, campaignId: req.headers['x-campaign-id'] }
+          );
+        }
+        if (url.pathname === '/auth/logout' && user) playerTests.endOwner(user.id);
         if (user) {
-          const requested = req.headers['x-campaign-id'] || active.campaign_id;
+          const requested =
+            url.pathname === '/auth/logout'
+              ? active.campaign_id
+              : req.headers['x-campaign-id'] || active.campaign_id;
           const permitted = store.root.campaigns.filter(
             (c) => user.role === 'admin' || Object.hasOwn(user.memberships, c.id)
           );
-          if (req.headers['x-campaign-id'] && !permitted.some((c) => c.id === requested))
+          if (
+            url.pathname !== '/auth/logout' &&
+            req.headers['x-campaign-id'] &&
+            !permitted.some((c) => c.id === requested)
+          )
             throw error('Você não pertence a esta campanha.', 403);
           const selected = permitted.find((c) => c.id === requested) || permitted[0];
           if (selected) store.root.active_campaign_id = selected.id;
@@ -369,12 +423,14 @@ export function createPortalServer({
         res.setHeader('Set-Cookie', 'coroa_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0');
       if (!res.headersSent)
         respond(e.status || 500, {
-          error: e.status ? e.message : 'Não foi possível concluir a operação.'
+          error: e.status ? e.message : 'Não foi possível concluir a operação.',
+          ...(e.code === 'PLAYER_TEST_EXPIRED' ? { code: e.code } : {})
         });
       else res.end();
     }
   });
   server.requestTimeout = 120000;
   server.headersTimeout = 15000;
+  server.on('close', () => playerTests.clear());
   return server;
 }

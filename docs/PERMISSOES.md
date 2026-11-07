@@ -11,7 +11,7 @@
 | Conclusão de missão | Ajusta a recompensa final e entrega uma vez | Consulta o resultado; não entrega recompensas |
 | Mapas | Envia vários, libera acesso, gerencia e remove/restaura | Abre os liberados e cria/edita seus próprios marcadores |
 | Local privado no mapa | Acessa se for autor | Acessa se for autor |
-| Posição pessoal de personagem | Vê todas | Controla as próprias e vê posições compartilhadas |
+| Posição pessoal de personagem | Vê, cria, move e remove todas; preserva a escolha de visibilidade | Controla as próprias e vê posições compartilhadas |
 | Círculo de relações | Não abre nem edita pela aplicação | Mural separado de cada personagem sob seu controle |
 | Diário compartilhado | Lê e administra registros compartilhados | Lê e cria; edita os seus |
 | Anotação privada | Acessa somente as próprias | Acessa somente as próprias |
@@ -44,7 +44,7 @@ O login persiste por cookie HttpOnly, com verificação de origem nas alteraçõ
 | Compra de informação | Administra o catálogo | Confirma pagamento completo com uma ficha própria |
 | Informação revelada | Consulta e administra | Todos da campanha consultam, com identificação do comprador |
 | Catálogo de legados | Libera/restringe disciplinas | Adquire as permitidas pelo custo configurado, no nível 0 |
-| Marcador pessoal | Vê todas as posições | Move seus personagens e decide compartilhar ou reservar |
+| Marcador pessoal | Vê e posiciona todos os personagens | Move seus personagens e decide compartilhar ou reservar |
 | Escala por imagem | Calibra | Usa para medir a distância |
 | Histórico de ficha | Pode apagar e acrescentar mensagem ao editar | Consulta; evoluções e gastos são registrados pelo servidor |
 | Mensagem, brinde, pergunta e desafio | Interage como pessoa da mesa | Interage com participantes da mesma campanha |
@@ -53,3 +53,15 @@ O login persiste por cookie HttpOnly, com verificação de origem nas alteraçõ
 As cópias administrativas completas continuam contendo dados de recuperação. A restrição de mensagens e anotações privadas se refere às telas e rotas normais de consulta. Notas pessoais acompanham seu autor; o círculo de relações continua exclusivo do personagem e não é o cadastro de NPCs dos mapas.
 
 Ambição e desejo pertencem à ficha: o jogador altera e encerra os próprios objetivos; o narrador pode administrar a ficha. Outros jogadores não têm acesso a esses textos pelas rotas normais. Conclusão/desistência conserva o registro no histórico, cuja exclusão continua exclusiva do narrador. Enquadramento do retrato segue a mesma propriedade. O narrador define preço geral e preço individual dos legados; jogadores confirmam o custo que o servidor confere antes de cobrar.
+
+## Posições e modo de testes (9.1)
+
+O narrador pode criar, mover e remover posições de personagens ativos. Cada jogador controla apenas seus personagens e decide se os outros jogadores veem sua posição. Movimentos do narrador preservam essa decisão.
+
+**Testar como jogador** cria um workspace isolado e uma conta temporária com papel de jogador, vinculada somente à ficha de teste. Não muda o papel do narrador, sua senha ou seus vínculos na campanha real. O teste não recebe notas privadas, murais pessoais, mensagens ou contas de jogadores reais. A navegação administrativa permanece bloqueada no servidor e no cliente.
+
+## Criação e leitura (9.2)
+
+Jogadores distribuem os pontos iniciais e bônus em uma proposta; não alteram os custos do catálogo, não digitam livremente geração/XP/capital e não aprovam personagens. O servidor reconstrói a ficha pelas escolhas, valida limites e calcula Geração e Recursos. Qualidades e defeitos usam os pontos bônus. Um clã personalizado continua dependendo da aprovação manual.
+
+O narrador consulta o livro sem abrir edição; Gerenciar livro habilita os formulários. Continua podendo transcrever fichas, ajustar propostas e aprovar exceções justificadas. Atualizar regras não recalcula fichas antigas nem concede capital novamente. Propostas legadas sem etapas registradas precisam de conferência manual.

@@ -428,7 +428,9 @@ test('v7: proposta pode ser apagada pelo autor sem remover ficha aprovada', asyn
     404
   );
   const approved = await f.call('/api/submissions/' + proposal.id + '/approve', 'POST', {
-    revision: proposal._revision
+    revision: proposal._revision,
+    override: true,
+    reason: 'Proposta legada conferida manualmente para testar a exclusão.'
   });
   await f.call(
     '/api/submissions/' + proposal.id,
