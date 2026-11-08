@@ -22,7 +22,11 @@ const MIME = {
   '.xml': 'application/xml; charset=utf-8'
 };
 const routes = [
-  [/^\/auth\/(bootstrap|login|logout|password)$/, ['POST']],
+  [/^\/auth\/(bootstrap|login|logout|password|register)$/, ['POST']],
+  [/^\/api\/admin\/registrations$/, ['GET']],
+  [/^\/api\/admin\/registrations\/[^/]+\/(approve|reject)$/, ['POST']],
+  [/^\/api\/rewards$/, ['GET']],
+  [/^\/api\/rewards\/(check-in|claim|ack)$/, ['POST']],
   [/^\/auth\/me$/, ['GET']],
   [/^\/api\/campaigns$/, ['GET', 'POST']],
   [/^\/api\/campaigns\/[^/]+\/select$/, ['POST']],
@@ -192,7 +196,7 @@ export function createPortalServer({
         return;
       }
       if (url.pathname === '/api/health') {
-        respond(200, { status: 'ok', version: '9.2.2' });
+        respond(200, { status: 'ok', version: '9.3.0' });
         return;
       }
       const ip = trustProxy
@@ -219,7 +223,11 @@ export function createPortalServer({
           ? JSON.parse(url.searchParams.get('data'))
           : await body(
               req,
-              url.pathname.startsWith('/auth/') ? Math.min(maxBytes, 16384) : maxBytes
+              url.pathname === '/auth/register'
+                ? Math.min(maxBytes, 512 * 1024)
+                : url.pathname.startsWith('/auth/')
+                  ? Math.min(maxBytes, 16384)
+                  : maxBytes
             );
       if (url.pathname !== '/auth/status' && url.pathname !== '/api/sync') {
         const route = routes.find(([pattern]) => pattern.test(url.pathname));
@@ -256,7 +264,11 @@ export function createPortalServer({
         const loaded = await repository.load();
         if (url.pathname === '/auth/status')
           return {
-            response: { needs_bootstrap: !loaded.root.accounts.length, remote: true },
+            response: {
+              needs_bootstrap: !loaded.root.accounts.length,
+              registration_open: loaded.root.accounts.some((a) => a.role === 'admin' && a.active),
+              remote: true
+            },
             revision: loaded.revision
           };
         const baseline = JSON.stringify(loaded.root),

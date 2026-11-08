@@ -14254,127 +14254,1129 @@
       "id": 0,
       "name": "ECO CADAVÉRICO",
       "nivel": 2,
-      "short_description": "Extrai fragmentos finais da morte de um cadáver.",
-      "description": "Permite acessar os últimos instantes de um cadáver, obtendo fragmentos sensoriais e emocionais da morte em forma de visões simbólicas e incompletas. Requer cadáver não-degradado e não-destruído, sal negro consagrado e cinzas de osso humano queimado, além de tempo de preparação. Teste de Raciocínio + Ocultismo determina a clareza das informações obtidas."
+      "short_description": "Receba fragmentos sensoriais dos últimos instantes de um cadáver.",
+      "description": "Receba fragmentos sensoriais dos últimos instantes de um cadáver. As visões são incompletas; não revelam automaticamente o assassino nem funcionam se os restos foram destruídos.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": false
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 2,
+        "preparation": "20 minutos",
+        "duration": "uma leitura",
+        "materials": "cadáver preservado, sal negro e cinzas de osso",
+        "cost": "Sem Teste de Despertar"
+      },
+      "origin": "legacy-house",
+      "adaptation_note": "Ritual já existente na campanha, revisado para as regras da mesa. Não apresentado como transcrição oficial.",
+      "tags": [
+        "Ritual da mesa"
+      ]
     },
     {
       "id": 1,
       "name": "MARCA DE FALECIMENTO",
       "nivel": 2,
-      "short_description": "Marca espiritualmente um alvo para rastreamento ligado à morte.",
-      "description": "Aplica uma marca espiritual em um alvo vivo, tornando-o rastreável por forças ligadas à morte sem causar dano direto. Requer um item pessoal íntimo do alvo, sangue de cadáver humano recém falecido e lascas de uma lápide antiga. Teste de Manipulação + Ocultismo vs Força de Vontade. Dura por dias ou até ser dissipada por rituais equivalentes."
+      "short_description": "Marque um alvo através de um objeto íntimo para reconhecê-lo por rastros ligados à morte.",
+      "description": "Marque um alvo através de um objeto íntimo para reconhecê-lo por rastros ligados à morte. A marca não mostra um ponto exato no mapa. Resistência sobrenatural exige disputa com Força de Vontade, contando sucessos em 6+.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": false
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 2,
+        "preparation": "30 minutos",
+        "duration": "até três noites",
+        "materials": "objeto íntimo do alvo, sangue de cadáver e lasca de lápide",
+        "cost": "Sem Teste de Despertar"
+      },
+      "origin": "legacy-house",
+      "adaptation_note": "Ritual já existente na campanha, revisado para as regras da mesa. Não apresentado como transcrição oficial.",
+      "tags": [
+        "Ritual da mesa"
+      ]
     },
     {
       "id": 2,
       "name": "RELÍQUIA MORTUÁRIA",
       "nivel": 2,
-      "short_description": "Vincula a vida do vampiro a um objeto externo como âncora existencial.",
-      "description": "Vincula a existência do vampiro a um objeto específico escolhido durante o ritual, impedindo sua destruição definitiva enquanto o vínculo existir. Se o objeto for destruído, o vampiro morre imediatamente. O objeto deve ser significativo e pessoal ao vampiro (ligado a eventos marcantes de sua história). Requer sangue do próprio vampiro, exposição prolongada ao objeto e um local de forte carga de morte ou decadência para realização do ritual. Após o vínculo, o vampiro deve manter contato físico periódico com o objeto ou sofre penalidades progressivas."
+      "short_description": "Ritual excepcional da mesa: ancora a existência do vampiro em um objeto.",
+      "description": "Ritual excepcional da mesa: ancora a existência do vampiro em um objeto. Só pode existir uma âncora. Destruir o objeto destrói o vínculo e o vampiro. Os limites de sobrevivência e a necessidade de contato devem ser aprovados antes do aprendizado; não modifica dano ou morte automaticamente na ficha.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": true
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 4,
+        "preparation": "quatro horas",
+        "duration": "vínculo supervisionado pelo narrador",
+        "materials": "objeto pessoal significativo e sangue do conjurador",
+        "cost": "1 Teste de Despertar"
+      },
+      "origin": "legacy-house",
+      "adaptation_note": "Ritual já existente na campanha, revisado para as regras da mesa. Não apresentado como transcrição oficial.",
+      "tags": [
+        "Ritual da mesa",
+        "Excepcional · aprovação prévia"
+      ],
+      "requires_narrator_approval": true
     },
     {
       "id": 3,
       "name": "MORTE DA AURA",
       "nivel": 2,
-      "short_description": "Apaga a leitura sobrenatural da aura do alvo.",
-      "description": "Suprime completamente a expressão da aura de um alvo, tornando-a vazia e ilegível para percepção sobrenatural, com intensificação em áreas ligadas à morte. Requer contato físico com o alvo, água de lavagem de ossário e restos mortais humanos. Teste de Raciocínio + Ocultismo para realizar. Dura até o fim da noite."
+      "short_description": "Oculte a expressão sobrenatural da aura de um alvo tocado.",
+      "description": "Oculte a expressão sobrenatural da aura de um alvo tocado. Não apaga sua presença física ou memórias. Quem investiga com poder equivalente pode disputar sucessos para reconhecer o ocultamento.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": false
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 2,
+        "preparation": "20 minutos",
+        "duration": "até o fim da noite",
+        "materials": "água de ossário e restos humanos",
+        "cost": "Sem Teste de Despertar"
+      },
+      "origin": "legacy-house",
+      "adaptation_note": "Ritual já existente na campanha, revisado para as regras da mesa. Não apresentado como transcrição oficial.",
+      "tags": [
+        "Ritual da mesa"
+      ]
     },
     {
       "id": 4,
       "name": "PASSO DE VITAE",
       "nivel": 4,
-      "short_description": "Reduz permanentemente a geração do vampiro através de sangue ancião.",
-      "description": "Reduz a geração de um vampiro em um nível, fortalecendo permanentemente sua ligação com a vitae. Só pode ser usado uma vez por indivíduo. Requer consumo direto de sangue de um vampiro de geração mais baixa (ancião) e um ritual prolongado de assimilação que dura várias horas. Após concluído, a geração do vampiro diminui permanentemente, aumentando seu poder sanguíneo."
+      "short_description": "Ritual excepcional da mesa, uma vez por personagem.",
+      "description": "Ritual excepcional da mesa, uma vez por personagem. Assimile sangue de geração inferior para reduzir a própria geração em um. Exige autorização prévia do narrador, que define as consequências e altera a geração manualmente. Não funciona como compra de pontos e não é aplicado automaticamente.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": true
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 5,
+        "preparation": "uma noite de preparação",
+        "duration": "permanente, após aprovação",
+        "materials": "sangue de um vampiro de geração inferior e círculo de assimilação",
+        "cost": "1 Teste de Despertar"
+      },
+      "origin": "legacy-house",
+      "adaptation_note": "Ritual já existente na campanha, revisado para as regras da mesa. Não apresentado como transcrição oficial.",
+      "tags": [
+        "Ritual da mesa",
+        "Excepcional · aprovação prévia"
+      ],
+      "requires_narrator_approval": true
     },
     {
       "id": 5,
       "name": "MIRAGEM DA SEPULTURA",
       "nivel": 2,
-      "short_description": "Induz visões recorrentes da própria morte no alvo.",
-      "description": "Revela ao alvo premonições de sua própria morte, gerando visões fragmentadas e aterrorizantes ao longo de vários dias. O ritual dura duas horas e consome um item pessoal do alvo (imagem, objeto íntimo ou vestígio corporal), queimado durante a execução. Durante uma semana, o alvo sofre visões recorrentes de sua morte futura, variando em clareza e consistência."
+      "short_description": "Provoque visões simbólicas e perturbadoras da morte do alvo.",
+      "description": "Provoque visões simbólicas e perturbadoras da morte do alvo. São presságios incertos, nunca uma previsão garantida nem dano automático. O narrador usa as visões como pistas ou tensão; o alvo pode resistir com Força de Vontade, comparando sucessos.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": false
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 2,
+        "preparation": "duas horas",
+        "duration": "uma semana",
+        "materials": "objeto pessoal do alvo, queimado no preparo",
+        "cost": "Sem Teste de Despertar"
+      },
+      "origin": "legacy-house",
+      "adaptation_note": "Ritual já existente na campanha, revisado para as regras da mesa. Não apresentado como transcrição oficial.",
+      "tags": [
+        "Ritual da mesa"
+      ]
     },
     {
       "id": 6,
       "name": "PROTEÇÃO CONTRA O MAL DA MADEIRA",
       "nivel": 2,
-      "short_description": "Anula a primeira estaca destinada ao coração do vampiro.",
-      "description": "Cria uma proteção automática contra estacas, fazendo com que a primeira tentativa de perfurar o coração do vampiro falhe e destrua o objeto no processo. Só funciona contra a primeira estaca bem-sucedida; ataques posteriores funcionam normalmente enquanto o efeito não for renovado."
+      "short_description": "Proteja o coração contra a primeira estaca que o atingiria.",
+      "description": "Proteja o coração contra a primeira estaca que o atingiria. A proteção rompe a estaca e se desfaz. Não impede outros ataques, não cura dano anterior e não acumula cargas com repetições.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": true
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 3,
+        "preparation": "uma hora",
+        "duration": "até disparar ou até o próximo repouso",
+        "materials": "estilhaço de madeira e sangue do conjurador",
+        "cost": "1 Teste de Despertar"
+      },
+      "origin": "legacy-house",
+      "adaptation_note": "Ritual já existente na campanha, revisado para as regras da mesa. Não apresentado como transcrição oficial.",
+      "tags": [
+        "Ritual da mesa"
+      ]
     },
     {
       "id": 7,
       "name": "PROTEÇÃO CONTRA CARNIÇAIS",
       "nivel": 2,
-      "short_description": "Amaldiçoa objetos com dor letal contra carniçais.",
-      "description": "Inscreve uma marca ritual em um objeto, causando dor intensa a qualquer carniçal que se aproximar dele. Carniçais que entram em contato com o item são levados à morte final. O efeito é restrito ao objeto marcado ou parte específica dele."
+      "short_description": "Consagra uma barreira contra carniçais.",
+      "description": "Teste: mínimo 3 sucessos em 6+. Preparo: 2 horas. Duração: até o fim da noite ou destruição do símbolo. Materiais: sangue mortal e uma superfície marcada. Consagra uma barreira contra carniçais. Escolha um objeto ou passagem de até 2 m; o primeiro contato hostil causa 2 danos superficiais e denuncia a intrusão. Contatos seguintes apenas repelem. Ferramentas e aliados podem destruir o símbolo; não encanta munição.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": true
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 3,
+        "preparation": "2 horas",
+        "duration": "até o fim da noite ou destruição do símbolo",
+        "materials": "sangue mortal e uma superfície marcada",
+        "cost": "1 Teste de Despertar"
+      },
+      "origin": "adapted",
+      "tags": [
+        "Adaptação da mesa",
+        "Investigação"
+      ],
+      "source_url": "https://sites.google.com/site/bradockrpg/vampiro-a-mascara-rituais-tremere",
+      "reference_level": 2,
+      "adaptation_note": "Conceito da referência; custos, testes, limites e efeitos numéricos são adaptação da mesa."
     },
     {
       "id": 8,
       "name": "MIRAGEM DA SEPULTURA",
       "nivel": 2,
-      "short_description": "Provoca premonições repetidas e instáveis de morte no alvo.",
-      "description": "Revela ao alvo premonições de sua própria morte, gerando visões fragmentadas e aterrorizantes ao longo de vários dias. O ritual dura duas horas e consome um item pessoal do alvo, queimado durante a execução. Durante uma semana, o alvo sofre visões recorrentes de sua morte futura, variando em clareza e consistência."
+      "short_description": "Provoque visões simbólicas e perturbadoras da morte do alvo.",
+      "description": "Provoque visões simbólicas e perturbadoras da morte do alvo. São presságios incertos, nunca uma previsão garantida nem dano automático. O narrador usa as visões como pistas ou tensão; o alvo pode resistir com Força de Vontade, comparando sucessos.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": false
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 2,
+        "preparation": "duas horas",
+        "duration": "uma semana",
+        "materials": "objeto pessoal do alvo, queimado no preparo",
+        "cost": "Sem Teste de Despertar"
+      },
+      "origin": "legacy-house",
+      "adaptation_note": "Ritual já existente na campanha, revisado para as regras da mesa. Não apresentado como transcrição oficial.",
+      "tags": [
+        "Ritual da mesa"
+      ]
     },
     {
       "id": 9,
       "name": "DEFESA DO REFÚGIO SAGRADO",
       "nivel": 3,
-      "short_description": "Impede a entrada de luz solar em uma área ao redor do local ritualizado.",
-      "description": "Cria uma zona de 6 metros onde a luz solar não consegue atravessar portas, janelas ou aberturas, sendo bloqueada por uma escuridão mística. Requer símbolos astrológicos desenhados com sangue em todas as entradas e 1 ponto de sangue. O efeito dura enquanto o vampiro permanecer dentro da área."
+      "short_description": "Veda um aposento contra a luz solar.",
+      "description": "Teste: mínimo 3 sucessos em 6+. Preparo: 60 minutos. Duração: até o próximo repouso terminar ou o conjurador sair. Materiais: sangue do conjurador e janelas seladas. Veda um aposento contra a luz solar. Protege apenas um cômodo fechado de até 7 m; não permite caminhar ao sol. Uma abertura forçada rompe a proteção nessa entrada. Só um refúgio pode permanecer protegido por conjurador.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": true
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 3,
+        "preparation": "60 minutos",
+        "duration": "até o próximo repouso terminar ou o conjurador sair",
+        "materials": "sangue do conjurador e janelas seladas",
+        "cost": "1 Teste de Despertar"
+      },
+      "origin": "adapted",
+      "tags": [
+        "Adaptação da mesa",
+        "Investigação"
+      ],
+      "source_url": "https://sites.google.com/site/bradockrpg/vampiro-a-mascara-rituais-tremere",
+      "reference_level": 1,
+      "adaptation_note": "Conceito da referência; custos, testes, limites e efeitos numéricos são adaptação da mesa."
     },
     {
       "id": 10,
-      "name": "DESPERTAR COM O FRESCOR DO ANOITECER",
+      "name": "DESPERTAR COM O FRESCOR DO AMANHECER",
       "nivel": 3,
-      "short_description": "Permite que o vampiro desperte automaticamente diante de perigo, mesmo durante o dia.",
-      "description": "O vampiro acorda imediatamente ao detectar perigo real, ignorando limitações de sono diurno nos primeiros momentos de ação. Requer cinzas de pena queimada espalhadas no local de descanso. Deve ser realizado antes do repouso e não pode ser interrompido."
+      "short_description": "Alerta o vampiro adormecido diante de perigo imediato.",
+      "description": "Teste: mínimo 2 sucessos em 6+. Preparo: 30 minutos antes de repousar. Duração: até o fim do próximo repouso. Materiais: cinzas de pena e um círculo de vigília. Alerta o vampiro adormecido diante de perigo imediato. Permite reagir por dois turnos antes das limitações diurnas normais; não impede dano solar nem substitui um vigia. Interromper o preparo ou sair do local cancela o efeito.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": false
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 2,
+        "preparation": "30 minutos antes de repousar",
+        "duration": "até o fim do próximo repouso",
+        "materials": "cinzas de pena e um círculo de vigília",
+        "cost": "Sem Teste de Despertar"
+      },
+      "origin": "adapted",
+      "tags": [
+        "Adaptação da mesa",
+        "Investigação"
+      ],
+      "source_url": "https://sites.google.com/site/bradockrpg/vampiro-a-mascara-rituais-tremere",
+      "reference_level": 1,
+      "adaptation_note": "Conceito da referência; custos, testes, limites e efeitos numéricos são adaptação da mesa."
     },
     {
       "id": 11,
-      "name": "COMUNICAR-SE COM O SENHOR",
+      "name": "COMUNICAÇÃO COM O SENHOR",
       "nivel": 3,
-      "short_description": "Cria comunicação telepática com o senhor do vampiro à qualquer distância.",
-      "description": "Permite comunicação mental direta com o senhor do vampiro por meio de conexão psíquica temporária. Requer objeto previamente pertencente ao senhor e meditação de 30 minutos. A duração depende dos sucessos no teste de ativação, permitindo diálogo limitado no plano mental."
+      "short_description": "Estabelece uma conversa mental com o senhor.",
+      "description": "Teste: mínimo 2 sucessos em 6+. Preparo: 30 minutos. Duração: uma conversa de até 5 minutos. Materiais: objeto pessoal ligado ao senhor. Estabelece uma conversa mental com o senhor. Ele percebe o chamado e pode recusá-lo ou encerrá-lo. A comunicação não revela localização, pensamentos privados ou informações que nenhuma das partes conheça. Uma tentativa por vínculo em cada cena.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": false
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 2,
+        "preparation": "30 minutos",
+        "duration": "uma conversa de até 5 minutos",
+        "materials": "objeto pessoal ligado ao senhor",
+        "cost": "Sem Teste de Despertar"
+      },
+      "origin": "adapted",
+      "tags": [
+        "Adaptação da mesa",
+        "Investigação"
+      ],
+      "source_url": "https://sites.google.com/site/bradockrpg/vampiro-a-mascara-rituais-tremere",
+      "reference_level": 1,
+      "adaptation_note": "Conceito da referência; custos, testes, limites e efeitos numéricos são adaptação da mesa."
     },
     {
       "id": 12,
       "name": "TOQUE DO DEMÔNIO",
       "nivel": 3,
-      "short_description": "Marca um mortal com rejeição social sobrenatural temporária.",
-      "description": "Impõe uma marca invisível que faz com que qualquer interação social com o alvo seja hostil ou degradante. Requer 1 moeda simples colocada na vítima durante o ritual. Dura uma noite inteira e só afeta mortais."
+      "short_description": "Marque um mortal com uma sensação de repulsa.",
+      "description": "Marque um mortal com uma sensação de repulsa. Interações sociais ficam desfavoráveis conforme a cena, sem obrigar ninguém a atacar ou ignorar vínculos reais. O alvo pode resistir com Força de Vontade, comparando sucessos.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": false
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 2,
+        "preparation": "30 minutos",
+        "duration": "uma noite",
+        "materials": "moeda deixada com o alvo mortal",
+        "cost": "Sem Teste de Despertar"
+      },
+      "origin": "legacy-house",
+      "adaptation_note": "Ritual já existente na campanha, revisado para as regras da mesa. Não apresentado como transcrição oficial.",
+      "tags": [
+        "Ritual da mesa"
+      ]
     },
     {
       "id": 13,
       "name": "FOCO PRINCIPAL DA INFUSÃO DE VITAE",
       "nivel": 3,
-      "short_description": "Armazena sangue em um objeto que pode ser liberado sob comando.",
-      "description": "Encanta um objeto pequeno para armazenar 1 ponto de sangue do vampiro. O objeto pode ser quebrado por comando mental, liberando o sangue em forma líquida. Requer 1 ponto de sangue e presença do objeto durante a criação. O sangue pode ser usado normalmente após liberado."
+      "short_description": "Armazene uma dose de vitae em um objeto pequeno.",
+      "description": "Armazene uma dose de vitae em um objeto pequeno. Ao comando e toque do criador, a dose é liberada. Não cria sangue, não elimina vínculos de sangue e não reduz fome automaticamente; o narrador resolve consumo e efeitos.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": false
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 2,
+        "preparation": "30 minutos",
+        "duration": "até liberar o conteúdo",
+        "materials": "objeto pequeno e uma dose de vitae do conjurador",
+        "cost": "Sem Teste de Despertar"
+      },
+      "origin": "legacy-house",
+      "adaptation_note": "Ritual já existente na campanha, revisado para as regras da mesa. Não apresentado como transcrição oficial.",
+      "tags": [
+        "Ritual da mesa"
+      ]
     },
     {
       "id": 14,
       "name": "TRAVESSIA INCORPÓREA",
       "nivel": 3,
-      "short_description": "Torna o vampiro intangível por um período limitado.",
-      "description": "Permite atravessar objetos sólidos e ignorar ataques físicos enquanto estiver ativo. O vampiro deve se mover em linha reta durante o efeito. Requer fragmento de espelho quebrado. Duração baseada em sucessos em Raciocínio + Sobrevivência."
+      "short_description": "Torne-se incorpóreo e atravesse uma barreira física em linha reta.",
+      "description": "Torne-se incorpóreo e atravesse uma barreira física em linha reta. Não pode atacar, carregar outra pessoa nem terminar dentro de matéria sólida. Proteções sobrenaturais continuam válidas. O narrador resolve o deslocamento, sem alterar o mapa automaticamente.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": true
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 4,
+        "preparation": "30 minutos",
+        "duration": "até três turnos",
+        "materials": "fragmento de espelho quebrado",
+        "cost": "1 Teste de Despertar"
+      },
+      "origin": "legacy-house",
+      "adaptation_note": "Ritual já existente na campanha, revisado para as regras da mesa. Não apresentado como transcrição oficial.",
+      "tags": [
+        "Ritual da mesa"
+      ]
     },
     {
       "id": 15,
       "name": "ESCUDO DA PRESENÇA PÚTRIDA",
       "nivel": 3,
-      "short_description": "Reverte efeitos de Presença contra o usuário.",
-      "description": "Faz com que qualquer uso de Presença contra o alvo seja refletido no agressor. Requer pano de seda azul ao redor do pescoço do protegido. Dura até o amanhecer e só ativa após sucesso do poder original."
+      "short_description": "Prepare uma defesa contra Presença.",
+      "description": "Prepare uma defesa contra Presença. No primeiro efeito direcionado ao protegido, dispute os sucessos do agressor. Vencendo, devolva aquele efeito ao usuário; perdendo, ele age normalmente. A defesa se desfaz após a tentativa e não reflete poderes em área.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": true
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 3,
+        "preparation": "uma hora",
+        "duration": "até refletir um efeito ou até o amanhecer",
+        "materials": "faixa de seda azul e sangue do protegido",
+        "cost": "1 Teste de Despertar"
+      },
+      "origin": "legacy-house",
+      "adaptation_note": "Ritual já existente na campanha, revisado para as regras da mesa. Não apresentado como transcrição oficial.",
+      "tags": [
+        "Ritual da mesa"
+      ]
     },
     {
       "id": 16,
       "name": "O OSSO DA MENTIRA",
       "nivel": 4,
-      "short_description": "Força qualquer portador a dizer a verdade.",
-      "description": "Um osso encantado obriga o portador a falar a verdade ao tentar mentir, consumindo cargas espirituais do objeto. Requer osso com mais de 200 anos e 10 pontos de sangue na criação. Cada mentira consome uma carga até esgotamento."
+      "short_description": "Encante um osso para constranger mentiras deliberadas de quem o segura voluntariamente.",
+      "description": "Encante um osso para constranger mentiras deliberadas de quem o segura voluntariamente. Cada tentativa consome uma carga. Uma resistência de Força de Vontade pode vencer a compulsão por sucessos. Não detecta enganos sinceros, omissões ou verdades desconhecidas.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": true
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 4,
+        "preparation": "três horas",
+        "duration": "três tentativas de mentira",
+        "materials": "osso antigo e sangue do conjurador",
+        "cost": "1 Teste de Despertar"
+      },
+      "origin": "legacy-house",
+      "adaptation_note": "Ritual já existente na campanha, revisado para as regras da mesa. Não apresentado como transcrição oficial.",
+      "tags": [
+        "Ritual da mesa"
+      ]
     },
     {
       "id": 17,
       "name": "CONTRATO DE SANGUE",
       "nivel": 5,
-      "short_description": "Cria um contrato mágico impossível de quebrar sem consequências.",
-      "description": "Liga duas partes a um contrato sobrenatural escrito e selado com sangue. Requer 3 noites de preparação e assinatura com sangue das partes envolvidas. O contrato só pode ser quebrado ao ser cumprido ou destruído fisicamente."
+      "short_description": "Sele um acordo aceito conscientemente pelas partes.",
+      "description": "Sele um acordo aceito conscientemente pelas partes. Antes das assinaturas, escreva obrigações e consequências da quebra, aprovadas pelo narrador. O pacto não controla pensamentos nem impõe morte automática. Quem destrói o original encerra o vínculo e enfrenta apenas a consequência previamente combinada.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": true
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 4,
+        "preparation": "três noites de preparo",
+        "duration": "até cumprir, romper ou destruir o contrato",
+        "materials": "pergaminho e assinatura em sangue de todos os envolvidos",
+        "cost": "1 Teste de Despertar"
+      },
+      "origin": "legacy-house",
+      "adaptation_note": "Ritual já existente na campanha, revisado para as regras da mesa. Não apresentado como transcrição oficial.",
+      "tags": [
+        "Ritual da mesa"
+      ]
+    },
+    {
+      "id": 18,
+      "name": "TRILHA DO SANGUE",
+      "nivel": 2,
+      "description": "Teste: mínimo 3 sucessos em 6+. Preparo: 90 minutos. Duração: leitura instantânea. Materiais: amostra suficiente do sangue investigado. Investiga a ascendência de uma amostra vampírica. Revela um vínculo ancestral; cada sucesso excedente acrescenta outro, até três. Sem referência conhecida, surgem símbolos e impressões, não nomes infalíveis. Não determina localização nem obriga o narrador a revelar identidades ainda indeterminadas.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": false
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 3,
+        "preparation": "90 minutos",
+        "duration": "leitura instantânea",
+        "materials": "amostra suficiente do sangue investigado",
+        "cost": "Sem Teste de Despertar"
+      },
+      "origin": "adapted",
+      "tags": [
+        "Adaptação da mesa",
+        "Investigação"
+      ],
+      "source_url": "https://sites.google.com/site/bradockrpg/vampiro-a-mascara-rituais-tremere",
+      "reference_level": 2,
+      "adaptation_note": "Conceito da referência; custos, testes, limites e efeitos numéricos são adaptação da mesa.",
+      "short_description": "Investiga a ascendência de uma amostra vampírica."
+    },
+    {
+      "id": 19,
+      "name": "AJUDANTE DE SANGUE",
+      "nivel": 3,
+      "description": "Teste: mínimo 3 sucessos em 6+. Preparo: 60 minutos. Duração: até o fim da noite. Materiais: tigela marcada, sangue e objetos pequenos. Anima um pequeno auxiliar de laboratório. Ele executa tarefas simples com 2 dados, não luta, ensina magia ou usa disciplinas. Só um ajudante por conjurador; uma agressão o faz fugir e um dano o desmonta. Não funciona como espião autônomo.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": false
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 3,
+        "preparation": "60 minutos",
+        "duration": "até o fim da noite",
+        "materials": "tigela marcada, sangue e objetos pequenos",
+        "cost": "Sem Teste de Despertar"
+      },
+      "origin": "adapted",
+      "tags": [
+        "Adaptação da mesa",
+        "Investigação"
+      ],
+      "source_url": "https://sites.google.com/site/bradockrpg/vampiro-a-mascara-rituais-tremere",
+      "reference_level": 3,
+      "adaptation_note": "Conceito da referência; custos, testes, limites e efeitos numéricos são adaptação da mesa.",
+      "short_description": "Anima um pequeno auxiliar de laboratório."
+    },
+    {
+      "id": 20,
+      "name": "LÂMINA ARDENTE",
+      "nivel": 2,
+      "description": "Teste: mínimo 3 sucessos em 6+. Preparo: 30 minutos. Duração: dois acertos ou o fim da cena. Materiais: arma branca e sangue do conjurador. Imbui uma arma com fogo sobrenatural. Nos próximos dois acertos, converta no máximo 1 ponto do dano causado em agravado. Não acrescenta acertos nem dano gratuito, não acumula com outro encantamento e perde a carga ao ser entregue a terceiros.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": true
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 3,
+        "preparation": "30 minutos",
+        "duration": "dois acertos ou o fim da cena",
+        "materials": "arma branca e sangue do conjurador",
+        "cost": "1 Teste de Despertar"
+      },
+      "origin": "adapted",
+      "tags": [
+        "Adaptação da mesa",
+        "Investigação"
+      ],
+      "source_url": "https://sites.google.com/site/bradockrpg/vampiro-a-mascara-rituais-tremere",
+      "reference_level": 2,
+      "adaptation_note": "Conceito da referência; custos, testes, limites e efeitos numéricos são adaptação da mesa.",
+      "short_description": "Imbui uma arma com fogo sobrenatural."
+    },
+    {
+      "id": 21,
+      "name": "FUGA PARA UM AMIGO VERDADEIRO",
+      "nivel": 5,
+      "description": "Teste: mínimo 5 sucessos em 6+. Preparo: três etapas narrativas de preparação. Duração: uma única ativação. Materiais: círculo fixo e vínculo voluntário com um aliado. Transporta o conjurador até um aliado previamente vinculado. Na mesa, funciona apenas dentro de 10 km e entre pontos preparados pelo narrador. O círculo se desfaz ao usar; não leva passageiros. Sem chegada desocupada e protegida do sol, a fuga falha no local de origem.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": true
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 5,
+        "preparation": "três etapas narrativas de preparação",
+        "duration": "uma única ativação",
+        "materials": "círculo fixo e vínculo voluntário com um aliado",
+        "cost": "1 Teste de Despertar"
+      },
+      "origin": "adapted",
+      "tags": [
+        "Adaptação da mesa",
+        "Alta feitiçaria"
+      ],
+      "source_url": "https://sites.google.com/site/bradockrpg/vampiro-a-mascara-rituais-tremere",
+      "reference_level": 5,
+      "adaptation_note": "Conceito da referência; custos, testes, limites e efeitos numéricos são adaptação da mesa.",
+      "short_description": "Transporta o conjurador até um aliado previamente vinculado."
+    },
+    {
+      "id": 22,
+      "name": "SELO DE CERA NEGRA",
+      "nivel": 1,
+      "description": "Teste: mínimo 1 sucesso em 6+. Preparo: 10 minutos. Duração: até abrir ou por uma noite. Materiais: cera negra e uma gota de sangue. Sele uma carta ou pequeno recipiente. Se alguém violar o lacre, a cera revela uma cicatriz rubra visível ao conjurador. Indica adulteração, sem identificar o responsável nem avisar à distância. Não torna o recipiente indestrutível.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": false
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 1,
+        "preparation": "10 minutos",
+        "duration": "até abrir ou por uma noite",
+        "materials": "cera negra e uma gota de sangue",
+        "cost": "Sem Teste de Despertar"
+      },
+      "origin": "original",
+      "tags": [
+        "Ritual original",
+        "Investigação"
+      ],
+      "source_url": null,
+      "adaptation_note": "Ritual original de A Coroa Velada; não apresentado como conteúdo oficial.",
+      "short_description": "Sele uma carta ou pequeno recipiente."
+    },
+    {
+      "id": 23,
+      "name": "CINZAS DO ÚLTIMO PASSO",
+      "nivel": 1,
+      "description": "Teste: mínimo 2 sucessos em 6+. Preparo: 15 minutos. Duração: uma leitura. Materiais: cinzas e vestígio do lugar. Ao espalhar cinzas em uma área de até 3 m, receba uma impressão do deslocamento mais recente ocorrido na última hora: direção e ritmo. Não revela identidade, conversas ou um trajeto completo; chuva e limpeza cuidadosa podem eliminar o vestígio.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": false
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 2,
+        "preparation": "15 minutos",
+        "duration": "uma leitura",
+        "materials": "cinzas e vestígio do lugar",
+        "cost": "Sem Teste de Despertar"
+      },
+      "origin": "original",
+      "tags": [
+        "Ritual original",
+        "Investigação"
+      ],
+      "source_url": null,
+      "adaptation_note": "Ritual original de A Coroa Velada; não apresentado como conteúdo oficial.",
+      "short_description": "Ao espalhar cinzas em uma área de até 3 m, receba uma impressão do deslocamento mais recente ocorrido na última hora: direção e ritmo."
+    },
+    {
+      "id": 24,
+      "name": "RESSONÂNCIA DA CHAVE",
+      "nivel": 1,
+      "description": "Teste: mínimo 2 sucessos em 6+. Preparo: 10 minutos. Duração: uma leitura. Materiais: a chave e a fechadura investigadas. Aproxime uma chave de uma fechadura. Um pulso indica se aquela chave foi usada ali na noite atual e se abriu ou apenas tentou girar. Não abre a porta, identifica o usuário ou descobre chaves desconhecidas. Fechaduras puramente eletrônicas não respondem.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": false
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 2,
+        "preparation": "10 minutos",
+        "duration": "uma leitura",
+        "materials": "a chave e a fechadura investigadas",
+        "cost": "Sem Teste de Despertar"
+      },
+      "origin": "original",
+      "tags": [
+        "Ritual original",
+        "Investigação"
+      ],
+      "source_url": null,
+      "adaptation_note": "Ritual original de A Coroa Velada; não apresentado como conteúdo oficial.",
+      "short_description": "Aproxime uma chave de uma fechadura."
+    },
+    {
+      "id": 25,
+      "name": "LACRE DE CORTESIA",
+      "nivel": 1,
+      "description": "Teste: mínimo 1 sucesso em 6+. Preparo: 15 minutos. Duração: até o primeiro destinatário ler. Materiais: convite escrito, nome declarado e tinta vermelha. Prepare um convite que só revela sua mensagem secreta quando segurado pelo destinatário voluntário nomeado. Os demais veem apenas o texto público. O lacre não confirma a identidade verdadeira de quem usa um nome nem obriga ninguém a comparecer.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": false
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 1,
+        "preparation": "15 minutos",
+        "duration": "até o primeiro destinatário ler",
+        "materials": "convite escrito, nome declarado e tinta vermelha",
+        "cost": "Sem Teste de Despertar"
+      },
+      "origin": "original",
+      "tags": [
+        "Ritual original",
+        "Investigação"
+      ],
+      "source_url": null,
+      "adaptation_note": "Ritual original de A Coroa Velada; não apresentado como conteúdo oficial.",
+      "short_description": "Prepare um convite que só revela sua mensagem secreta quando segurado pelo destinatário voluntário nomeado."
+    },
+    {
+      "id": 26,
+      "name": "BRASA DO FALSO RASTRO",
+      "nivel": 1,
+      "description": "Teste: mínimo 2 sucessos em 6+. Preparo: 15 minutos. Duração: uma cena. Materiais: carvão e um objeto recém-carregado. Apague sinais pequenos de sua própria passagem, como cheiro de tecido e marcas de poeira. Receba +1 dado para escapar de uma perseguição mundana pertinente. Não remove gravações, testemunhas, sangue derramado ou rastros sobrenaturais; um preparo ativo por pessoa.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": false
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 2,
+        "preparation": "15 minutos",
+        "duration": "uma cena",
+        "materials": "carvão e um objeto recém-carregado",
+        "cost": "Sem Teste de Despertar"
+      },
+      "origin": "original",
+      "tags": [
+        "Ritual original",
+        "Investigação"
+      ],
+      "source_url": null,
+      "adaptation_note": "Ritual original de A Coroa Velada; não apresentado como conteúdo oficial.",
+      "short_description": "Apague sinais pequenos de sua própria passagem, como cheiro de tecido e marcas de poeira."
+    },
+    {
+      "id": 27,
+      "name": "PERFUME DA DÍVIDA",
+      "nivel": 2,
+      "description": "Teste: mínimo 2 sucessos em 6+. Preparo: 20 minutos. Duração: até as partes encerrarem o favor ou por sete noites. Materiais: um símbolo de favor aceito por ambas as partes. Duas pessoas voluntárias vinculam um objeto a um favor descrito em voz alta. Ele aquece quando ambas reconhecem o cumprimento. Não cobra, transfere dinheiro ou força lealdade; desacordo deixa o objeto frio e preserva a disputa para o roleplay.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": false
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 2,
+        "preparation": "20 minutos",
+        "duration": "até as partes encerrarem o favor ou por sete noites",
+        "materials": "um símbolo de favor aceito por ambas as partes",
+        "cost": "Sem Teste de Despertar"
+      },
+      "origin": "original",
+      "tags": [
+        "Ritual original",
+        "Investigação"
+      ],
+      "source_url": null,
+      "adaptation_note": "Ritual original de A Coroa Velada; não apresentado como conteúdo oficial.",
+      "short_description": "Duas pessoas voluntárias vinculam um objeto a um favor descrito em voz alta."
+    },
+    {
+      "id": 28,
+      "name": "VÉU DA ÚLTIMA CONVERSA",
+      "nivel": 2,
+      "description": "Teste: mínimo 3 sucessos em 6+. Preparo: 30 minutos. Duração: uma conversa de até 10 minutos. Materiais: três velas e uma sala fechada. As vozes de um pequeno grupo confundem quem tenta escutá-las do lado de fora. Os participantes recebem +2 dados para proteger o sigilo contra escuta mundana pertinente. Quem já está na sala e aparelhos deixados dentro continuam ouvindo normalmente; não apaga gravações.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": false
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 3,
+        "preparation": "30 minutos",
+        "duration": "uma conversa de até 10 minutos",
+        "materials": "três velas e uma sala fechada",
+        "cost": "Sem Teste de Despertar"
+      },
+      "origin": "original",
+      "tags": [
+        "Ritual original",
+        "Investigação"
+      ],
+      "source_url": null,
+      "adaptation_note": "Ritual original de A Coroa Velada; não apresentado como conteúdo oficial.",
+      "short_description": "As vozes de um pequeno grupo confundem quem tenta escutá-las do lado de fora."
+    },
+    {
+      "id": 29,
+      "name": "CARTOGRAFIA DAS CICATRIZES",
+      "nivel": 2,
+      "description": "Teste: mínimo 2 sucessos em 6+. Preparo: 30 minutos. Duração: uma leitura. Materiais: planta simples do lugar e pó de tijolo. Marque um cômodo de até 10 m no desenho. Ele destaca o ponto de violação física mais recente da noite: arrombamento, escavação ou quebra. Não mostra quem fez, acessos autorizados ou passagens desconhecidas que nunca foram danificadas. Restaurações podem apagar a pista.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": false
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 2,
+        "preparation": "30 minutos",
+        "duration": "uma leitura",
+        "materials": "planta simples do lugar e pó de tijolo",
+        "cost": "Sem Teste de Despertar"
+      },
+      "origin": "original",
+      "tags": [
+        "Ritual original",
+        "Investigação"
+      ],
+      "source_url": null,
+      "adaptation_note": "Ritual original de A Coroa Velada; não apresentado como conteúdo oficial.",
+      "short_description": "Marque um cômodo de até 10 m no desenho."
+    },
+    {
+      "id": 30,
+      "name": "FOTOGRAFIA QUE RESPIRA",
+      "nivel": 2,
+      "description": "Teste: mínimo 2 sucessos em 6+. Preparo: 20 minutos. Duração: uma cena. Materiais: fotografia e consentimento da pessoa retratada. O retratado deposita voluntariamente uma emoção na imagem. Quem ela autorizar a tocar verá uma breve mudança no retrato que comunica esse sentimento. A fotografia não acompanha emoções posteriores, lê pensamentos ou revela posição; uma mensagem por imagem.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": false
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 2,
+        "preparation": "20 minutos",
+        "duration": "uma cena",
+        "materials": "fotografia e consentimento da pessoa retratada",
+        "cost": "Sem Teste de Despertar"
+      },
+      "origin": "original",
+      "tags": [
+        "Ritual original",
+        "Investigação"
+      ],
+      "source_url": null,
+      "adaptation_note": "Ritual original de A Coroa Velada; não apresentado como conteúdo oficial.",
+      "short_description": "O retratado deposita voluntariamente uma emoção na imagem."
+    },
+    {
+      "id": 31,
+      "name": "ROSÁRIO DA ÚLTIMA FRASE",
+      "nivel": 2,
+      "description": "Teste: mínimo 2 sucessos em 6+. Preparo: 20 minutos. Duração: até uma reprodução ou o fim da noite. Materiais: cordão com três contas. Vincule o rosário à sua próxima frase dita conscientemente, limitada a vinte palavras. Um portador autorizado poderá ouvi-la uma vez ao apertar a conta marcada. O objeto não captura falas de terceiros, não traduz idiomas e não comprova a sinceridade da mensagem.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": false
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 2,
+        "preparation": "20 minutos",
+        "duration": "até uma reprodução ou o fim da noite",
+        "materials": "cordão com três contas",
+        "cost": "Sem Teste de Despertar"
+      },
+      "origin": "original",
+      "tags": [
+        "Ritual original",
+        "Investigação"
+      ],
+      "source_url": null,
+      "adaptation_note": "Ritual original de A Coroa Velada; não apresentado como conteúdo oficial.",
+      "short_description": "Vincule o rosário à sua próxima frase dita conscientemente, limitada a vinte palavras."
+    },
+    {
+      "id": 32,
+      "name": "VIGÍLIA DO DOMÍNIO",
+      "nivel": 3,
+      "description": "Teste: mínimo 3 sucessos em 6+. Preparo: 60 minutos. Duração: até o fim da noite ou o primeiro alerta. Materiais: quatro marcas de sangue em uma sala de até 20 m. Prepare um alerta para a primeira entrada não autorizada na sala. O conjurador sente um único sino interior se estiver a até 1 km. Não recebe identidade, imagem ou direção exata; animais comuns e ruído não acionam. Quebrar uma marca encerra a vigília.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": true
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 3,
+        "preparation": "60 minutos",
+        "duration": "até o fim da noite ou o primeiro alerta",
+        "materials": "quatro marcas de sangue em uma sala de até 20 m",
+        "cost": "1 Teste de Despertar"
+      },
+      "origin": "original",
+      "tags": [
+        "Ritual original",
+        "Investigação"
+      ],
+      "source_url": null,
+      "adaptation_note": "Ritual original de A Coroa Velada; não apresentado como conteúdo oficial.",
+      "short_description": "Prepare um alerta para a primeira entrada não autorizada na sala."
+    },
+    {
+      "id": 33,
+      "name": "ARQUIVO RUBRO",
+      "nivel": 3,
+      "description": "Teste: mínimo 3 sucessos em 6+. Preparo: 60 minutos. Duração: até três noites ou uma leitura. Materiais: folha preparada e uma lembrança voluntária. Guarde uma lembrança sensorial curta que você realmente possua. Um leitor autorizado a revive como impressão, com as lacunas e interpretações do autor. Não cria prova objetiva, consulta o passado de terceiros ou recupera informação que ninguém percebeu. Uma memória por folha.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": false
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 3,
+        "preparation": "60 minutos",
+        "duration": "até três noites ou uma leitura",
+        "materials": "folha preparada e uma lembrança voluntária",
+        "cost": "Sem Teste de Despertar"
+      },
+      "origin": "original",
+      "tags": [
+        "Ritual original",
+        "Investigação"
+      ],
+      "source_url": null,
+      "adaptation_note": "Ritual original de A Coroa Velada; não apresentado como conteúdo oficial.",
+      "short_description": "Guarde uma lembrança sensorial curta que você realmente possua."
+    },
+    {
+      "id": 34,
+      "name": "FIO DA AUSÊNCIA",
+      "nivel": 3,
+      "description": "Teste: mínimo 3 sucessos em 6+. Preparo: 30 minutos. Duração: uma indicação. Materiais: objeto usado recentemente pela pessoa procurada. Se a pessoa estiver a até 5 km, o fio aponta uma direção ampla no instante do ritual; caso contrário, fica imóvel. Não informa distância exata, altura, rota ou identidade de acompanhantes. Exige que o conjurador já conheça a pessoa e só admite uma tentativa por noite para o mesmo alvo.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": false
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 3,
+        "preparation": "30 minutos",
+        "duration": "uma indicação",
+        "materials": "objeto usado recentemente pela pessoa procurada",
+        "cost": "Sem Teste de Despertar"
+      },
+      "origin": "original",
+      "tags": [
+        "Ritual original",
+        "Investigação"
+      ],
+      "source_url": null,
+      "adaptation_note": "Ritual original de A Coroa Velada; não apresentado como conteúdo oficial.",
+      "short_description": "Se a pessoa estiver a até 5 km, o fio aponta uma direção ampla no instante do ritual; caso contrário, fica imóvel."
+    },
+    {
+      "id": 35,
+      "name": "MORTALHA DO MENSAGEIRO",
+      "nivel": 3,
+      "description": "Teste: mínimo 3 sucessos em 6+. Preparo: 30 minutos. Duração: uma cena. Materiais: carta lacrada e tecido usado pelo portador. O portador voluntário recebe +2 dados para resistir a tentativas sobrenaturais de ler o conteúdo de uma única mensagem selada. Não esconde a carta de revista física, torna o mensageiro invisível ou impede abertura à força. O benefício termina quando o lacre se rompe.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": false
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 3,
+        "preparation": "30 minutos",
+        "duration": "uma cena",
+        "materials": "carta lacrada e tecido usado pelo portador",
+        "cost": "Sem Teste de Despertar"
+      },
+      "origin": "original",
+      "tags": [
+        "Ritual original",
+        "Investigação"
+      ],
+      "source_url": null,
+      "adaptation_note": "Ritual original de A Coroa Velada; não apresentado como conteúdo oficial.",
+      "short_description": "O portador voluntário recebe +2 dados para resistir a tentativas sobrenaturais de ler o conteúdo de uma única mensagem selada."
+    },
+    {
+      "id": 36,
+      "name": "AGULHA DOS DOIS ECOS",
+      "nivel": 3,
+      "description": "Teste: mínimo 3 sucessos em 6+. Preparo: 40 minutos. Duração: uma leitura comparativa. Materiais: duas provas materiais distintas e agulha ritual. Compare as marcas mágicas deixadas em duas provas. Se houver exposição ao mesmo efeito sobrenatural, o narrador revela uma semelhança sensorial concreta; em ausência de vínculo, a agulha fica muda. Não identifica conjurador, demonstra culpa ou revela a fórmula do poder.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": false
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 3,
+        "preparation": "40 minutos",
+        "duration": "uma leitura comparativa",
+        "materials": "duas provas materiais distintas e agulha ritual",
+        "cost": "Sem Teste de Despertar"
+      },
+      "origin": "original",
+      "tags": [
+        "Ritual original",
+        "Investigação"
+      ],
+      "source_url": null,
+      "adaptation_note": "Ritual original de A Coroa Velada; não apresentado como conteúdo oficial.",
+      "short_description": "Compare as marcas mágicas deixadas em duas provas."
+    },
+    {
+      "id": 37,
+      "name": "TESTEMUNHA DO ESPELHO",
+      "nivel": 4,
+      "description": "Teste: mínimo 4 sucessos em 6+. Preparo: 2 horas. Duração: uma noite e uma reprodução. Materiais: espelho pequeno e fio de prata. O espelho registra até dez segundos da próxima pessoa visível que cruzar uma entrada escolhida. Só grava o que poderia refletir naquele ponto; cobertura, disfarces e ocultação sobrenatural continuam relevantes. A imagem se apaga após ser mostrada uma vez. Um espelho ativo por conjurador.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": true
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 4,
+        "preparation": "2 horas",
+        "duration": "uma noite e uma reprodução",
+        "materials": "espelho pequeno e fio de prata",
+        "cost": "1 Teste de Despertar"
+      },
+      "origin": "original",
+      "tags": [
+        "Ritual original",
+        "Alta feitiçaria"
+      ],
+      "source_url": null,
+      "adaptation_note": "Ritual original de A Coroa Velada; não apresentado como conteúdo oficial.",
+      "short_description": "O espelho registra até dez segundos da próxima pessoa visível que cruzar uma entrada escolhida."
+    },
+    {
+      "id": 38,
+      "name": "CUSTÓDIA DE UM NOME",
+      "nivel": 4,
+      "description": "Teste: mínimo 4 sucessos em 6+. Preparo: 60 minutos. Duração: uma cena. Materiais: nome verdadeiro entregue voluntariamente e papel queimado. Um aliado voluntário protege uma informação específica que já conhece. Recebe +2 dados para resistir a uma tentativa sobrenatural de extraí-la de sua mente. Não impede mentira, conversa voluntária ou investigação por outras fontes; uma informação protegida por pessoa.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": true
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 4,
+        "preparation": "60 minutos",
+        "duration": "uma cena",
+        "materials": "nome verdadeiro entregue voluntariamente e papel queimado",
+        "cost": "1 Teste de Despertar"
+      },
+      "origin": "original",
+      "tags": [
+        "Ritual original",
+        "Alta feitiçaria"
+      ],
+      "source_url": null,
+      "adaptation_note": "Ritual original de A Coroa Velada; não apresentado como conteúdo oficial.",
+      "short_description": "Um aliado voluntário protege uma informação específica que já conhece."
+    },
+    {
+      "id": 39,
+      "name": "CERCO DAS TREZE VELAS",
+      "nivel": 4,
+      "description": "Teste: mínimo 4 sucessos em 6+. Preparo: 60 minutos. Duração: uma cena. Materiais: treze velas e um espaço fechado de até 10 m. Consagre um cômodo para dificultar entrada por deslocamento sobrenatural. Um invasor precisa superar os sucessos do ritual em um teste apropriado definido pelo narrador. Portas, janelas e força física funcionam normalmente. Apagar qualquer vela rompe o cerco; ninguém fica preso contra a vontade.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": true
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 4,
+        "preparation": "60 minutos",
+        "duration": "uma cena",
+        "materials": "treze velas e um espaço fechado de até 10 m",
+        "cost": "1 Teste de Despertar"
+      },
+      "origin": "original",
+      "tags": [
+        "Ritual original",
+        "Alta feitiçaria"
+      ],
+      "source_url": null,
+      "adaptation_note": "Ritual original de A Coroa Velada; não apresentado como conteúdo oficial.",
+      "short_description": "Consagre um cômodo para dificultar entrada por deslocamento sobrenatural."
+    },
+    {
+      "id": 40,
+      "name": "PÊNDULO DO PONTO CEGO",
+      "nivel": 4,
+      "description": "Teste: mínimo 4 sucessos em 6+. Preparo: 90 minutos. Duração: uma noite ou a primeira defesa. Materiais: pêndulo e amostra voluntária do protegido. O protegido recebe +2 dados contra a primeira tentativa de localização sobrenatural remota feita na noite. Não bloqueia observação direta, mapas, câmeras ou informantes. Se vencer a defesa por dois sucessos de margem, percebe apenas que houve uma busca; não descobre o investigador.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": true
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 4,
+        "preparation": "90 minutos",
+        "duration": "uma noite ou a primeira defesa",
+        "materials": "pêndulo e amostra voluntária do protegido",
+        "cost": "1 Teste de Despertar"
+      },
+      "origin": "original",
+      "tags": [
+        "Ritual original",
+        "Alta feitiçaria"
+      ],
+      "source_url": null,
+      "adaptation_note": "Ritual original de A Coroa Velada; não apresentado como conteúdo oficial.",
+      "short_description": "O protegido recebe +2 dados contra a primeira tentativa de localização sobrenatural remota feita na noite."
+    },
+    {
+      "id": 41,
+      "name": "COROA DE CINZAS",
+      "nivel": 5,
+      "description": "Teste: mínimo 5 sucessos em 6+. Preparo: 2 horas. Duração: uma cena. Materiais: cinzas de um símbolo importante e até quatro participantes voluntários. Forme um círculo de confiança. Uma vez na cena, cada participante pode transferir 1 ponto de Força de Vontade que possua para outro participante presente. O doador perde o ponto e o receptor respeita seu máximo; nada é criado. A saída de alguém encerra o vínculo de todos.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": true
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 5,
+        "preparation": "2 horas",
+        "duration": "uma cena",
+        "materials": "cinzas de um símbolo importante e até quatro participantes voluntários",
+        "cost": "1 Teste de Despertar"
+      },
+      "origin": "original",
+      "tags": [
+        "Ritual original",
+        "Alta feitiçaria"
+      ],
+      "source_url": null,
+      "adaptation_note": "Ritual original de A Coroa Velada; não apresentado como conteúdo oficial.",
+      "short_description": "Forme um círculo de confiança."
+    },
+    {
+      "id": 42,
+      "name": "TRIBUNAL DO VÉU",
+      "nivel": 5,
+      "description": "Teste: mínimo 5 sucessos em 6+. Preparo: 2 horas. Duração: uma audiência de até uma cena. Materiais: três testemunhos voluntários e um objeto do acontecimento. Três testemunhas compartilham impressões de um evento que presenciaram. O narrador apresenta até três fragmentos sensoriais que já estavam nessas memórias. Contradições ficam evidentes, mas falsas crenças continuam possíveis: o ritual não estabelece verdade universal, lê culpabilidade ou preenche fatos desconhecidos.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": true
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 5,
+        "preparation": "2 horas",
+        "duration": "uma audiência de até uma cena",
+        "materials": "três testemunhos voluntários e um objeto do acontecimento",
+        "cost": "1 Teste de Despertar"
+      },
+      "origin": "original",
+      "tags": [
+        "Ritual original",
+        "Alta feitiçaria"
+      ],
+      "source_url": null,
+      "adaptation_note": "Ritual original de A Coroa Velada; não apresentado como conteúdo oficial.",
+      "short_description": "Três testemunhas compartilham impressões de um evento que presenciaram."
+    },
+    {
+      "id": 43,
+      "name": "DÍZIMO DA FORTALEZA",
+      "nivel": 5,
+      "description": "Teste: mínimo 5 sucessos em 6+. Preparo: 2 horas. Duração: uma cena. Materiais: marca de um refúgio e até três fiadores voluntários. Dentro do refúgio preparado, os fiadores podem redistribuir entre si até 2 danos superficiais no total, uma única vez, por consentimento expresso. O dano total não diminui e ninguém ultrapassa seu limite. Não move dano agravado, desfaz incapacitação já consumada ou evita morte final.",
+      "mechanics": {
+        "test": "INTELIGÊNCIA + OCULTISMO",
+        "rouse_check": true
+      },
+      "casting": {
+        "success_on": 6,
+        "required_successes": 5,
+        "preparation": "2 horas",
+        "duration": "uma cena",
+        "materials": "marca de um refúgio e até três fiadores voluntários",
+        "cost": "1 Teste de Despertar"
+      },
+      "origin": "original",
+      "tags": [
+        "Ritual original",
+        "Alta feitiçaria"
+      ],
+      "source_url": null,
+      "adaptation_note": "Ritual original de A Coroa Velada; não apresentado como conteúdo oficial.",
+      "short_description": "Dentro do refúgio preparado, os fiadores podem redistribuir entre si até 2 danos superficiais no total, uma única vez, por consentimento expresso."
     }
   ],
   "maxvalue_generation": {
@@ -28772,5 +29774,22 @@
     "require_narrator_completion": true
   },
   "rulebook": [],
-  "labels": {}
+  "labels": {},
+  "login_rewards": {
+    "enabled": true,
+    "days": 5,
+    "xp": 1,
+    "time_zone": "America/Sao_Paulo"
+  },
+  "ritual_catalog": {
+    "version": "9.3.0",
+    "updated_at": "2026-11-08",
+    "count": 44,
+    "added": 26,
+    "originals": 22,
+    "reference": "https://sites.google.com/site/bradockrpg/vampiro-a-mascara-rituais-tremere",
+    "success_on": 6,
+    "casting_test": "INTELIGÊNCIA + OCULTISMO",
+    "note": "Oito conceitos adaptados da referência, 22 rituais originais e revisão do acervo anterior. IDs e níveis preservados. Efeitos narrativos, Despertar, duração e materiais são resolvidos pela mesa; nenhuma mudança automática de geração, mapa ou fome."
+  }
 }

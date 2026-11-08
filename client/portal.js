@@ -1,4 +1,7 @@
 import { NavigationTrail } from './navigation.js';
+import { queueExperience, disposeExperience, animatePage } from './game-experience.js';
+import { loyaltyPage, loyaltyAction } from './loyalty.js';
+import { registrationsPage, registrationAction } from './registrations.js';
 import { jsonDestinationError } from '../core/json-kind.js';
 import { playerTestAction, playerTestBanner } from './player-test.js';
 import { aspirationsPage, aspirationAction } from './aspirations.js';
@@ -150,7 +153,8 @@ const sharedNav = [
   ['my-characters', 'Meus personagens'],
   ['profile', 'Meu perfil'],
   ['notifications', 'Notificações'],
-  ['submissions', 'Propostas de personagens']
+  ['submissions', 'Propostas de personagens'],
+  ['rewards', 'Presença na crônica']
 ];
 const adminNav = [
   ['dashboard', 'Conselho do narrador'],
@@ -158,6 +162,7 @@ const adminNav = [
   ['new-player', 'Cadastrar ficha'],
   ['submissions', 'Avaliar fichas'],
   ['accounts', 'Jogadores e acesso'],
+  ['registrations', 'Avaliar cadastros'],
   ['rules', 'Livro de regras'],
   ['storage', 'Arquivos e backups'],
   ['trash', 'Lixeira']
@@ -214,7 +219,10 @@ const sectionHead = (title, description, action = '') =>
   `<div class="section-heading"><div><h2>${title}</h2><p>${description}</p></div>${action}</div>`;
 function renderNavigation() {
   const p = player(),
-    campaignViews = nav.filter(([k]) => !sheetViews.includes(k));
+    campaignViews = [
+      ...nav.filter(([k]) => !sheetViews.includes(k)),
+      ['rewards', admin() ? 'Recompensas de login' : 'Presença na crônica']
+    ];
   const personal = !state.campaigns?.length
     ? []
     : admin()
@@ -227,11 +235,11 @@ function renderNavigation() {
     items
       .map(
         ([key, label]) =>
-          `<button type="button" data-view="${key}">${icon(key === 'my-characters' ? 'characters' : key === 'submissions' ? 'notes' : key === 'campaigns' ? 'world' : key === 'dashboard' ? 'accounts' : key === 'notifications' ? 'notes' : key)}<span>${label}</span></button>`
+          `<button type="button" data-view="${key}">${icon(key === 'rewards' ? 'blood' : key === 'registrations' ? 'accounts' : key === 'my-characters' ? 'characters' : key === 'submissions' ? 'notes' : key === 'campaigns' ? 'world' : key === 'dashboard' ? 'accounts' : key === 'notifications' ? 'notes' : key)}<span>${label}${key === 'registrations' && state.registrations?.some((a) => a.registration.status === 'pending') ? ' · ' + state.registrations.filter((a) => a.registration.status === 'pending').length : ''}</span></button>`
       )
       .join('');
   $('[data-nav-root]').innerHTML =
-    `<nav class="portal-navigation" aria-label="Portal">${navButtons([...personal, ['campaigns', 'Minhas campanhas']])}</nav>${admin() ? `<div class="narrator-test-control">${button(icon('dice') + ' Testar como jogador', 'player-test-start', '', 'button ghost')}</div>` : ''}${admin() && !p ? '<div class="narrator-sidebar-note">Abra uma ficha em Personagens para consultar os dados do jogador.</div>' : `<div class="sidebar-caption">${admin() ? 'FICHA DE JOGADOR ABERTA' : 'SEU PERSONAGEM'}</div><div class="character-select"><select id="character-select" aria-label="Selecionar personagem"></select>${admin() ? button('Fechar ficha', 'close-character', '', 'text-button') : ''}</div>`}${p ? `<div class="sidebar-caption">FICHA DE ${esc(p.char)}</div><nav aria-label="Ficha do personagem">${navButtons(nav.filter(([k]) => sheetViews.includes(k) && (k !== 'network' || !admin())))}</nav>` : ''}${state.campaigns?.length ? `<div class="sidebar-caption">A CAMPANHA</div><nav aria-label="Ferramentas da campanha">${navButtons(campaignViews)}</nav>` : ''}${admin() ? `<div class="sidebar-caption admin-caption">ADMINISTRAÇÃO</div><nav aria-label="Administração">${navButtons(adminNav.filter(([k]) => k !== 'dashboard' && (state.campaigns?.length || ['storage', 'trash'].includes(k))))}</nav>` : ''}`;
+    `<nav class="portal-navigation" aria-label="Portal">${navButtons([...personal, ['campaigns', 'Minhas campanhas']])}</nav>${admin() ? `<div class="narrator-test-control">${button(icon('dice') + ' Testar como jogador', 'player-test-start', '', 'button ghost')}</div>` : ''}${admin() && !p ? '<div class="narrator-sidebar-note">Abra uma ficha em Personagens para consultar os dados do jogador.</div>' : `<div class="sidebar-caption">${admin() ? 'FICHA DE JOGADOR ABERTA' : 'SEU PERSONAGEM'}</div><div class="character-select"><select id="character-select" aria-label="Selecionar personagem"></select>${admin() ? button('Fechar ficha', 'close-character', '', 'text-button') : ''}</div>`}${p ? `<div class="sidebar-caption">FICHA DE ${esc(p.char)}</div><nav aria-label="Ficha do personagem">${navButtons(nav.filter(([k]) => sheetViews.includes(k) && (k !== 'network' || !admin())))}</nav>` : ''}${state.campaigns?.length ? `<div class="sidebar-caption">A CAMPANHA</div><nav aria-label="Ferramentas da campanha">${navButtons(campaignViews)}</nav>` : ''}${admin() ? `<div class="sidebar-caption admin-caption">ADMINISTRAÇÃO</div><nav aria-label="Administração">${navButtons(adminNav.filter(([k]) => k !== 'dashboard' && (state.campaigns?.length || ['storage', 'trash', 'registrations'].includes(k))))}</nav>` : ''}`;
   updateSelect();
   const select = $('#character-select');
   if (session()?.player_test)
@@ -284,7 +292,7 @@ function initShell() {
   document.body.classList.remove('login-page');
   document.querySelector('.skip-link')?.setAttribute('href', '#main-content');
   $('#app').innerHTML =
-    `<aside id="sidebar" class="sidebar"><a href="#campaigns" class="brand"><span class="brand-crest">${crown}</span><span>A COROA VELADA<small>ONDE AS HISTÓRIAS VIVEM</small></span></a><button type="button" data-action="close-menu" class="icon-button drawer-close" aria-label="Fechar navegação">${icon('close')}</button><div data-nav-root></div><div class="sidebar-footer"><p>O sangue lembra.<br><span>A noite nunca esquece.</span></p><span class="version">PORTAL ONLINE · V9.2.2 BETA</span></div></aside><div class="workspace"><header class="topbar"><div class="breadcrumb"><button data-action="menu" class="icon-button mobile-menu" aria-label="Abrir navegação">${icon('menu')}</button><span class="campaign-breadcrumb"></span><i>/</i><strong id="breadcrumb-current"></strong></div><div class="topbar-right">${button(icon('search'), 'global-search', 'aria-label="Pesquisar em toda a campanha" title="Pesquisar"', 'icon-button')}${soundButton()}${button(icon('download') + ' <span>Salvar JSON</span>', 'backup-table', 'aria-label="Salvar JSONs do portal"', 'button ghost top-export')}<button type="button" class="icon-button notification-button" data-action="nav-notifications" aria-label="Notificações">${icon('notes')}<span data-notification-count hidden></span></button><button type="button" class="user-button" data-action="nav-profile" aria-label="Abrir meu perfil" title="Meu perfil"><span class="avatar small" data-user-avatar></span><span data-user-name></span></button><button class="icon-button" data-action="logout" aria-label="Sair">${icon('logout')}</button></div></header><div class="connection-banner"><span>${icon('save')} <span data-sync-label></span></span><span>Atualização automática da campanha</span></div><div class="route-toolbar" aria-label="Navegação da página"><button type="button" class="button ghost" data-action="route-back"><span class="back-arrow">${icon('arrow')}</span> Voltar</button><span data-route-label></span><button type="button" class="text-button" data-action="route-home">Início</button></div><div id="xp-hud"></div><main id="main-content" tabindex="-1"></main><footer class="app-footer"><span>A COROA VELADA</span><span>Suas histórias, além do véu.</span><span>◇</span></footer></div><button type="button" class="drawer-backdrop" data-action="close-menu" aria-label="Fechar menu"></button><nav class="mobile-bottom" aria-label="Navegação principal"></nav>`;
+    `<aside id="sidebar" class="sidebar"><a href="#campaigns" class="brand"><span class="brand-crest">${crown}</span><span>A COROA VELADA<small>ONDE AS HISTÓRIAS VIVEM</small></span></a><button type="button" data-action="close-menu" class="icon-button drawer-close" aria-label="Fechar navegação">${icon('close')}</button><div data-nav-root></div><div class="sidebar-footer"><p>O sangue lembra.<br><span>A noite nunca esquece.</span></p><span class="version">PORTAL ONLINE · V9.3.0 BETA</span></div></aside><div class="workspace"><header class="topbar"><div class="breadcrumb"><button data-action="menu" class="icon-button mobile-menu" aria-label="Abrir navegação">${icon('menu')}</button><span class="campaign-breadcrumb"></span><i>/</i><strong id="breadcrumb-current"></strong></div><div class="topbar-right">${button(icon('search'), 'global-search', 'aria-label="Pesquisar em toda a campanha" title="Pesquisar"', 'icon-button')}${soundButton()}${button(icon('download') + ' <span>Salvar JSON</span>', 'backup-table', 'aria-label="Salvar JSONs do portal"', 'button ghost top-export')}<button type="button" class="icon-button notification-button" data-action="nav-notifications" aria-label="Notificações">${icon('notes')}<span data-notification-count hidden></span></button><button type="button" class="user-button" data-action="nav-profile" aria-label="Abrir meu perfil" title="Meu perfil"><span class="avatar small" data-user-avatar></span><span data-user-name></span></button><button class="icon-button" data-action="logout" aria-label="Sair">${icon('logout')}</button></div></header><div class="connection-banner"><span>${icon('save')} <span data-sync-label></span></span><span>Atualização automática da campanha</span></div><div class="route-toolbar" aria-label="Navegação da página"><button type="button" class="button ghost" data-action="route-back"><span class="back-arrow">${icon('arrow')}</span> Voltar</button><span data-route-label></span><button type="button" class="text-button" data-action="route-home">Início</button></div><div id="xp-hud"></div><main id="main-content" tabindex="-1"></main><footer class="app-footer"><span>A COROA VELADA</span><span>Suas histórias, além do véu.</span><span>◇</span></footer></div><button type="button" class="drawer-backdrop" data-action="close-menu" aria-label="Fechar menu"></button><nav class="mobile-bottom" aria-label="Navegação principal"></nav>`;
   document.addEventListener('click', handleClick, { signal: events.signal });
   document.querySelector('.route-toolbar').insertAdjacentHTML('beforebegin', playerTestBanner());
   document.addEventListener('submit', handleSubmit, { signal: events.signal });
@@ -388,6 +396,7 @@ async function refreshAll({ silent = false } = {}) {
   const mapVersion = state.campaign?.maps?.map((m) => m.id + ':' + m._revision).join('|');
   const knownNotifications = new Set((state.notifications || []).map((n) => n.id));
   await loadFeatureState(state, { silent });
+  queueExperience(context());
   if (
     silent &&
     state.notifications.some(
@@ -417,6 +426,10 @@ async function reloadCampaign() {
   state.editor = null;
   state.archived = false;
   await refreshAll();
+  if (!admin() && state.campaigns.length) {
+    state.rewards = await api('/api/rewards/check-in', { method: 'POST', data: {}, silent: true });
+    queueExperience(context());
+  }
   await go(
     !state.campaigns.length
       ? 'campaigns'
@@ -430,7 +443,9 @@ async function reloadCampaign() {
 function render() {
   if (
     !state.campaigns?.length &&
-    !['campaigns', 'profile', 'storage', 'trash', 'notifications'].includes(state.view)
+    !['campaigns', 'profile', 'storage', 'trash', 'notifications', 'registrations'].includes(
+      state.view
+    )
   )
     state.view = 'campaigns';
   if (admin() && state.view === 'network') state.view = 'dashboard';
@@ -489,6 +504,8 @@ function render() {
   const ctx = context(),
     featureViews = {
       campaigns: campaignHub,
+      rewards: loyaltyPage,
+      registrations: registrationsPage,
       social: socialPage,
       intel: intelPage,
       legacies: legaciesPage,
@@ -562,6 +579,7 @@ function render() {
         : views[state.view]();
   }
   $('#main-content').innerHTML = html;
+  queueExperience(context());
   if (state.view === 'characters') bindSearch();
   if (state.view === 'new-player' || state.view === 'proposal-editor') state.editor?.bind();
   if (state.view === 'power-detail') bindConsultation();
@@ -763,7 +781,16 @@ function bindSearch() {
     });
 }
 function accountsView() {
-  return `${sectionHead('Quem tem as chaves da mesa.', 'Cada jogador pode ter vários personagens. A conta do narrador administra a campanha.', button(icon('plus') + ' Criar acesso', 'create-account', '', 'button primary'))}<div class="account-grid">${state.accounts.map((a) => `<article class="panel account-card"><div class="account-card-header"><span class="avatar small">${a.avatar ? `<img src="${esc(a.avatar)}" alt="">` : esc(a.display_name.slice(0, 1))}</span><div><h3>${esc(a.display_name)}</h3><p>@${esc(a.username)}</p></div><span class="tag ${a.active ? 'red' : ''}">${a.active ? 'ATIVO' : 'INATIVO'}</span></div><p class="account-role">${a.role === 'admin' ? 'Narrador · administra sem personagem' : a.campaign_access ? 'Jogador com acesso à campanha' : 'Sem acesso a esta campanha'}</p><div class="account-linked">${a.role === 'admin' ? '<span class="muted">Pode administrar todas as fichas.</span>' : a.character_ids.map((id) => `<span class="tag">${esc(state.players.find((p) => p.id === id)?.char || '#' + id)}</span>`).join('') || '<span class="muted">Pode criar propostas quando tiver acesso à campanha.</span>'}</div>${button('Gerenciar acesso e personagens', 'edit-account', `data-id="${a.id}"`, 'button ghost')}${a.role === 'player' && a.campaign_access ? button(icon('download') + ' Download do acesso (JSON)', 'export-account', `data-id="${a.id}"`, 'button ghost') : ''}${a.id !== state.account.id ? button(a.role === 'admin' ? 'Remover narrador' : 'Remover jogador', 'delete-account', `data-id="${a.id}"`, 'text-button danger') : ''}</article>`).join('')}</div>`;
+  return `${sectionHead('Quem tem as chaves da mesa.', 'Cada jogador pode ter vários personagens. A conta do narrador administra a campanha.', button(icon('plus') + ' Criar acesso', 'create-account', '', 'button primary'))}<div class="account-grid">${state.accounts
+    .filter(
+      (a) =>
+        !state.registrations?.some((r) => r.id === a.id && r.registration.status !== 'approved')
+    )
+    .map(
+      (a) =>
+        `<article class="panel account-card"><div class="account-card-header"><span class="avatar small">${a.avatar ? `<img src="${esc(a.avatar)}" alt="">` : esc(a.display_name.slice(0, 1))}</span><div><h3>${esc(a.display_name)}</h3><p>@${esc(a.username)}</p></div><span class="tag ${a.active ? 'red' : ''}">${a.active ? 'ATIVO' : 'INATIVO'}</span></div><p class="account-role">${a.role === 'admin' ? 'Narrador · administra sem personagem' : a.campaign_access ? 'Jogador com acesso à campanha' : 'Sem acesso a esta campanha'}</p><div class="account-linked">${a.role === 'admin' ? '<span class="muted">Pode administrar todas as fichas.</span>' : a.character_ids.map((id) => `<span class="tag">${esc(state.players.find((p) => p.id === id)?.char || '#' + id)}</span>`).join('') || '<span class="muted">Pode criar propostas quando tiver acesso à campanha.</span>'}</div>${button('Gerenciar acesso e personagens', 'edit-account', `data-id="${a.id}"`, 'button ghost')}${a.role === 'player' && a.campaign_access ? button(icon('download') + ' Download do acesso (JSON)', 'export-account', `data-id="${a.id}"`, 'button ghost') : ''}${a.id !== state.account.id ? button(a.role === 'admin' ? 'Remover narrador' : 'Remover jogador', 'delete-account', `data-id="${a.id}"`, 'text-button danger') : ''}</article>`
+    )
+    .join('')}</div>`;
 }
 function rulesView() {
   return rulebookPage(context());
@@ -949,6 +976,8 @@ async function handleClick(event) {
       await go(admin() ? 'dashboard' : 'my-characters');
       return;
     }
+    if (await loyaltyAction(action, control.dataset, context())) return;
+    if (await registrationAction(action, control.dataset, context())) return;
     if (await aspirationAction(action, control.dataset, context())) return;
     if (await consultationAction(action, control.dataset, context())) return;
     if (await searchAction(action, control.dataset, context())) return;
@@ -1549,7 +1578,7 @@ async function go(view, options = {}) {
   try {
     if (
       !state.campaigns?.length &&
-      !['campaigns', 'profile', 'storage', 'trash', 'notifications'].includes(view)
+      !['campaigns', 'profile', 'storage', 'trash', 'notifications', 'registrations'].includes(view)
     )
       view = 'campaigns';
     if (view !== state.view) clearPending();
@@ -1565,6 +1594,7 @@ async function go(view, options = {}) {
     closeModal();
     render();
     window.scrollTo({ top: 0, behavior: 'instant' });
+    if (previousView !== state.view) animatePage();
     if (previousView !== state.view || options.route) {
       const marker = trail.push(routePoint());
       history[options.replace ? 'replaceState' : 'pushState'](marker, '', `#${state.view}`);
@@ -1580,6 +1610,7 @@ async function go(view, options = {}) {
 
 let syncTimer;
 export function stopPortal() {
+  disposeExperience();
   configureSound(undefined, null);
   clearInterval(syncTimer);
   delete document.body.dataset.pendingEditor;
@@ -1624,6 +1655,20 @@ export async function startPortal() {
   state.player = null;
   await loadFeatureState(state);
   saveSession({ ...session(), account: state.account });
+  if (state.account.role === 'player' && state.campaigns.length) {
+    try {
+      state.rewards = await api('/api/rewards/check-in', {
+        method: 'POST',
+        data: {},
+        silent: true
+      });
+    } catch (error) {
+      toast(
+        'Não foi possível registrar sua presença. Você pode tentar em Presença na crônica.',
+        true
+      );
+    }
+  }
   state.evolution = null;
   state.reviewId = null;
   state.mapId = null;
@@ -1696,7 +1741,34 @@ export async function startPortal() {
     };
     clearInterval(syncTimer);
     syncTimer = setInterval(synchronize, 20000);
-    window.addEventListener('focus', synchronize, { signal: events.signal });
+    const returnToPortal = async () => {
+      if (!admin() && state.campaigns.length && !document.hidden) {
+        try {
+          const previous = state.rewards;
+          state.rewards = await api('/api/rewards/check-in', {
+            method: 'POST',
+            data: {},
+            silent: true
+          });
+          queueExperience(context());
+          if (
+            state.view === 'rewards' &&
+            previous?.today !== state.rewards.today &&
+            !document.querySelector('#modal[open]')
+          )
+            render();
+        } catch {}
+      }
+      await synchronize();
+    };
+    window.addEventListener('focus', returnToPortal, { signal: events.signal });
+    document.addEventListener(
+      'visibilitychange',
+      () => {
+        if (!document.hidden) returnToPortal();
+      },
+      { signal: events.signal }
+    );
   }
   matchMedia('(max-width:800px)').addEventListener('change', closeMenu, { signal: events.signal });
   document.addEventListener(

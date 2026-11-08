@@ -136,3 +136,18 @@ Depois de aprovada, `creation` serve de registro das escolhas. `primary_paths` l
 ## Tipos de JSON (9.2.2)
 
 O game-data pode informar `format: coroa-game-data-v1`; arquivos antigos com os catálogos e `xp_cost` continuam aceitos sem marcador. O identificador não substitui a validação completa. `/api/game`, importação de fichas e restauração de portal identificam arquivos destinados a outra rota e retornam orientação específica. A importação de regras que viole uma ficha existente informa nome/ID e o erro de validação, conservando as regras e as fichas anteriores.
+
+## Cadastro e recompensas (9.3.0)
+
+| Rota | Contrato |
+| --- | --- |
+| `POST /auth/register` | Público: `display_name`, `username`, `password` (10–128 caracteres), `avatar` opcional em data URL. Resposta `status: pending`, sem token/cookie de sessão. |
+| `GET /api/admin/registrations` | Narrador: fila e histórico de avaliações, sem hashes. |
+| `POST /api/admin/registrations/:id/approve` | Narrador: `revision`, `campaign_ids` de pelo menos uma campanha aberta, `note` opcional. |
+| `POST /api/admin/registrations/:id/reject` | Narrador: `revision`, `note` opcional. |
+| `GET /api/rewards` | Jogador: regra, presença, créditos pendentes e até 25 recibos privados não reconhecidos da campanha. |
+| `POST /api/rewards/check-in` | Jogador: corpo vazio; servidor decide o dia pelo fuso da regra. Repetições no mesmo dia não criam outro progresso. |
+| `POST /api/rewards/claim` | Jogador: `credit_id`, `character_id`, `revision` da ficha e `confirmed: true`. Resgate idempotente para o mesmo personagem. |
+| `POST /api/rewards/ack` | Jogador: `ids`, de 1 a 50 recibos próprios. Reconhece animações sem remover histórico ou notificações. |
+
+`GET /api/portal-state` inclui `rewards` para o jogador e `registrations` para o narrador. A configuração fica em `game.login_rewards`; é salva na rota existente `PUT /api/game`, com `_expected_revision`. Ver [JOGO-VIVO.md](JOGO-VIVO.md).

@@ -38,6 +38,8 @@ export async function loadFeatureState(state, { silent = false } = {}) {
   state.notifications = payload.campaign.notifications;
   state.accounts = payload.accounts;
   state.social = payload.social;
+  state.rewards = payload.rewards || null;
+  state.registrations = payload.registrations || [];
 }
 export function campaignHub(ctx) {
   const { state, admin } = ctx;

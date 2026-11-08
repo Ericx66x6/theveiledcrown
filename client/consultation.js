@@ -1,4 +1,5 @@
 import { $, esc, icon, button, empty } from '../shared/ui.js';
+import { ritualDetails } from './ritual-details.js';
 import { mechanics } from '../core/settings.js';
 import { powerPool } from './power-pool.js';
 import { openEvolution } from './evolution.js';
@@ -37,7 +38,7 @@ export function consultationPage(ctx) {
           .join(
             ''
           )}</nav>${n ? `<article class="consultation-power is-${access.state}">${powerAccessNotice(access, d)}<header><span class="eyebrow">NÍVEL ${n.nivel}</span><h2>${esc(n.subname)}</h2></header>${badges(n)}${p ? powerPool(ctx, d, n, index) : ''}<p class="prose">${esc(n.description)}</p></article>` : empty('Sem poderes cadastrados.', 'O narrador pode completar esta disciplina no livro.')}`
-      : `<article class="consultation-power is-${access.state}">${powerAccessNotice(access, d, detail.key)}${badges(d)}${p ? powerPool(ctx, d, d, 0, detail.key) : ''}<p class="prose">${esc(d.description || '')}</p></article>`
+      : `<article class="consultation-power is-${access.state}">${powerAccessNotice(access, d, detail.key)}${badges(d)}${detail.key === 'rituals' ? ritualDetails(d) : ''}${p ? powerPool(ctx, d, d, 0, detail.key) : ''}<p class="prose">${esc(d.description || '')}</p></article>`
   }${discipline && p ? `<aside class="consultation-upgrade"><div><strong>${ctx.admin() ? 'Ajustar esta disciplina' : 'Quer ir além?'}</strong><p>${ctx.admin() ? 'O ajuste da ficha fica separado da consulta.' : known ? 'A evolução abre seu planejamento e pede confirmação antes de gastar XP.' : 'O narrador pode conceder este dom ou liberá-lo em Legados do Sangue.'}</p></div>${known || ctx.admin() ? button(icon('powers') + (ctx.admin() ? ' Ajustar nível' : ' Evoluir disciplina'), 'consult-evolve', `data-id="${d.id}"`, 'button primary') : button('Ver Legados do Sangue', 'nav-legacies', '', 'button ghost')}</aside>` : ''}`;
 }
 function badges(n) {

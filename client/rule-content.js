@@ -1,5 +1,6 @@
 import { esc, icon, modal } from '../shared/ui.js';
 import { mechanics } from '../core/settings.js';
+import { ritualDetails } from './ritual-details.js';
 import { traitKind, traitPrice } from '../core/character-creation.js';
 export const realMoney = (value) =>
   Number(value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -47,7 +48,7 @@ export function ruleContent(d, key, game) {
             )
             .join('')}</div>`
         : ''
-  }${effects.length ? `<section class="creation-effect-note"><h3>Efeitos conferidos na criação</h3><ul>${effects.map((l) => `<li>${esc(l)}</li>`).join('')}</ul></section>` : ''}${traitKind(d) ? '<p class="hint">O custo usa pontos bônus, nunca XP. Efeitos ligados à situação da cena continuam dependendo da aplicação pelo narrador.</p>' : ''}${key === 'disciplines' ? `<section class="rule-reader-powers"><h3>Poderes e níveis</h3>${(d.nivels || []).map((n, i) => `<details ${i === 0 ? 'open' : ''}><summary><span class="tag">${n.nivel}</span> ${esc(n.subname || 'Poder sem nome')}</summary>${power(n)}</details>`).join('') || '<p class="hint">Esta disciplina usa linhas cadastradas separadamente.</p>'}</section>` : key === 'rituals' ? power(d) : ''}</div>`;
+  }${effects.length ? `<section class="creation-effect-note"><h3>Efeitos conferidos na criação</h3><ul>${effects.map((l) => `<li>${esc(l)}</li>`).join('')}</ul></section>` : ''}${traitKind(d) ? '<p class="hint">O custo usa pontos bônus, nunca XP. Efeitos ligados à situação da cena continuam dependendo da aplicação pelo narrador.</p>' : ''}${key === 'disciplines' ? `<section class="rule-reader-powers"><h3>Poderes e níveis</h3>${(d.nivels || []).map((n, i) => `<details ${i === 0 ? 'open' : ''}><summary><span class="tag">${n.nivel}</span> ${esc(n.subname || 'Poder sem nome')}</summary>${power(n)}</details>`).join('') || '<p class="hint">Esta disciplina usa linhas cadastradas separadamente.</p>'}</section>` : key === 'rituals' ? ritualDetails(d) + power(d) : ''}</div>`;
 }
 export function showRuleContent(d, key, game) {
   modal(d.name, ruleContent(d, key, game), null, { wide: true });

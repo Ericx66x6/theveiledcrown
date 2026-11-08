@@ -1,3 +1,4 @@
+import { presenceWidget } from './loyalty.js';
 import { showChallenge } from './community.js';
 import { realMoney } from './rule-content.js';
 import {
@@ -44,6 +45,14 @@ export function narratorDashboard(ctx) {
           .join('')
       : '<div class="dashboard-empty">Nenhuma ficha aguardando avaliação. Crie um acesso para o jogador montar seu próprio personagem.</div>'
   }${button(icon('download') + ' Receber solicitação JSON', 'import-submission', '', 'button ghost')}</section><section class="panel"><span class="eyebrow">FERRAMENTAS DO NARRADOR</span><div class="dashboard-shortcuts">${[
+    [
+      'registrations',
+      'accounts',
+      'Avaliar novos cadastros',
+      (s.registrations || []).filter((a) => a.registration.status === 'pending').length +
+        ' pedido(s) aguardando'
+    ],
+    ['rewards', 'blood', 'Recompensas de login', 'Configure dias consecutivos e XP por ciclo'],
     ['rules', 'rules', 'Editar o livro de regras', 'Catálogos, poderes e conteúdo livre'],
     ['notes', 'notes', 'Diário da campanha', 'Pistas, registros e notas reservadas'],
     ['quests', 'quests', 'Missões da mesa', 'Objetivos e recompensas'],
@@ -59,7 +68,7 @@ export function narratorDashboard(ctx) {
 }
 export function myCharactersView(ctx) {
   const s = ctx.state;
-  return `<div class="page-intro"><span class="eyebrow">AS SUAS HISTÓRIAS</span><h1>Escolha quem atravessa o véu.</h1><p>Uma conta, vários personagens. Cada ficha mantém sua própria história e evolução.</p></div><div class="list-toolbar">${s.game.character_creation.enabled ? button(icon('plus') + ' Criar personagem', 'propose-character', '', 'button primary') : ''}${button(icon('notes') + ' Minhas propostas', 'nav-submissions', '', 'button ghost')}</div><div class="player-character-grid">${s.players.map((p) => `<article class="player-character-card"><div class="player-character-portrait">${cardPortrait(p)}</div><div class="player-character-content"><span class="eyebrow">${esc(p.cla)}</span><h2>${esc(p.char)}</h2><p>${p.xp} XP disponíveis · ${p.generation}ª geração</p>${button('Abrir personagem ' + icon('arrow'), 'open-character', `data-id="${p.id}"`, 'button primary')}</div></article>`).join('') || empty('Seu próximo personagem começa aqui.', 'Monte a ficha e envie para avaliação do narrador.', s.game.character_creation.enabled ? button('Criar meu personagem', 'propose-character', '', 'button primary') : '')}</div>`;
+  return `${presenceWidget(ctx)}<div class="page-intro"><span class="eyebrow">AS SUAS HISTÓRIAS</span><h1>Escolha quem atravessa o véu.</h1><p>Uma conta, vários personagens. Cada ficha mantém sua própria história e evolução.</p></div><div class="list-toolbar">${s.game.character_creation.enabled ? button(icon('plus') + ' Criar personagem', 'propose-character', '', 'button primary') : ''}${button(icon('notes') + ' Minhas propostas', 'nav-submissions', '', 'button ghost')}</div><div class="player-character-grid">${s.players.map((p) => `<article class="player-character-card"><div class="player-character-portrait">${cardPortrait(p)}</div><div class="player-character-content"><span class="eyebrow">${esc(p.cla)}</span><h2>${esc(p.char)}</h2><p>${p.xp} XP disponíveis · ${p.generation}ª geração</p>${button('Abrir personagem ' + icon('arrow'), 'open-character', `data-id="${p.id}"`, 'button primary')}</div></article>`).join('') || empty('Seu próximo personagem começa aqui.', 'Monte a ficha e envie para avaliação do narrador.', s.game.character_creation.enabled ? button('Criar meu personagem', 'propose-character', '', 'button primary') : '')}</div>`;
 }
 export function submissionsView(ctx) {
   const s = ctx.state;
@@ -107,7 +116,8 @@ export function notificationsView(ctx) {
               legacy: 'blood',
               quest: 'quests',
               xp: 'powers',
-              submission: 'notes'
+              submission: 'notes',
+              registration: 'accounts'
             }[n.kind] || 'notes';
         return `<article class="notification-card ${read ? 'read' : 'unread'} ${n.kind}"><span class="notification-icon">${author?.avatar ? `<img src="${esc(author.avatar)}" alt="">` : icon(type)}</span><div class="notification-content"><span class="eyebrow">${read ? 'LIDA' : 'NOVA'} · ${date(n.created_at)}</span><h2>${esc(n.title)}</h2><p class="prose">${esc(n.message)}</p></div><div class="notification-actions">${button('Abrir', 'open-notification', `data-id="${n.id}"`, 'button ghost')}${button('Apagar', 'delete-notification', `data-id="${n.id}"`, 'text-button danger')}</div></article>`;
       })
@@ -255,6 +265,10 @@ export async function administrationAction(action, data, ctx) {
     }
     if (n.kind === 'intel') {
       await ctx.go('intel');
+      return true;
+    }
+    if (n.kind === 'registration' && ctx.admin()) {
+      await ctx.go('registrations');
       return true;
     }
     if (n.kind === 'legacy') {

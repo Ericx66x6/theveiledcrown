@@ -242,6 +242,40 @@ export async function previewFixture() {
     token: player.token,
     data: { kind: 'challenge', to: admin.account.id, choice: 'rock' }
   });
+  // Persistent, fictional game-feel fixtures; never used by npm start.
+  await service.request('/auth/register', {
+    method: 'POST',
+    data: {
+      username: 'qa-convidada',
+      password: 'senha-ficticia-123',
+      display_name: 'Isadora · novo cadastro'
+    }
+  });
+  const now = Date.now();
+  for (let offset = 6; offset >= 2; offset--) {
+    service.now = () => now - offset * 86400000;
+    await service.request('/api/rewards/check-in', {
+      method: 'POST',
+      data: {},
+      token: player.token
+    });
+  }
+  const receipts = await service.request('/api/rewards', { token: player.token });
+  await service.request('/api/rewards/ack', {
+    method: 'POST',
+    data: { ids: receipts.events.map((e) => e.id) },
+    token: player.token
+  });
+  delete service.now;
+  const before = await request('/api/characters/234567');
+  await request('/api/admin/xp/distribute', 'POST', {
+    request_id: 'qa_login_xp_93',
+    amount: 7,
+    reason: 'Uma ótima interpretação deixou marcas na corte.',
+    character_ids: [before.id],
+    revisions: { [before.id]: before._revision },
+    confirmed: true
+  });
   const campaign_id = store.root.active_campaign_id;
   return {
     root: await store.workspace(),

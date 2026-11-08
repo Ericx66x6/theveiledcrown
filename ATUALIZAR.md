@@ -1,6 +1,6 @@
-# Atualizar para A Coroa Velada 9.2.2 · Beta
+# Atualizar para A Coroa Velada 9.3.0 · Beta
 
-A versão 9.2.2 usa seus serviços atuais: GitHub, API Node.js 24 no Render, Supabase e Vercel. **Não há SQL, bucket ou variável obrigatória nova.** Para domínio próprio, há uma variável pública opcional para o compartilhamento. As contas, fichas, campanhas e imagens atuais continuam no mesmo Supabase.
+A versão 9.3.0 usa seus serviços atuais: GitHub, API Node.js 24 no Render, Supabase e Vercel. **Não há SQL, bucket ou variável obrigatória nova.** Para domínio próprio, há uma variável pública opcional para o compartilhamento. As contas, fichas, campanhas e imagens atuais continuam no mesmo Supabase.
 
 ## 1. Faça um backup e envie o código completo
 
@@ -15,7 +15,7 @@ Esta entrega tem mais de 100 arquivos; o GitHub limita o upload pelo navegador a
 3. Abra a pasta clonada pelo **Show in Explorer**.
 4. Copie todo o conteúdo extraído de `theveiledcrown` para essa pasta e confirme a substituição. Inclua os arquivos iniciados por ponto, como `.gitignore` e `.env.render.example`.
 5. Apague um eventual **`vercel.json` antigo**. O projeto usa somente **`vercel.mjs`**. Não apague a pasta `.git` do checkout.
-6. No Desktop, revise as alterações, escreva `Beta 9.2.2 — poderes liberados e importação clara`, faça **Commit to main** e depois **Push origin**.
+6. No Desktop, revise as alterações, escreva `Beta 9.3.0 — recompensas, celebrações e novos rituais`, faça **Commit to main** e depois **Push origin**.
 
 Se preferir o navegador, envie primeiro `client`, `core`, `shared`, `server`, `tools` e `data` em um commit; depois envie os outros arquivos e pastas. Faça os deploys finais somente depois que o pacote inteiro estiver no GitHub. Não envie o ZIP fechado, `node_modules`, `dist`, `.qa`, `.git` ou um arquivo `.env` com credenciais.
 
@@ -33,7 +33,7 @@ Mantenha o serviço existente e confira:
 
 Mantenha suas variáveis atuais: `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_IMAGE_BUCKET`, `BOOTSTRAP_TOKEN`, `NODE_ENV`, `NODE_VERSION`, `TRUST_PROXY` e `ALLOWED_ORIGINS`. A chave privada continua somente no Render. Confira `TRUST_PROXY=1` e o domínio de produção do Vercel em `ALLOWED_ORIGINS`.
 
-Use **Manual Deploy → Deploy latest commit** se o deploy automático estiver desligado. Aguarde **Live** e abra a URL do Render seguida de `/api/health`. A resposta precisa conter **`"version":"9.2.2"`**.
+Use **Manual Deploy → Deploy latest commit** se o deploy automático estiver desligado. Aguarde **Live** e abra a URL do Render seguida de `/api/health`. A resposta precisa conter **`"version":"9.3.0"`**.
 
 ## 3. Atualize o frontend no Vercel
 
@@ -48,15 +48,15 @@ Mantenha `vercel.mjs` e a variável **`COROA_API_BASE` com a URL HTTPS atual do 
 | Output | `dist` |
 | Node | 24.x |
 
-Após a API 9.2.2 ficar Live, publique o commit completo no Vercel. Se o Vercel compilou um upload incompleto ou publicou antes do Render terminar, faça **Redeploy**. Um aviso de que `engines` escolheu Node 24 em vez da versão configurada no painel não é erro; selecionar 24.x no painel deixa as configurações alinhadas.
+Após a API 9.3.0 ficar Live, publique o commit completo no Vercel. Se o Vercel compilou um upload incompleto ou publicou antes do Render terminar, faça **Redeploy**. Um aviso de que `engines` escolheu Node 24 em vez da versão configurada no painel não é erro; selecionar 24.x no painel deixa as configurações alinhadas.
 
-Não crie outro narrador e não importe o backup para efetuar a atualização. Abra seu domínio normal e confira o indicador **V9.2.2 BETA**. Se houver um erro de rota nova, confira primeiro se o Render já informa versão 9.2.2.
+Não crie outro narrador e não importe o backup para efetuar a atualização. Abra seu domínio normal e confira o indicador **V9.3.0 BETA**. Se houver um erro de rota nova, confira primeiro se o Render já informa versão 9.3.0.
 
 ## 4. Personalize sua campanha
 
 Em **Minhas campanhas → Editar mesa**, escolha a cor e envie uma capa JPG, PNG ou WebP. Botões, iluminação, bordas, fundos e elementos da interface acompanham a cor da campanha aberta. As imagens mantêm suas cores originais. O campo de seleção de sistema de RPG foi removido.
 
-O alto-falante do topo abre **O som da sua noite**. Efeitos e trilha ambiente têm interruptores e volumes separados; **Silenciar tudo** desliga os dois. A conta guarda as preferências. A trilha começa desativada; depois da sua escolha, toca uma composição instrumental de graves, drones e pulsos. Ela pausa ao ocultar a aba. O navegador libera áudio após uma interação; não há arquivos de som externos ou chaves adicionais.
+O alto-falante do topo abre **O som da sua noite**. Efeitos e trilha ambiente têm interruptores e volumes separados; **Silenciar tudo** desliga os dois. A conta guarda as preferências. A trilha vem ativada por padrão e toca uma composição instrumental de graves, drones e pulsos após o primeiro toque permitido pelo navegador. Ela pausa ao ocultar a aba. O navegador libera áudio após uma interação; não há arquivos de som externos ou chaves adicionais.
 
 ## 5. Prepare os Ecos do Véu
 
@@ -185,3 +185,18 @@ O JSON anexado para esta revisão passou na validação e na importação da API
 Se houver incompatibilidade com uma ficha existente, a importação informa personagem, ID e erro; o livro e as fichas permanecem preservados. Uma mensagem de arquivo inválido não significa necessariamente JSON corrompido: o tipo de importação ou as referências atuais da campanha também podem impedir o envio. Esta atualização informa o destino correto quando o arquivo está no importador errado.
 
 Não precisa de SQL, buckets ou variáveis novas. Publique a API no Render antes do frontend no Vercel.
+
+
+## Jogo vivo da versão 9.3.0
+
+Atualize o projeto completo: Render primeiro, Vercel depois. Não recrie tabelas, buckets ou contas. A nova estrutura de presença, recibos e cadastros utiliza os documentos JSON atuais, sem novo SQL.
+
+Importe o arquivo **game_data_coroa_v9.3.0_validado.json** em **Livro de regras → Gerenciar livro → Importar game-data** para receber os 44 rituais. O arquivo personalizado mantém seus custos de Legados, capítulos e demais configurações. O livro inicial em `data/game_data.json` é o modelo para novas instalações; atualizar código não substitui o livro de uma campanha existente.
+
+No menu da campanha, **Recompensas de login** permite ao narrador ajustar dias, XP e fuso. Jogadores veem **Presença na crônica**, recebem um registro por dia e escolhem um personagem aprovado para resgatar cada crédito. O padrão é cinco dias seguidos → 1 XP.
+
+**Avaliar cadastros** reúne os pedidos enviados em Criar minha conta. Aprove escolhendo uma ou mais campanhas abertas; o jogador entra sem personagem e pode enviar uma ficha. A aprovação da conta e a aprovação da ficha são decisões separadas.
+
+Efeitos e trilha vêm ligados. Na primeira migração de contas antigas, a trilha é ativada se o áudio geral não estava silenciado. Escolhas feitas depois no botão de áudio são preservadas. O navegador libera o som a partir de um toque ou tecla.
+
+Consulte [docs/JOGO-VIVO.md](docs/JOGO-VIVO.md) para as regras de ciclo, segurança de resgate e catálogo.

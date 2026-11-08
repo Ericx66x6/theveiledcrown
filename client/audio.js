@@ -1,4 +1,4 @@
-let preferences = { audio_enabled: true, music_enabled: false, sfx_volume: 80, music_volume: 35 },
+let preferences = { audio_enabled: true, music_enabled: true, sfx_volume: 80, music_volume: 35 },
   context,
   sfx,
   music,
@@ -62,7 +62,7 @@ export function configureSound(value, onChange) {
   if (onChange !== undefined) {
     savePreference = onChange;
     if (onChange === null) {
-      preferences.music_enabled = false;
+      preferences = { audio_enabled: true, music_enabled: true, sfx_volume: 80, music_volume: 35 };
       stopMusic();
     }
   }
@@ -142,6 +142,21 @@ export function playSound(kind = 'tick') {
       );
       noise(at, 0.95, 0.25);
       for (let i = 0; i < 14; i++) tone(700 + i * 71, at + 0.45 + i * 0.07, 0.5, 0.045);
+      return;
+    }
+    if (['xp-gain', 'level-up', 'discipline-learn'].includes(kind)) {
+      const notes =
+        kind === 'xp-gain'
+          ? [130.8, 196, 261.6, 392, 523.2]
+          : kind === 'level-up'
+            ? [98, 146.8, 196, 293.6, 392, 587.3]
+            : [65.4, 69.3, 130.8, 196, 261.6, 523.2];
+      tone(49, at, 1.1, 0.2, 'triangle', 32.7);
+      noise(at, kind === 'discipline-learn' ? 1.1 : 0.65, 0.2);
+      notes.forEach((f, i) =>
+        tone(f, at + 0.08 + i * 0.1, 1.25, 0.15, i < 2 ? 'triangle' : 'sine')
+      );
+      for (let i = 0; i < 7; i++) tone(784 + i * 83, at + 0.6 + i * 0.07, 0.4, 0.045);
       return;
     }
     if (kind === 'surrender') {
@@ -249,7 +264,7 @@ async function audioDialog() {
   };
   modal(
     'O som da sua noite',
-    `<div class="audio-hero"><span aria-hidden="true">♫</span><div><span class="eyebrow">PESO, TENSÃO E PRESENÇA</span><h3>Você dita o clima.</h3><p>Efeitos marcantes nos toques. Uma trilha instrumental escura para ficar no fundo.</p></div></div><div class="audio-settings"><label class="audio-switch"><span><strong>Efeitos sonoros</strong><small>Toques, dados, confirmações e conquistas</small></span><input type="checkbox" name="audio_enabled" ${preferences.audio_enabled ? 'checked' : ''}></label>${field('sfx_volume', 'Volume dos efeitos', preferences.sfx_volume, 'range', 'min="0" max="100" step="1"')}<label class="audio-switch"><span><strong>Trilha ambiente</strong><small>Pulso grave, drones e tensão · sem vozes</small></span><input type="checkbox" name="music_enabled" ${preferences.music_enabled ? 'checked' : ''}></label>${field('music_volume', 'Volume da trilha', preferences.music_volume, 'range', 'min="0" max="100" step="1"')}<button type="button" class="button ghost" id="audio-preview">Ouvir efeito</button>${button('Silenciar tudo', 'audio-mute-all', '', 'text-button danger')}<p class="hint">A trilha começa com a sua escolha e pausa quando esta aba fica oculta. ${savePreference ? 'Preferências salvas na sua conta.' : 'Entre para salvar suas preferências na conta.'}</p></div>`,
+    `<div class="audio-hero"><span aria-hidden="true">♫</span><div><span class="eyebrow">PESO, TENSÃO E PRESENÇA</span><h3>Você dita o clima.</h3><p>Efeitos marcantes nos toques. Uma trilha instrumental escura para ficar no fundo.</p></div></div><div class="audio-settings"><label class="audio-switch"><span><strong>Efeitos sonoros</strong><small>Toques, dados, confirmações e conquistas</small></span><input type="checkbox" name="audio_enabled" ${preferences.audio_enabled ? 'checked' : ''}></label>${field('sfx_volume', 'Volume dos efeitos', preferences.sfx_volume, 'range', 'min="0" max="100" step="1"')}<label class="audio-switch"><span><strong>Trilha ambiente</strong><small>Pulso grave, drones e tensão · sem vozes</small></span><input type="checkbox" name="music_enabled" ${preferences.music_enabled ? 'checked' : ''}></label>${field('music_volume', 'Volume da trilha', preferences.music_volume, 'range', 'min="0" max="100" step="1"')}<button type="button" class="button ghost" id="audio-preview">Ouvir efeito</button>${button('Silenciar tudo', 'audio-mute-all', '', 'text-button danger')}<p class="hint">A trilha vem ativada, começa no primeiro toque permitido pelo navegador e pausa quando esta aba fica oculta. ${savePreference ? 'Preferências salvas na sua conta.' : 'Entre para salvar suas preferências na conta.'}</p></div>`,
     async (form) => {
       await persist({
         audio_enabled: form.has('audio_enabled'),

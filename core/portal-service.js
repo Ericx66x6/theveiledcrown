@@ -1,4 +1,6 @@
 import { commerceRequest } from './commerce-service.js';
+import { rewardsRequest, loginRewardState } from './login-rewards.js';
+import { registrationRequest } from './registration-service.js';
 import { communityRequest, socialSnapshot } from './community-service.js';
 import { lifecycleRequest } from './lifecycle-service.js';
 import { distributeXp } from './xp-service.js';
@@ -18,8 +20,11 @@ import { submissionsRequest, submissionPackage, importSubmission } from './submi
 export class PortalService extends CampaignService {
   async request(path, options = {}) {
     const { method = 'GET', data = {}, token } = options;
+    if (path === '/auth/register' || path.startsWith('/api/admin/registrations'))
+      return registrationRequest(this, path, method, data, token);
     const special =
       path === '/api/portal-state' ||
+      path.startsWith('/api/rewards') ||
       path.startsWith('/api/intel') ||
       path.startsWith('/api/discipline-market') ||
       path.startsWith('/api/social') ||
@@ -64,6 +69,8 @@ export class PortalService extends CampaignService {
       };
     if (a.role !== 'admin' && !a._campaign_member)
       fail('Escolha uma campanha vinculada ao seu acesso.', 403);
+    if (path.startsWith('/api/rewards'))
+      return rewardsRequest(this, path, method, data, token, doc, a);
     if (path.startsWith('/api/intel') || path.startsWith('/api/discipline-market')) {
       if (!root.campaigns.some((c) => c.id === doc.id)) fail('Selecione uma campanha.', 409);
       if (
@@ -93,6 +100,16 @@ export class PortalService extends CampaignService {
       }
       return {
         account: publicAccount(a),
+        rewards:
+          a.role === 'player'
+            ? loginRewardState(doc, a, new Date(this.now ? this.now() : Date.now()))
+            : null,
+        registrations:
+          a.role === 'admin'
+            ? root.accounts
+                .filter((x) => x.registration)
+                .map((x) => ({ ...publicAccount(x), registration: clone(x.registration) }))
+            : [],
         campaign,
         game: clone(doc.game),
         players: doc.characters

@@ -144,12 +144,52 @@ test('adaptador Supabase atravessa as funções SQL e preserva contas, sessões 
       images: []
     }
   });
+  const registration = {
+    username: 'jogador-persistido',
+    display_name: 'Pessoa de teste',
+    password: 'senha-ficticia-123'
+  };
+  await service.request('/auth/register', { method: 'POST', data: registration });
+  const pending = (await service.request('/api/admin/registrations', { token: auth.token }))[0];
+  await service.request(`/api/admin/registrations/${pending.id}/approve`, {
+    method: 'POST',
+    token: auth.token,
+    data: { revision: 1, campaign_ids: [store.root.active_campaign_id] }
+  });
+  const login = await service.request('/auth/login', { method: 'POST', data: registration });
+  const book = await service.request('/api/game', { token: auth.token });
+  await service.request('/api/game', {
+    method: 'PUT',
+    token: auth.token,
+    data: {
+      ...book,
+      _expected_revision: book._revision,
+      login_rewards: { ...book.login_rewards, days: 1, xp: 2 }
+    }
+  });
+  await service.request('/api/rewards/check-in', { method: 'POST', token: login.token, data: {} });
+  await service.request('/auth/register', {
+    method: 'POST',
+    data: { ...registration, username: 'aguardando-aprovacao' }
+  });
   await repository.save(await store.workspace(), 0);
   const loaded = await repository.load();
   assert.equal(loaded.root.accounts[0].username, 'narrador');
   assert.equal(loaded.root.campaigns[0].intel[0].id, entry.id);
   assert.equal(loaded.root.campaigns[0].intel[0].secret, 'Somente depois de investigar.');
   assert.equal(loaded.root.sessions[0].token, auth.token);
+  const persisted = loaded.root.accounts.find((a) => a.id === pending.id);
+  assert.equal(persisted.registration.status, 'approved');
+  const track = persisted.login_rewards[loaded.root.active_campaign_id];
+  assert.equal(track.streak, 1);
+  assert.equal(track.credits[0].xp, 2);
+  assert.equal(track.credits[0].claimed_at, null);
+  assert.equal(persisted.reward_events[0].kind, 'check-in');
+  assert.equal(persisted.reward_events[0].seen_at, null);
+  assert.equal(
+    loaded.root.accounts.find((a) => a.username === 'aguardando-aprovacao').active,
+    false
+  );
   assert.equal(
     (
       await new PortalService(new CampaignStore(loaded.root)).request('/auth/me', {

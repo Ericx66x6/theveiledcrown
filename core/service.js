@@ -1,4 +1,5 @@
 import { characterChanges } from './character-audit.js';
+import { characterRewards } from './reward-events.js';
 import { notification } from './notifications.js';
 import { upgradeQuote, gameSettings, validateSettings } from './settings.js';
 import {
@@ -44,7 +45,8 @@ export function accountRecord(data, passwordHash) {
     bio: '',
     preferences: {
       audio_enabled: true,
-      music_enabled: false,
+      music_enabled: true,
+      audio_defaults_version: 2,
       sfx_volume: 80,
       music_volume: 35,
       animations: true,
@@ -98,6 +100,7 @@ export function commit(doc, previous, data, actor, action, details = '') {
       details
     }
   ];
+  characterRewards(doc, previous, next, actor, action, details);
   if (next.xp > previous.xp && action !== 'Missão concluída') {
     const owner = doc.accounts.find(
       (a) => a.role === 'player' && a.character_ids.includes(next.id)
@@ -183,9 +186,12 @@ export class CharacterService {
       times.push(Date.now());
       this.attempts.set(username, times);
       const before = await this.store.get(),
-        found = before.accounts.find((a) => a.username === username && a.active);
+        found = before.accounts.find(
+          (a) => a.username === username && (a.active || a.registration?.status === 'pending')
+        );
       if (!found || !(await checkPassword(data?.password, found.password_hash)))
         fail('Login ou senha incorretos.', 401);
+      if (!found.active) fail('Seu cadastro está aguardando aprovação do narrador.', 403);
       return this.write(
         null,
         (doc) => {
@@ -363,6 +369,8 @@ export class CharacterService {
         } else {
           target = doc.accounts.find((x) => x.id === path.split('/').pop());
           if (!target) fail('Conta não encontrada.', 404);
+          if (target.registration && target.registration.status !== 'approved')
+            fail('Use Avaliar cadastros para aprovar esta entrada.', 409);
           target.session_version++;
         }
         if (data.role !== undefined) {

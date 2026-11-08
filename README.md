@@ -1,9 +1,13 @@
-# The Veiled Crown · A Coroa Velada 9.2.2 · Beta
+# The Veiled Crown · A Coroa Velada 9.3.0 · Beta
 
 Portal de RPG exclusivamente online: **Vercel → API Node.js no Render → Supabase**.
 
 Já usa a versão 6, 7 ou 8? Siga **[ATUALIZAR.md](ATUALIZAR.md)** para preservar seus dados. Para instalar do zero, leia **[TUTORIAL.md](TUTORIAL.md)** para instalar no seu repositório `Ericx66x6/theveiledcrown`. Inclui o passo a passo do Supabase, GitHub, Render, Vercel e do primeiro acesso.
 
+- Celebrações de XP, evolução e novos dons; recibos pendentes aparecem no próximo acesso.
+- Presença diária configurável por campanha (padrão: cinco dias consecutivos, 1 XP), com resgate para um personagem.
+- Cadastro público com foto, aprovação do narrador e liberação de campanhas.
+- 44 rituais com preparo, duração, materiais e testes por sucessos em 6+, incluindo 22 originais.
 - Node.js 24 e API que valida as permissões, custos e recompensas.
 - Fichas, contas, regras e campanhas como documentos JSONB no Supabase.
 - Mapas e retratos no bucket privado `coroa-imagens`, com referências nos documentos. As respostas e backups autorizados reconstituem as imagens.
@@ -60,4 +64,6 @@ Os motores de mapa são carregados conforme a necessidade: Leaflet para imagens 
 
 A versão 9.2.1 organiza a criação em passos obrigatórios, uma categoria por tela, com gasto completo das reservas iniciais e dos bônus. Qualidades e defeitos vêm antes dos bônus, que percorrem atributos, habilidades, antecedentes e disciplinas até zerar. A API confere os pontos no envio e reenvio. Consulta do livro, clãs, linhas, geração e capital continuam disponíveis. Veja [docs/CRIACAO.md](docs/CRIACAO.md) e [ATUALIZAR.md](ATUALIZAR.md).
 
-A versão 9.2.2 distingue poderes liberados/bloqueados e identifica o destino dos JSONs nas importações. Consulte [docs/IMPORTACAO.md](docs/IMPORTACAO.md).
+A versão 9.3.0 adiciona recompensas de presença, cadastro sujeito à aprovação, celebrações persistentes e um repertório ampliado de rituais. Leia [docs/JOGO-VIVO.md](docs/JOGO-VIVO.md) e [docs/IMPORTACAO.md](docs/IMPORTACAO.md).
+
+Validação desta entrega: [228 testes e revisão visual](docs/VALIDACAO-V93.md).

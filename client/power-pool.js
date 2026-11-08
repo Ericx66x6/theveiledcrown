@@ -36,7 +36,14 @@ export async function powerAction(action, data, ctx) {
   ctx.state.diceDraft = null;
   ctx.state.preparedRoll = {
     pool: result.total,
-    label: d.name + (level.subname ? ' · ' + level.subname : '') + ' · ' + result.source
+    label:
+      d.name +
+      (level.subname ? ' · ' + level.subname : '') +
+      ' · ' +
+      result.source +
+      (level.casting?.required_successes
+        ? ` · Meta: ${level.casting.required_successes} sucessos em ${level.casting.success_on}+`
+        : '')
   };
   await ctx.go('dice');
   return true;

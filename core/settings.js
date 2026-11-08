@@ -75,6 +75,13 @@ export function gameSettings(source) {
     require_narrator_completion: true,
     ...g.quests
   };
+  g.login_rewards = {
+    enabled: true,
+    days: 5,
+    xp: 1,
+    time_zone: 'America/Sao_Paulo',
+    ...g.login_rewards
+  };
   g.character_creation = {
     enabled: true,
     require_approval: true,
@@ -113,6 +120,15 @@ export function gameSettings(source) {
   return configureCreation(g);
 }
 export function validateSettings(g) {
+  const loyalty = g.login_rewards;
+  if (!loyalty || typeof loyalty.enabled !== 'boolean') fail('Configuração de presença inválida.');
+  number(loyalty.days, 'Dias consecutivos', 1, 60);
+  number(loyalty.xp, 'XP da recompensa de presença', 1, 10000);
+  try {
+    new Intl.DateTimeFormat('pt-BR', { timeZone: loyalty.time_zone }).format();
+  } catch {
+    fail('Fuso horário da recompensa inválido.');
+  }
   validateCreationConfig(g);
   number(g._revision, 'Revisão das regras');
   const allowed = g.discipline_market.allowed_ids;

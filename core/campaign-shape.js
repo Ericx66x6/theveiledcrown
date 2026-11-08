@@ -63,9 +63,10 @@ export function normalizeRoot(source) {
   root.active_campaign_id ??= root.campaigns[0]?.id || null;
   root.campaigns = root.campaigns.map(normalizeCampaign);
   for (const a of root.accounts) {
+    const firstAudioUpdate = a.preferences?.audio_defaults_version !== 2;
     a.preferences = {
       audio_enabled: a.preferences?.ui_sound !== false,
-      music_enabled: false,
+      music_enabled: true,
       sfx_volume: 80,
       music_volume: 35,
       animations: true,
@@ -73,6 +74,10 @@ export function normalizeRoot(source) {
       social_note: '',
       ...a.preferences
     };
+    if (firstAudioUpdate) {
+      a.preferences.music_enabled = a.preferences.audio_enabled !== false;
+      a.preferences.audio_defaults_version = 2;
+    }
     delete a.preferences.sound;
     delete a.preferences.ui_sound;
     if (a.role === 'admin')

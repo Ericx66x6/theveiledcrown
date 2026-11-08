@@ -20,6 +20,7 @@ export { imageData } from './image-data.js';
 import { imageData } from './image-data.js';
 import { publicMap, validateScale, validateMapPosition } from './map-state.js';
 import { publicIntel, validateIntel } from './intel-state.js';
+import { validateRewardAccount } from './reward-state.js';
 export function coordinate(value) {
   if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > 1)
     fail('Posição fora do mapa.');
@@ -335,6 +336,7 @@ export function validateWorkspace(source) {
     a.avatar ??= '';
     a.bio ??= '';
     a.memberships ??= {};
+    validateRewardAccount(a);
     for (const [id, ids] of Object.entries(a.memberships)) {
       const c = root.campaigns.find((c) => c.id === id);
       if (!c || !Array.isArray(ids) || ids.some((pid) => !c.characters.some((p) => p.id === pid)))

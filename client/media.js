@@ -3,7 +3,7 @@ export function heroImage() {
 }
 export const currency = (value) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
-export async function readImage(file, { map = false } = {}) {
+export async function readImage(file, { map = false, thumbnail = false } = {}) {
   if (!file || !file.size || file.size > (map ? 30 : 5) * 1024 * 1024)
     throw new Error(map ? 'Escolha uma imagem de até 30 MB.' : 'Escolha uma imagem de até 5 MB.');
   if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type))
@@ -26,7 +26,7 @@ export async function readImage(file, { map = false } = {}) {
       image.onerror = () => reject(new Error('Imagem inválida.'));
       image.src = url;
     }));
-  const limit = map ? 6000 : 1100,
+  const limit = map ? 6000 : thumbnail ? 256 : 1100,
     scale = Math.min(1, limit / Math.max(img.width, img.height)),
     canvas = document.createElement('canvas');
   canvas.width = Math.max(1, Math.round(img.width * scale));

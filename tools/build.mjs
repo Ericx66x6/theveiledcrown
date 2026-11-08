@@ -58,7 +58,17 @@ if (siteOrigin)
     resolve(out, 'sitemap.xml'),
     `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>${siteOrigin}/</loc></url></urlset>`
   );
-for (const name of ['base', 'theme', 'hub', 'experience', 'updates', 'expansion', 'beta', 'creation'])
+for (const name of [
+  'base',
+  'theme',
+  'hub',
+  'experience',
+  'updates',
+  'expansion',
+  'beta',
+  'creation',
+  'gamefeel'
+])
   await writeFile(
     resolve(out, 'assets/styles', name + '.css'),
     themeCSS(await readFile(resolve(root, 'client', name + '.css'), 'utf8'))
