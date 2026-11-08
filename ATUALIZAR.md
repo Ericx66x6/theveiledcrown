@@ -1,6 +1,6 @@
-# Atualizar para A Coroa Velada 9.2.1 · Beta
+# Atualizar para A Coroa Velada 9.2.2 · Beta
 
-A versão 9.2.1 usa seus serviços atuais: GitHub, API Node.js 24 no Render, Supabase e Vercel. **Não há SQL, bucket ou variável obrigatória nova.** Para domínio próprio, há uma variável pública opcional para o compartilhamento. As contas, fichas, campanhas e imagens atuais continuam no mesmo Supabase.
+A versão 9.2.2 usa seus serviços atuais: GitHub, API Node.js 24 no Render, Supabase e Vercel. **Não há SQL, bucket ou variável obrigatória nova.** Para domínio próprio, há uma variável pública opcional para o compartilhamento. As contas, fichas, campanhas e imagens atuais continuam no mesmo Supabase.
 
 ## 1. Faça um backup e envie o código completo
 
@@ -15,7 +15,7 @@ Esta entrega tem mais de 100 arquivos; o GitHub limita o upload pelo navegador a
 3. Abra a pasta clonada pelo **Show in Explorer**.
 4. Copie todo o conteúdo extraído de `theveiledcrown` para essa pasta e confirme a substituição. Inclua os arquivos iniciados por ponto, como `.gitignore` e `.env.render.example`.
 5. Apague um eventual **`vercel.json` antigo**. O projeto usa somente **`vercel.mjs`**. Não apague a pasta `.git` do checkout.
-6. No Desktop, revise as alterações, escreva `Beta 9.2.1 — criação em etapas obrigatórias`, faça **Commit to main** e depois **Push origin**.
+6. No Desktop, revise as alterações, escreva `Beta 9.2.2 — poderes liberados e importação clara`, faça **Commit to main** e depois **Push origin**.
 
 Se preferir o navegador, envie primeiro `client`, `core`, `shared`, `server`, `tools` e `data` em um commit; depois envie os outros arquivos e pastas. Faça os deploys finais somente depois que o pacote inteiro estiver no GitHub. Não envie o ZIP fechado, `node_modules`, `dist`, `.qa`, `.git` ou um arquivo `.env` com credenciais.
 
@@ -33,7 +33,7 @@ Mantenha o serviço existente e confira:
 
 Mantenha suas variáveis atuais: `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_IMAGE_BUCKET`, `BOOTSTRAP_TOKEN`, `NODE_ENV`, `NODE_VERSION`, `TRUST_PROXY` e `ALLOWED_ORIGINS`. A chave privada continua somente no Render. Confira `TRUST_PROXY=1` e o domínio de produção do Vercel em `ALLOWED_ORIGINS`.
 
-Use **Manual Deploy → Deploy latest commit** se o deploy automático estiver desligado. Aguarde **Live** e abra a URL do Render seguida de `/api/health`. A resposta precisa conter **`"version":"9.2.1"`**.
+Use **Manual Deploy → Deploy latest commit** se o deploy automático estiver desligado. Aguarde **Live** e abra a URL do Render seguida de `/api/health`. A resposta precisa conter **`"version":"9.2.2"`**.
 
 ## 3. Atualize o frontend no Vercel
 
@@ -48,9 +48,9 @@ Mantenha `vercel.mjs` e a variável **`COROA_API_BASE` com a URL HTTPS atual do 
 | Output | `dist` |
 | Node | 24.x |
 
-Após a API 9.2.1 ficar Live, publique o commit completo no Vercel. Se o Vercel compilou um upload incompleto ou publicou antes do Render terminar, faça **Redeploy**. Um aviso de que `engines` escolheu Node 24 em vez da versão configurada no painel não é erro; selecionar 24.x no painel deixa as configurações alinhadas.
+Após a API 9.2.2 ficar Live, publique o commit completo no Vercel. Se o Vercel compilou um upload incompleto ou publicou antes do Render terminar, faça **Redeploy**. Um aviso de que `engines` escolheu Node 24 em vez da versão configurada no painel não é erro; selecionar 24.x no painel deixa as configurações alinhadas.
 
-Não crie outro narrador e não importe o backup para efetuar a atualização. Abra seu domínio normal e confira o indicador **V9.2.1 BETA**. Se houver um erro de rota nova, confira primeiro se o Render já informa versão 9.2.1.
+Não crie outro narrador e não importe o backup para efetuar a atualização. Abra seu domínio normal e confira o indicador **V9.2.2 BETA**. Se houver um erro de rota nova, confira primeiro se o Render já informa versão 9.2.2.
 
 ## 4. Personalize sua campanha
 
@@ -173,3 +173,15 @@ Atualizar o código não substitui automaticamente os catálogos personalizados 
 A importação é somente do **game-data**; não importe um portal completo para atualizar regras. Fichas já aprovadas não recebem dinheiro de novo nem têm geração ou traços recalculados. IDs anteriores dos catálogos foram preservados. Uma proposta antiga sem distribuição por etapas continua visível para revisão manual do narrador. Se o jogador a editar, ela abre no assistente: nome e narrativa são mantidos e os pontos precisam ser redistribuídos. A aprovação manual de exceções pelo narrador continua exigindo justificativa.
 
 Os efeitos estruturados são mostrados na consulta e conferidos no envio. Monstruoso fixa Aparência; Criança impõe os limites e requisito; as versões do Beijo de Procuração concedem os pontos indicados. Bônus situacionais de testes, acontecimentos do roleplay e efeitos ainda descritos como manuais continuam sob aplicação do narrador. Consulte **docs/CRIACAO.md** para os campos e limites desta versão.
+
+## Disciplinas e importação da versão 9.2.2
+
+Na consulta, **LIBERADO** tem marca de confirmação e destaque na cor da campanha. **BLOQUEADO** tem cadeado, fundo neutro e borda tracejada. A descrição mostra o nível exigido e o nível atual; poderes bloqueados continuam disponíveis para leitura, com preparação de rolagem desativada. A seleção de um nível mantém sua aba visível no celular. A mesma distinção aparece na leitura da tela de evolução.
+
+O arquivo `game_data_coroa_v9.2.2_validado.json` é **somente o livro de regras**. No narrador, use **Livro de regras → Gerenciar livro → Importar game-data** ou o novo atalho **Arquivos da campanha → Importar game-data (regras)**. Não selecione esse arquivo no importador de ficha nem no de backup completo. Veja [docs/IMPORTACAO.md](docs/IMPORTACAO.md).
+
+O JSON anexado para esta revisão passou na validação e na importação da API de teste, com 83 disciplinas, 283 qualidades/defeitos, 11 antecedentes e quatro capítulos personalizados. A cópia validada conserva seus catálogos e configurações e acrescenta somente a identificação `format: coroa-game-data-v1`. O código continua aceitando game-data antigo sem esse identificador. Não foi reproduzido o erro específico da campanha de produção.
+
+Se houver incompatibilidade com uma ficha existente, a importação informa personagem, ID e erro; o livro e as fichas permanecem preservados. Uma mensagem de arquivo inválido não significa necessariamente JSON corrompido: o tipo de importação ou as referências atuais da campanha também podem impedir o envio. Esta atualização informa o destino correto quando o arquivo está no importador errado.
+
+Não precisa de SQL, buckets ou variáveis novas. Publique a API no Render antes do frontend no Vercel.

@@ -132,3 +132,7 @@ Para jogadores, a API reconstrói todos os traços pelo plano, recalcula geraç�
 O relatório contém `issues`, `warnings`, `totals` das reservas e `derived` para geração/capital. Propostas antigas sem plano são mantidas, com exigência de revisão manual quando o assistente está ativo. A aprovação continua exclusiva do narrador, com revisão obrigatória; divergências exigem `override:true` e justificativa em `reason`. A aprovação repetida é recusada, sem duplicar ficha ou capital.
 
 Depois de aprovada, `creation` serve de registro das escolhas. `primary_paths` liga disciplina e linha primária; evoluir qualquer uma pela rota normal atualiza ambas e cobra a cotação uma única vez. Adquirir novas linhas, aplicar efeitos situacionais e editar fichas antigas continuam sob as regras normais da campanha.
+
+## Tipos de JSON (9.2.2)
+
+O game-data pode informar `format: coroa-game-data-v1`; arquivos antigos com os catálogos e `xp_cost` continuam aceitos sem marcador. O identificador não substitui a validação completa. `/api/game`, importação de fichas e restauração de portal identificam arquivos destinados a outra rota e retornam orientação específica. A importação de regras que viole uma ficha existente informa nome/ID e o erro de validação, conservando as regras e as fichas anteriores.

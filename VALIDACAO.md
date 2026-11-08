@@ -1,10 +1,10 @@
-# Validação · A Coroa Velada 9.2.1 · Beta
+# Validação · A Coroa Velada 9.2.2 · Beta
 
 Verificação em 07/11/2026. Código para frontend Vercel, API Node.js 24 no Render e documentos JSONB/imagens privadas no Supabase. Nenhum serviço ou dado de produção do usuário foi alterado.
 
 ## Testes automatizados
 
-`npm run test:all` passou com **203 testes, sem falhas**. O comando compila o frontend, executa regras, domínio, gestos, áudio, API HTTP, SQL e Storage e confere sintaxe e referências aos assets.
+`npm run test:all` passou com **214 testes, sem falhas**. O comando compila o frontend, executa regras, domínio, gestos, áudio, API HTTP, SQL e Storage e confere sintaxe e referências aos assets.
 
 - O narrador cria, move e remove posições de personagens ativos em mapas por imagem e geográficos. A visibilidade definida pelo jogador é preservada; outros jogadores continuam impedidos de alterar a posição alheia. Revisões concorrentes e mapas sem acesso são recusados.
 - Gestos conferem o ponteiro principal, ignoram um segundo dedo e cancelam sem salvar ao perder a captura. A posição final considera as coordenadas ao soltar, mesmo sem o último evento de movimento. Arraste simples não muda a posição salva.
@@ -25,6 +25,19 @@ Verificação em 07/11/2026. Código para frontend Vercel, API Node.js 24 no Ren
 - Frontend sem localStorage, sessionStorage ou IndexedDB. Build de produção sem as identidades fictícias da prévia. Não foi acrescentado cache offline de fichas.
 
 As migrações SQL e funções foram executadas em PostgreSQL via PGlite, com transações, conflito de revisão, RLS e recusa das permissões `anon`/`authenticated`. O adaptador Supabase usa transporte REST simulado com funções SQL reais. O adaptador de imagens usa Storage simulado para conferir upload privado, reconstituição, deduplicação e falhas. **Não houve conexão ao Supabase do usuário.**
+
+## Disciplinas e arquivos JSON da versão 9.2.2
+
+- A disponibilidade usa o nível real do personagem; um dom no nível zero não libera poderes. Sem ficha aberta, a consulta do narrador usa estado de referência e não atribui bloqueios a um personagem inexistente. Rituais exigem registro próprio na ficha.
+- Poderes adquiridos e não adquiridos têm rótulos, ícones e tratamentos de borda/fundo diferentes, inclusive na evolução. A leitura de um poder bloqueado continua possível; preparar sua rolagem é recusado tanto no botão quanto no manipulador. Trocar de personagem ou evoluir recalcula a disponibilidade.
+- Game-data, ficha e backup do portal são reconhecidos antes da validação completa. Selecionar um tipo no importador de outro exibe instruções do caminho correto, sem importar ou descartar dados automaticamente. Backups compatíveis continuam válidos.
+- O teste de importação mantém capítulos e custos personalizados e não altera as fichas. Uma incompatibilidade identifica o personagem e preserva livro e fichas.
+
+O JSON fornecido pelo usuário passou como JSON, catálogo e configurações; a importação real na API em memória foi aceita com 83 disciplinas, 283 qualidades/defeitos, 11 antecedentes, quatro capítulos e o custo geral personalizado de 15 XP. Como backup completo, foi recusado por não conter campanhas e contas. O arquivo validado acrescenta somente a identificação do formato, conferida por comparação estrutural com a origem. Não foi acessada a campanha de produção; a causa exata do aviso relatado depende do erro e do caminho utilizados nela.
+
+Na revisão móvel, Helena com Auspícios 2 mostrou os níveis 1/2 como LIBERADO e 3/4/5 como BLOQUEADO. O nível 3 abriu para leitura com cadeado, exigência de nível 3 e Preparar rolagem desativado; voltar ao nível 2 reativou a rolagem. A busca global abriu diretamente o poder bloqueado com sua aba visível (caixa selecionada inteiramente dentro da área horizontal de 313 px). Em 390 px, conteúdo e rolagem mediram 375/375, sem transbordamento. O atalho Arquivos da campanha → Importar game-data abriu o formulário correto.
+
+O teste adicional de seleção/upload de arquivo no navegador excedeu o tempo disponível e a sessão do navegador foi encerrada; seu resultado não foi confirmado. A aceitação do JSON foi verificada pela validação completa e pela API em memória. Não foi confirmado um upload pelo navegador nem acessado o ambiente publicado do usuário.
 
 ## Sequência obrigatória da versão 9.2.1
 
@@ -75,7 +88,7 @@ Não houve ensaio de carga nem teste em celular físico. Presença e novidades u
 
 ## Publicação
 
-Siga **[ATUALIZAR.md](ATUALIZAR.md)**. Não há SQL, bucket ou variável obrigatória nova. Faça backup, envie o conteúdo completo do ZIP, publique primeiro a API no Render e confira `/api/health` com versão 9.2.1; depois publique no Vercel.
+Siga **[ATUALIZAR.md](ATUALIZAR.md)**. Não há SQL, bucket ou variável obrigatória nova. Faça backup, envie o conteúdo completo do ZIP, publique primeiro a API no Render e confira `/api/health` com versão 9.2.2; depois publique no Vercel.
 
 Favicon e imagem social foram gerados e servidos pela prévia. A miniatura real no WhatsApp depende da publicação no domínio final e da leitura/cache do serviço. A origem padrão do Vercel é detectada automaticamente; domínio próprio pode ser indicado em `COROA_SITE_URL` no Vercel.
 

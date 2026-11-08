@@ -1,4 +1,4 @@
-# The Veiled Crown · A Coroa Velada 9.2.1 · Beta
+# The Veiled Crown · A Coroa Velada 9.2.2 · Beta
 
 Portal de RPG exclusivamente online: **Vercel → API Node.js no Render → Supabase**.
 
@@ -59,3 +59,5 @@ O SQL cria a nova estrutura sem apagar os buckets anteriores. A chave privada fi
 Os motores de mapa são carregados conforme a necessidade: Leaflet para imagens e OpenLayers para a base vetorial, sem exigir WebGL. Os créditos dos dados e provedores permanecem visíveis no mapa.
 
 A versão 9.2.1 organiza a criação em passos obrigatórios, uma categoria por tela, com gasto completo das reservas iniciais e dos bônus. Qualidades e defeitos vêm antes dos bônus, que percorrem atributos, habilidades, antecedentes e disciplinas até zerar. A API confere os pontos no envio e reenvio. Consulta do livro, clãs, linhas, geração e capital continuam disponíveis. Veja [docs/CRIACAO.md](docs/CRIACAO.md) e [ATUALIZAR.md](ATUALIZAR.md).
+
+A versão 9.2.2 distingue poderes liberados/bloqueados e identifica o destino dos JSONs nas importações. Consulte [docs/IMPORTACAO.md](docs/IMPORTACAO.md).

@@ -1,4 +1,5 @@
 import { socialVisible, publicSocialPost, socialKinds, gestures } from './social-state.js';
+import { jsonDestinationError } from './json-kind.js';
 import { personalNetwork, questVisible } from './permissions.js';
 import {
   clone,
@@ -103,6 +104,8 @@ function historicalPlayer(source, game) {
   return validatePlayer(p, historical);
 }
 export function validateWorkspace(source) {
+  const destinationError = jsonDestinationError(source, 'workspace');
+  if (destinationError) fail(destinationError);
   let input = source;
   if (source?.format === 'coroa-offline-player-v1') {
     if (source.account?.role !== 'player') fail('Pacote de jogador inválido.');

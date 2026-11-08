@@ -32,7 +32,7 @@ const server = createPortalServer({
 });
 await repository.load();
 server.listen(Number(process.env.PORT || 3000), '0.0.0.0', () =>
-  console.log('A Coroa Velada 9.2.1 · servidor iniciado.')
+  console.log('A Coroa Velada 9.2.2 · servidor iniciado.')
 );
 function shutdown() {
   server.close(() => process.exit(0));

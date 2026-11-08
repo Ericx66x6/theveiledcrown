@@ -1,4 +1,5 @@
 import { imageData } from './image-data.js';
+import { jsonDestinationError } from './json-kind.js';
 import { limits, xpCost, newId } from '../shared/rules.js';
 export { limits, xpCost, newId };
 export const stats = ['atributes', 'talents', 'expertises', 'knowledges', 'precedents'];
@@ -96,6 +97,8 @@ export function blank(game, id) {
   });
 }
 export function validateGame(game) {
+  const destinationError = jsonDestinationError(game, 'game');
+  if (destinationError) fail(destinationError);
   if (!game || typeof game !== 'object' || Array.isArray(game)) fail('game_data inválido.');
   for (const key of [...stats, 'disciplines', 'rituals', 'caracteristics']) {
     if (!Array.isArray(game[key])) fail(`game_data: lista ${key} ausente.`);
@@ -130,6 +133,8 @@ export function validateGame(game) {
   return game;
 }
 export function validatePlayer(source, game) {
+  const destinationError = jsonDestinationError(source, 'character');
+  if (destinationError) fail(destinationError);
   const p = normalize(source);
   number(p.id, 'ID', 0, 999999);
   p.char = text(p.char, 'Nome do personagem', 150, true);

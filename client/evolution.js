@@ -1,4 +1,6 @@
 import { powerPool } from './power-pool.js';
+import { powerAccess } from '../core/power-access.js';
+import { powerAccessLabel } from './power-access.js';
 import { fold } from '../core/power-tests.js';
 import { $, esc, icon, button, dots, empty, modal, field, area, toast } from '../shared/ui.js';
 import { labels } from '../shared/rules.js';
@@ -130,8 +132,9 @@ function lore(ctx, u) {
     d.nivels || []
   )
     .map((n) => {
-      const m = mechanics(n.description, n.mechanics).mechanics;
-      return `<article class="evolution-power"><span class="power-level-number">${n.nivel}</span><div><h3>${esc(n.subname)}</h3><div class="power-badges"><span class="power-badge ${m.rouse_check ? 'required' : 'quiet'}">${icon('blood')} ${m.rouse_check === null ? 'Despertar não informado' : m.rouse_check ? 'Teste de Despertar' : 'Sem despertar'}</span><span class="power-badge">${icon('test')} ${esc(m.test || 'Sem teste')}</span></div>${powerPool(ctx, d, n, d.nivels.indexOf(n))}<p class="prose">${esc(n.description)}</p></div></article>`;
+      const m = mechanics(n.description, n.mechanics).mechanics,
+        access = powerAccess(ctx.player(), u.key, d, n);
+      return `<article class="evolution-power is-${access.state}"><span class="power-level-number">${n.nivel}</span><div>${powerAccessLabel(access)}<h3>${esc(n.subname)}</h3><div class="power-badges"><span class="power-badge ${m.rouse_check ? 'required' : 'quiet'}">${icon('blood')} ${m.rouse_check === null ? 'Despertar não informado' : m.rouse_check ? 'Teste de Despertar' : 'Sem despertar'}</span><span class="power-badge">${icon('test')} ${esc(m.test || 'Sem teste')}</span></div>${powerPool(ctx, d, n, d.nivels.indexOf(n))}<p class="prose">${esc(n.description)}</p></div></article>`;
     })
     .join('')}</details></section>`;
 }

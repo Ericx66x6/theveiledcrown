@@ -267,7 +267,13 @@ export class CharacterService {
                 next[key].push({ id, value: 0 });
                 changed = true;
               }
-          validatePlayer(next, game);
+          try {
+            validatePlayer(next, game);
+          } catch (error) {
+            fail(
+              `O livro não é compatível com ${p.char} (#${p.id}): ${error.message} Confira os IDs e limites do catálogo antes de importar. Nenhuma ficha foi alterada.`
+            );
+          }
           return { next, changed };
         };
         const characters = doc.characters.map((p) => ({ previous: p, ...withNewTraits(p) }));

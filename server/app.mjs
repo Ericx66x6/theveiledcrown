@@ -192,7 +192,7 @@ export function createPortalServer({
         return;
       }
       if (url.pathname === '/api/health') {
-        respond(200, { status: 'ok', version: '9.2.1' });
+        respond(200, { status: 'ok', version: '9.2.2' });
         return;
       }
       const ip = trustProxy
