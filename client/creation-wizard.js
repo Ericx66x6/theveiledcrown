@@ -10,11 +10,16 @@ import {
   traitKind,
   traitPrice
 } from '../core/character-creation.js';
-import { $, esc, field, area, select, icon, button, modal, toast, download } from '../shared/ui.js';
+import { $, esc, field, area, select, icon, button, modal } from '../shared/ui.js';
 import { labels } from '../shared/rules.js';
 import { store } from './api.js';
 import { realMoney, showRuleContent, effectDescriptions } from './rule-content.js';
-const steps = ['Identidade', 'Pontos iniciais', 'Pontos bônus', 'Conferir e enviar'];
+import {
+  creationStages,
+  creationStepProblems,
+  nextCreationStep,
+  canReturnToCreationStep
+} from './creation-flow.js';
 const categories = {
   atributes: 'Atributos',
   skills: 'Habilidades',
@@ -44,8 +49,10 @@ export class CreationWizard {
     this.source.player = accountName;
     this.plan = clone(character?.creation || draft?.plan || emptyCreation(game));
     this.step = 0;
-    this.category = 'atributes';
-    this.bonusCategory = 'atributes';
+    this.notice =
+      character && !character.creation
+        ? 'Esta proposta é anterior ao assistente. Confira o clã e distribua os pontos no passo a passo. O nome e os textos foram preservados.'
+        : '';
     this.skillCategory = 'talents';
     this.query = '';
     this.kind = 'all';
@@ -66,15 +73,54 @@ export class CreationWizard {
     delete store.drafts[this.key];
     delete document.body.dataset.pendingEditor;
   }
+  currentSource() {
+    return { ...this.source, creation: this.plan };
+  }
   render() {
     this.update();
-    const totals = this.report.totals;
-    return `<section class="page-intro creation-intro"><span class="eyebrow">UM PERSONAGEM. UMA NOVA NÃO-VIDA.</span><h1>Do primeiro traço ao véu.</h1><p>Construa sua ficha em duas distribuições. O narrador confere e aprova antes de você jogar.</p></section><nav class="creation-steps" aria-label="Etapas da criação">${steps.map((name, index) => `<button type="button" data-create-step="${index}" aria-current="${index === this.step ? 'step' : 'false'}"><span>${index + 1}</span><strong>${name}</strong></button>`).join('')}</nav><form id="creation-wizard" novalidate><div class="creation-context"><span>${esc(this.p.char || 'Seu personagem')}<small>${esc(this.p.cla || 'Escolha o clã')}</small></span><span>${this.p.generation}ª geração<small>${realMoney(this.p.money)} iniciais</small></span></div><section class="creation-screen">${this.step === 0 ? this.identity() : this.step === 1 ? this.allocation(false) : this.step === 2 ? this.allocation(true) : this.review()}</section><p class="form-error" id="creation-error" role="alert">${esc(this.error)}</p><footer class="creation-footer"><span>Rascunho nesta aba · #${this.p.id}</span><div>${button('Cancelar', 'creation-cancel', '', 'button ghost')}${this.step ? button('Voltar', 'creation-prev', '', 'button ghost') : ''}${this.step < 3 ? button('Continuar ' + icon('arrow'), 'creation-next', '', 'button primary') : `<button type="submit" class="button primary">${icon('save')} Enviar ao narrador</button>`}</div></footer></form>`;
+    const stage = creationStages[this.step],
+      progress = Math.round((this.step / (creationStages.length - 1)) * 100),
+      phases = [
+        { start: 0, end: 0, label: 'Identidade' },
+        { start: 1, end: 4, label: 'Pontos iniciais' },
+        { start: 5, end: 9, label: 'Pontos bônus' },
+        { start: 10, end: 10, label: 'Revisão' }
+      ];
+    return `${this.step === 0 ? '<section class="page-intro creation-intro"><span class="eyebrow">CRIE SUA NÃO-VIDA</span><h1>Uma escolha de cada vez.</h1><p>Siga a ordem e use todos os pontos. Sua ficha passa pela aprovação do narrador.</p></section>' : '<h1 class="creation-compact-title">Criação de personagem</h1>'}<nav class="creation-steps" aria-label="Fases da criação">${phases.map((phase, index) => `<button type="button" data-create-step="${phase.start}" ${phase.start >= this.step ? 'disabled' : ''} aria-current="${this.step >= phase.start && this.step <= phase.end ? 'step' : 'false'}"><span>${this.step > phase.end ? icon('test') : index + 1}</span><strong>${phase.label}</strong></button>`).join('')}</nav><div class="creation-progress"><span>PASSO ${this.step + 1} DE ${creationStages.length}<strong>${stage.label}</strong></span><div role="progressbar" aria-label="Progresso da criação" aria-valuenow="${progress}" aria-valuemin="0" aria-valuemax="100"><i style="width:${progress}%"></i></div></div><form id="creation-wizard" novalidate><div class="creation-context"><span>${esc(this.p.char || 'Seu personagem')}<small>${esc(this.p.cla || 'Escolha o clã')}</small></span><span>${this.p.generation}ª geração<small>${realMoney(this.p.money)} iniciais</small></span></div>${this.notice ? `<p class="creation-effect-note" role="status">${esc(this.notice)}</p>` : ''}<section class="creation-screen">${stage.phase === 'identity' ? this.identity() : stage.phase === 'review' ? this.review() : this.allocation(stage.phase === 'bonus' || stage.phase === 'traits')}</section><p class="form-error" id="creation-error" role="alert">${esc(this.error)}</p><div id="creation-navigation">${this.navigation()}</div></form>`;
+  }
+  navigation() {
+    const stage = creationStages[this.step],
+      next = nextCreationStep(this.step, this.currentSource(), this.report),
+      problems = creationStepProblems(this.step, this.currentSource(), this.report),
+      corrections = [...new Set(problems.filter((p) => p.step < this.step).map((p) => p.step))],
+      remaining = this.report.totals.bonus.remaining,
+      nextStage = creationStages[next.allowed ? next.target : Math.min(10, this.step + 1)];
+    let label =
+      'Continuar: ' + (nextStage.phase === 'bonus' ? categories[nextStage.key] : nextStage.label);
+    if (next.loop) label = `Distribuir bônus restantes (${remaining})`;
+    if (stage.phase === 'traits') label = 'Escolhas feitas · distribuir bônus';
+    if (this.step === 9 && !next.loop)
+      label = remaining === 0 ? 'Tudo gasto · conferir ficha' : 'Conferir ficha';
+    const help =
+      stage.phase === 'initial'
+        ? `Use os ${this.report.totals[stage.key].budget} pontos desta etapa para continuar.`
+        : stage.phase === 'traits'
+          ? 'Qualidades e defeitos são opcionais. A reserva final de bônus precisa ser toda utilizada.'
+          : stage.phase === 'bonus'
+            ? next.loop
+              ? 'Ainda há bônus na reserva. Faça outra volta para distribuí-los; o envio só libera com zero restante.'
+              : 'A reserva de bônus é compartilhada. Você pode guardar pontos para a próxima categoria.'
+            : '';
+    return `<footer class="creation-footer"><div class="creation-step-feedback" aria-live="polite">${problems.length ? `<p>${esc(problems[0].message)}</p>${corrections.map((index) => button('Reajustar: ' + creationStages[index].label, 'creation-fix', `data-step="${index}"`, 'text-button')).join('')}` : stage.phase === 'initial' ? `<p class="creation-ready">${icon('test')} Todos os pontos desta etapa foram usados.</p>` : stage.phase === 'bonus' ? `<p>${remaining === 0 ? 'Reserva totalmente distribuída.' : remaining + ' PB para distribuir no ciclo.'}</p>` : ''}<small>${help}</small></div><div class="creation-footer-actions">${this.step ? button('Voltar', 'creation-prev', '', 'button ghost') : ''}${this.step === 10 ? `<button type="submit" class="button primary" ${problems.length ? 'disabled' : ''}>${icon('save')} Enviar ao narrador</button>` : button(label + icon('arrow'), 'creation-next', next.allowed ? '' : 'disabled', 'button primary')}</div><div class="creation-draft">${button('Sair da criação', 'creation-cancel', '', 'text-button')}<span>Rascunho nesta aba · #${this.p.id}</span></div></footer>`;
+  }
+  refreshNavigation() {
+    this.update();
+    $('#creation-navigation').innerHTML = this.navigation();
   }
   identity() {
     const c = this.game.character_creation.guided,
       custom = this.plan.clan === 'custom';
-    return `<header class="creation-section-heading"><span class="eyebrow">01 · QUEM ATRAVESSA O VÉU?</span><h2>Um nome e uma linhagem.</h2><p>Os clãs usam as combinações definidas pela sua mesa. Um clã personalizado sempre passa pela sua avaliação com o narrador.</p></header><div class="form-grid">${field('char', 'Nome do personagem', this.source.char, 'text', 'required maxlength="150" autocomplete="off"')}${select('clan', 'Clã', [{ value: '', label: 'Escolha seu clã' }, ...c.clans.map((row) => ({ value: row.id, label: row.name })), { value: 'custom', label: 'Clã personalizado' }], this.plan.clan)}${custom ? field('cla', 'Nome do clã personalizado', this.source.cla || '', 'text', 'required maxlength="80"') : ''}</div>${custom ? `<section class="creation-custom-clan"><h3>Escolha três disciplinas <small>${this.plan.disciplines.length}/3</small></h3><p class="hint">Selecione entre as disciplinas cadastradas. As linhas iniciais são escolhidas abaixo quando necessário.</p><label class="search-field">${icon('search')}<input type="search" data-creation-search="custom" aria-label="Buscar disciplinas para o clã" placeholder="Buscar disciplina" value="${esc(this.query)}"></label><div id="creation-custom-list">${this.customDisciplineList()}</div></section>` : ''}${
+    return `<header class="creation-section-heading"><span class="eyebrow">01 · QUEM ATRAVESSA O VÉU?</span><h2 tabindex="-1">Um nome e uma linhagem.</h2><p>Os clãs usam as combinações definidas pela sua mesa. Um clã personalizado sempre passa pela sua avaliação com o narrador.</p></header><div class="form-grid">${field('char', 'Nome do personagem', this.source.char, 'text', 'required maxlength="150" autocomplete="off"')}${select('clan', 'Clã', [{ value: '', label: 'Escolha seu clã' }, ...c.clans.map((row) => ({ value: row.id, label: row.name })), { value: 'custom', label: 'Clã personalizado' }], this.plan.clan)}${custom ? field('cla', 'Nome do clã personalizado', this.source.cla || '', 'text', 'required maxlength="80"') : ''}</div>${custom ? `<section class="creation-custom-clan"><h3>Escolha três disciplinas <small>${this.plan.disciplines.length}/3</small></h3><p class="hint">Selecione entre as disciplinas cadastradas. As linhas iniciais são escolhidas abaixo quando necessário.</p><label class="search-field">${icon('search')}<input type="search" data-creation-search="custom" aria-label="Buscar disciplinas para o clã" placeholder="Buscar disciplina" value="${esc(this.query)}"></label><div id="creation-custom-list">${this.customDisciplineList()}</div></section>` : ''}${
       this.plan.disciplines.length
         ? `<section class="creation-clan-powers"><h3>Os três dons do seu sangue</h3>${this.plan.disciplines
             .map((id) => {
@@ -101,38 +147,28 @@ export class CreationWizard {
   }
   allocation(bonus) {
     const c = this.game.character_creation.guided,
-      category = bonus ? this.bonusCategory : this.category,
+      stage = creationStages[this.step],
+      category = stage.key,
+      traits = stage.phase === 'traits',
       total = bonus ? this.report.totals.bonus : this.report.totals[category],
-      available = total.budget - total.used;
-    return `<header class="creation-section-heading"><span class="eyebrow">${bonus ? '03 · UM PREÇO PARA CADA ESCOLHA' : '02 · A BASE DO PERSONAGEM'}</span><h2>${bonus ? 'Pontos bônus. Mais possibilidades.' : 'Distribua seus pontos iniciais.'}</h2><p>${bonus ? `Cada aumento custa pontos bônus. Qualidades gastam; defeitos concedem pontos. Todos os traços podem chegar ao nível ${c.max_level}, respeitando limitações pessoais.` : `Atributos partem de ${c.attribute_base}. Talentos, perícias e conhecimentos dividem uma única reserva de ${c.initial.skills} pontos. Antecedentes e disciplinas têm reservas próprias.`}</p></header>${
-      bonus
-        ? `<div class="creation-budget-bonus"><div><span>PONTOS BÔNUS RESTANTES</span><strong class="${available < 0 ? 'expense' : ''}">${available}</strong></div><p>${c.bonus_points} iniciais + ${this.report.totals.bonus.flaws} de defeitos − ${total.used} gastos</p></div><div class="creation-costs">${Object.entries(
-            c.bonus_costs
-          )
-            .map(([key, cost]) => `<span>${names[key]}<strong>${cost} por +1</strong></span>`)
-            .join('')}</div>`
-        : `<div class="creation-initial-budgets">${Object.entries(this.report.totals)
-            .filter(([k]) => k !== 'bonus')
-            .map(
-              ([key, total]) =>
-                `<span class="${total.used === total.budget ? 'complete' : total.used > total.budget ? 'warning' : ''}">${names[key]}<strong>${total.used}/${total.budget}</strong></span>`
-            )
-            .join('')}</div>`
-    }<nav class="creation-categories" aria-label="${bonus ? 'Compras com bônus' : 'Distribuição inicial'}">${Object.entries(
-      { ...categories, ...(bonus ? { traits: 'Qualidades e defeitos' } : {}) }
-    )
-      .map(
-        ([key, label]) =>
-          `<button type="button" data-creation-category="${key}" aria-pressed="${category === key}">${label}</button>`
-      )
-      .join(
-        ''
-      )}</nav>${category === 'traits' ? this.traits() : `<section class="creation-allocation"><div class="section-heading"><h3>${categories[category]}</h3><span class="tag ${available < 0 ? 'red' : ''}">${bonus ? available + ' bônus disponíveis' : available + ' ponto(s) restantes'}</span></div>${category === 'skills' ? `<nav class="creation-categories" aria-label="Grupo de habilidades">${skillKeys.map((key) => `<button type="button" data-creation-skill="${key}" aria-pressed="${key === this.skillCategory}">${labels[key]}</button>`).join('')}</nav><p class="hint">A reserva de ${c.initial.skills} pontos é compartilhada pelos três grupos.</p>` : ''}${(category === 'skills' ? [this.skillCategory] : [category]).map((key) => `<section class="creation-trait-group">${category === 'skills' ? `<h4>${labels[key]}</h4>` : ''}<div class="creation-trait-grid">${this.rows(key, bonus)}</div></section>`).join('')}</section>`}${
-      this.step === 2 && this.report.issues.some((i) => i.stage === 'bonus')
-        ? `<div class="creation-attention" role="status">${this.report.issues
-            .filter((i) => i.stage === 'bonus')
+      available = total.budget - total.used,
+      sequence = creationStages
+        .map((s, index) => ({ ...s, index }))
+        .filter((s) => (bonus ? ['traits', 'bonus'].includes(s.phase) : s.phase === 'initial'));
+    const instructions = {
+      atributes: `Todos começam em ${c.attribute_base}. Distribua mais ${c.initial.atributes} pontos; limite ${c.initial_max.atributes} nesta etapa.`,
+      skills: `Distribua ${c.initial.skills} pontos entre talentos, perícias e conhecimentos. O limite inicial de cada habilidade é ${c.initial_max.skills}.`,
+      precedents: `Distribua ${c.initial.precedents} pontos. Geração e Recursos já atualizam sua ficha automaticamente.`,
+      disciplines: `Distribua exatamente ${c.initial.disciplines} pontos entre os três dons do seu clã. Uma disciplina pode ficar em zero.`
+    };
+    return `<header class="creation-section-heading"><span class="eyebrow">${bonus ? 'SEGUNDA DISTRIBUIÇÃO · BÔNUS' : 'PRIMEIRA DISTRIBUIÇÃO · BASE'}</span><h2 tabindex="-1">${traits ? 'Primeiro, suas qualidades e defeitos.' : bonus ? stage.label + '.' : 'Distribua seus ' + categories[category].toLowerCase() + '.'}</h2><p>${traits ? `Defeitos acrescentam pontos; qualidades consomem pontos. Escolha até ${c.max_flaws} defeitos e depois distribua a reserva entre os traços, na ordem.` : bonus ? `+1 nível custa ${c.bonus_costs[category]} PB. Limite ${c.max_level}, respeitando suas características. Você pode guardar bônus para a próxima categoria.` : instructions[category]}</p></header><ol class="creation-sequence" aria-label="Ordem desta distribuição">${sequence.map((s) => `<li ${s.index === this.step ? 'aria-current="step"' : ''}><button type="button" data-create-step="${s.index}" ${s.index >= this.step ? 'disabled' : ''}>${s.index < this.step ? icon('test') : `<span>${sequence.indexOf(s) + 1}</span>`}${s.phase === 'bonus' ? categories[s.key] : s.label}</button></li>`).join('')}</ol><div class="creation-budget ${available === 0 ? 'complete' : ''} ${available < 0 ? 'warning' : ''}"><div><span>${bonus ? 'BÔNUS RESTANTES NA RESERVA' : 'PONTOS RESTANTES NESTA ETAPA'}</span><strong>${available}</strong></div><div class="creation-budget-track" role="progressbar" aria-label="Pontos gastos" aria-valuemin="0" aria-valuemax="${total.budget}" aria-valuenow="${Math.min(total.budget, Math.max(0, total.used))}"><i style="width:${Math.min(100, total.budget ? (total.used / total.budget) * 100 : 100)}%"></i></div><p>${bonus ? `${c.bonus_points} iniciais + ${total.flaws} de defeitos − ${total.merits} em qualidades − ${total.used - total.merits} em níveis` : `${total.used} de ${total.budget} distribuídos · use todos para liberar a próxima etapa`}</p>${bonus && !traits ? `<small>Reserva única para atributos, habilidades, antecedentes e disciplinas.</small>` : ''}</div>${traits ? this.traits() : `<section class="creation-allocation"><div class="section-heading"><h3>${categories[category]}</h3><span class="tag">${bonus ? c.bonus_costs[category] + ' PB por +1' : 'Limite inicial ' + c.initial_max[category]}</span></div>${category === 'skills' ? `<nav class="creation-categories" aria-label="Grupo de habilidades">${skillKeys.map((key) => `<button type="button" data-creation-skill="${key}" aria-pressed="${key === this.skillCategory}">${labels[key]}</button>`).join('')}</nav><p class="hint">Talentos, perícias e conhecimentos usam a mesma reserva. ${bonus ? 'Todos podem chegar a ' + c.max_level + '.' : 'Os três grupos somam ' + c.initial.skills + ' pontos.'}</p>` : ''}${(category === 'skills' ? [this.skillCategory] : [category]).map((key) => `<section class="creation-trait-group"><div class="creation-trait-grid">${this.rows(key, bonus)}</div></section>`).join('')}</section>`}${
+      bonus && this.report.issues.some((i) => i.stage === 'bonus' && i.key !== 'bonus')
+        ? `<details class="creation-warnings"><summary>Conferir suas escolhas (${this.report.issues.filter((i) => i.stage === 'bonus' && i.key !== 'bonus').length})</summary>${this.report.issues
+            .filter((i) => i.stage === 'bonus' && i.key !== 'bonus')
             .map((i) => `<p>${esc(i.message)}</p>`)
-            .join('')}</div>`
+            .join(
+              ''
+            )}<p>Requisitos de atributos e habilidades podem ser atendidos durante a distribuição dos bônus.</p></details>`
         : ''
     }`;
   }
@@ -165,7 +201,7 @@ export class CreationWizard {
             this.report.totals[bonus ? 'bonus' : category].budget -
             this.report.totals[bonus ? 'bonus' : category].used,
           cost = bonus ? c.bonus_costs[category] : 1;
-        return `<article class="creation-trait-card"><div class="creation-trait-title"><strong>${esc(d.name)}</strong>${button(icon('rules'), 'creation-read', `data-key="${key}" data-id="${d.id}" aria-label="Consultar ${esc(d.name)}"`, 'icon-button')}</div><div class="creation-points" aria-label="Nível ${value} de ${d.name}">${Array.from({ length: 5 }, (_, i) => `<i class="${i < value ? (i >= initial ? 'bonus' : 'filled') : ''}"></i>`).join('')}</div><div class="creation-trait-controls"><button type="button" data-creation-change="-1" data-key="${key}" data-id="${d.id}" aria-label="Diminuir ${esc(d.name)}" ${forced || (bonus ? extra <= 0 : initial <= min) ? 'disabled' : ''}>−</button><output>${value}</output><button type="button" data-creation-change="1" data-key="${key}" data-id="${d.id}" aria-label="Aumentar ${esc(d.name)}" ${forced || value >= cap || remaining < cost ? 'disabled' : ''}>+</button></div><small>${forced ? 'Valor fixado por característica' : bonus ? `${initial} inicial + ${extra} comprado${key === 'disciplines' && e.discipline_grants[d.id] ? ' + ' + e.discipline_grants[d.id] + ' de qualidade' : ''} · ${cost} bônus por ponto` : 'Limite inicial ' + cap}${key === 'precedents' && d.creation_effect === 'generation' ? ` · ${c.generation_base - amount(this.p, key, d.id)}ª geração` : key === 'precedents' && d.creation_effect === 'capital' ? ' · ' + realMoney(c.capital_by_level[amount(this.p, key, d.id)]) : ''}</small></article>`;
+        return `<article class="creation-trait-card"><div class="creation-trait-title"><strong>${esc(d.name)}</strong>${button(icon('rules'), 'creation-read', `data-key="${key}" data-id="${d.id}" aria-label="Consultar ${esc(d.name)}"`, 'icon-button')}</div><div class="creation-points" aria-label="Nível ${value} de ${d.name}">${Array.from({ length: 5 }, (_, i) => `<i class="${i < value ? (i >= initial ? 'bonus' : 'filled') : ''}"></i>`).join('')}</div><div class="creation-trait-controls"><button type="button" data-creation-change="-1" data-key="${key}" data-id="${d.id}" aria-label="Diminuir ${esc(d.name)}" ${forced || (bonus ? extra <= 0 : initial <= min) ? 'disabled' : ''}>−</button><output aria-live="polite">${value}</output><button type="button" data-creation-change="1" data-key="${key}" data-id="${d.id}" aria-label="Aumentar ${esc(d.name)}" ${forced || value >= cap || remaining < cost ? 'disabled' : ''}>+</button></div><small>${forced ? 'Valor fixado por característica' : bonus ? `${initial} inicial + ${extra} comprado${key === 'disciplines' && e.discipline_grants[d.id] ? ' + ' + e.discipline_grants[d.id] + ' de qualidade' : ''} · ${cost} bônus por ponto` : 'Limite inicial ' + cap}${key === 'precedents' && d.creation_effect === 'generation' ? ` · ${c.generation_base - amount(this.p, key, d.id)}ª geração` : key === 'precedents' && d.creation_effect === 'capital' ? ' · ' + realMoney(c.capital_by_level[amount(this.p, key, d.id)]) : ''}</small></article>`;
       })
       .join('');
   }
@@ -213,7 +249,7 @@ export class CreationWizard {
   }
   review() {
     const { totals, derived, issues, warnings } = this.report;
-    return `<header class="creation-section-heading"><span class="eyebrow">04 · ANTES DO ABRAÇO</span><h2>Confira sua nova história.</h2><p>O envio cria uma proposta. Só o narrador pode aprovar o personagem e liberar sua ficha.</p></header><div class="creation-review-highlights"><span>GERAÇÃO<strong>${derived.generation}ª</strong></span><span>CAPITAL INICIAL<strong>${realMoney(derived.money)}</strong></span><span>BÔNUS UTILIZADOS<strong>${totals.bonus.used}/${totals.bonus.budget}</strong></span></div>${issues.length ? `<div class="creation-attention"><h3>Ajuste antes de enviar</h3>${issues.map((i) => `<p>${esc(i.message)}</p>`).join('')}</div>` : '<p class="creation-pass">' + icon('test') + ' Distribuição conferida. Tudo pronto para a avaliação.</p>'}<div class="creation-review-grid">${Object.entries(
+    return `<header class="creation-section-heading"><span class="eyebrow">04 · ANTES DO ABRAÇO</span><h2 tabindex="-1">Confira sua nova história.</h2><p>O envio cria uma proposta. Só o narrador pode aprovar o personagem e liberar sua ficha.</p></header><div class="creation-review-highlights"><span>GERAÇÃO<strong>${derived.generation}ª</strong></span><span>CAPITAL INICIAL<strong>${realMoney(derived.money)}</strong></span><span>BÔNUS UTILIZADOS<strong>${totals.bonus.used}/${totals.bonus.budget}</strong></span></div>${issues.length ? `<div class="creation-attention"><h3>Ajuste antes de enviar</h3>${issues.map((i) => `<p>${esc(i.message)}</p>`).join('')}</div>` : '<p class="creation-pass">' + icon('test') + ' Distribuição conferida. Tudo pronto para a avaliação.</p>'}<div class="creation-review-grid">${Object.entries(
       categories
     )
       .map(
@@ -233,21 +269,50 @@ export class CreationWizard {
   }
   draw({ top = false } = {}) {
     const host = $('#main-content');
+    const active = document.activeElement;
+    const control = active?.dataset.creationChange
+      ? { change: active.dataset.creationChange, key: active.dataset.key, id: active.dataset.id }
+      : null;
     host.innerHTML = this.render();
     this.bind();
+    if (control && !top)
+      host
+        .querySelector(
+          `[data-creation-change="${control.change}"][data-key="${control.key}"][data-id="${control.id}"]`
+        )
+        ?.focus({ preventScroll: true });
     if (top) host.scrollIntoView({ block: 'start', behavior: 'instant' });
   }
-  changeStep(index) {
+  changeStep(index, { forward = false } = {}) {
+    if (forward) {
+      this.update();
+      const next = nextCreationStep(this.step, this.currentSource(), this.report);
+      if (!next.allowed || next.target !== index) return false;
+      this.notice = next.loop
+        ? 'Mais uma volta para gastar o restante. Suas escolhas estão mantidas.'
+        : '';
+    } else {
+      if (!canReturnToCreationStep(this.step, index)) return false;
+      this.notice = '';
+    }
     this.error = '';
-    this.step = Math.max(0, Math.min(3, index));
+    this.step = index;
     this.query = '';
+    this.skillCategory = 'talents';
+    this.saveDraft();
     this.draw({ top: true });
+    $('#creation-wizard h2')?.focus({ preventScroll: true });
+    return true;
   }
   bind() {
     const form = $('#creation-wizard');
-    document
-      .querySelectorAll('[data-create-step]')
-      .forEach((b) => (b.onclick = () => this.changeStep(Number(b.dataset.createStep))));
+    document.querySelectorAll('[data-create-step]').forEach(
+      (b) =>
+        (b.onclick = (event) => {
+          event.stopPropagation();
+          this.changeStep(Number(b.dataset.createStep));
+        })
+    );
     form.oninput = (event) => {
       const input = event.target;
       if (input.dataset.creationSearch) {
@@ -279,6 +344,7 @@ export class CreationWizard {
           .filter((t) => t.trim())
           .map((description, id) => ({ id, description }));
       this.saveDraft();
+      this.refreshNavigation();
     };
     form.onchange = (event) => {
       const input = event.target;
@@ -311,6 +377,7 @@ export class CreationWizard {
         if (input.value === '') delete this.plan.primary_paths[id];
         else this.plan.primary_paths[id] = Number(input.value);
         this.saveDraft();
+        this.refreshNavigation();
       } else if (input.dataset.customDiscipline) {
         const id = Number(input.dataset.customDiscipline);
         if (input.checked && this.plan.disciplines.length < 3) this.plan.disciplines.push(id);
@@ -332,7 +399,7 @@ export class CreationWizard {
       if (!b || b.disabled) return;
       event.stopPropagation();
       if (b.dataset.creationChange) {
-        const stage = this.step === 2 ? 'bonus' : 'initial',
+        const stage = creationStages[this.step].phase === 'bonus' ? 'bonus' : 'initial',
           key = b.dataset.key,
           id = b.dataset.id;
         this.plan[stage][key][id] =
@@ -345,17 +412,17 @@ export class CreationWizard {
       } else if (b.dataset.creationSkill) {
         this.skillCategory = b.dataset.creationSkill;
         this.draw();
-      } else if (b.dataset.creationCategory) {
-        if (this.step === 2) this.bonusCategory = b.dataset.creationCategory;
-        else this.category = b.dataset.creationCategory;
-        this.query = '';
-        this.draw();
       } else if (b.dataset.creationTrait) {
         const id = Number(b.dataset.creationTrait);
         if (this.plan.traits.some((r) => r.id === id))
           this.plan.traits = this.plan.traits.filter((r) => r.id !== id);
         else this.plan.traits.push({ id, notes: '' });
+        const before = JSON.stringify(this.plan.initial);
         this.plan = reconcileCreation(this.plan, this.game);
+        this.notice =
+          before !== JSON.stringify(this.plan.initial)
+            ? 'Esta característica devolveu pontos iniciais. Use Reajustar abaixo para redistribuí-los; as outras escolhas foram mantidas.'
+            : '';
         this.saveDraft();
         this.draw();
       } else if (b.dataset.action === 'creation-read')
@@ -364,7 +431,11 @@ export class CreationWizard {
           b.dataset.key,
           this.game
         );
-      else if (b.dataset.action === 'creation-next') this.changeStep(this.step + 1);
+      else if (b.dataset.action === 'creation-next') {
+        this.update();
+        const next = nextCreationStep(this.step, this.currentSource(), this.report);
+        this.changeStep(next.target, { forward: true });
+      } else if (b.dataset.action === 'creation-fix') this.changeStep(Number(b.dataset.step));
       else if (b.dataset.action === 'creation-prev') this.changeStep(this.step - 1);
       else if (b.dataset.action === 'creation-cancel') {
         delete document.body.dataset.pendingEditor;
@@ -374,7 +445,7 @@ export class CreationWizard {
     form.onsubmit = (event) => {
       event.preventDefault();
       event.stopPropagation();
-      if (this.busy) return;
+      if (this.busy || this.step !== 10) return;
       this.update();
       const problems = [...this.report.issues];
       if (!this.source.char?.trim())
@@ -389,7 +460,7 @@ export class CreationWizard {
       }
       modal(
         'Enviar personagem para avaliação?',
-        `<p><strong>${esc(this.p.char)}</strong> · ${esc(this.p.cla)} · ${this.p.generation}ª geração</p><p>Capital inicial: ${realMoney(this.p.money)}. A ficha só será liberada depois da aprovação do narrador.</p>${this.report.totals.bonus.remaining ? `<p class="creation-attention">Restam ${this.report.totals.bonus.remaining} pontos bônus. Ao enviar assim, você aceita encerrar a criação sem usá-los; eles não viram XP.</p>` : ''}<label class="checkbox"><input type="checkbox" name="confirmed" required> Conferi os pontos e quero enviar esta ficha.</label>`,
+        `<p><strong>${esc(this.p.char)}</strong> · ${esc(this.p.cla)} · ${this.p.generation}ª geração</p><p>Capital inicial: ${realMoney(this.p.money)}. A ficha só será liberada depois da aprovação do narrador.</p><p>Todos os pontos iniciais e bônus foram utilizados.</p><label class="checkbox"><input type="checkbox" name="confirmed" required> Conferi os pontos e quero enviar esta ficha.</label>`,
         async () => {
           if (this.busy) return;
           this.busy = true;

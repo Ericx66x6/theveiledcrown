@@ -85,6 +85,8 @@ test('v9.2: valores iniciais e bônus separados, habilidades compartilham 27 e p
 test('v9.2: disciplina no nível zero é mantida; linha primária acompanha sem consumir o pool duas vezes', () => {
   const source = creationSource(game, 'giovanni');
   source.creation.bonus.disciplines = {};
+  source.creation.bonus.precedents[background('Aliados')] = 5;
+  source.creation.bonus.precedents[background('Contatos')] = 4;
   const { character, report } = evaluateCreation(source, game);
   assert.equal(character.disciplines.find((d) => d.id === 5).nivel, 0);
   assert.equal(character.disciplines.find((d) => d.id === 18).nivel, 1);
@@ -185,11 +187,14 @@ test('v9.2: Beijo de Procuração concede pontos reais, mas não cobra pool inic
     Object.keys(source.creation.bonus).map((k) => [k, {}])
   );
   source.creation.traits = [{ id: trait('Beijo de Procuração — 8 Pontos') }];
+  source.creation.bonus.atributes[0] = 1;
+  source.creation.bonus.precedents[background('Aliados')] = 3;
   const r = evaluateCreation(source, game);
   assert.equal(r.report.issues.length, 0);
   assert.equal(r.character.disciplines.find((d) => d.id === 5).nivel, 1);
   assert.equal(r.character.disciplines.find((d) => d.id === 3).nivel, 1);
-  assert.equal(r.report.totals.bonus.used, 8);
+  assert.equal(r.report.totals.bonus.used, 15);
+  assert.equal(r.report.totals.bonus.merits, 8);
   assert.equal(r.report.totals.disciplines.used, 3);
   assert.equal(r.character.disciplines.length, 5);
 });
@@ -221,11 +226,10 @@ test('v9.2: API recalcula tudo, impede estouros e aprovação conserva capital s
   await rejected(() => f.request('/api/submissions', 'POST', { character: bad }, f.player.token));
   const legacy = blank(game, 678901);
   Object.assign(legacy, { char: 'Legado', player: 'Jogador', cla: 'Livre' });
-  const old = await f.request('/api/submissions', 'POST', { character: legacy }, f.player.token);
-  assert.ok(old.report.issues.some((i) => i.key === 'creation'));
   await rejected(() =>
-    f.request('/api/submissions/' + old.id + '/approve', 'POST', { revision: old._revision })
+    f.request('/api/submissions', 'POST', { character: legacy }, f.player.token)
   );
+  assert.ok(creationReport(legacy, game).issues.some((i) => i.key === 'creation'));
 });
 test('v9.2: pontos, linhas e antecedentes sobrevivem aos documentos JSON separados', async () => {
   const f = await fixture(),
@@ -322,7 +326,7 @@ test('v9.2: assistente começa com atributos em um, identidade sem geração liv
   assert.ok(!wizard.render().includes('name="generation"'));
   wizard.step = 1;
   assert.ok(wizard.render().includes('data-creation-change="1"'));
-  wizard.step = 3;
+  wizard.step = 10;
   assert.ok(wizard.render().includes('História e motivações'));
   assert.ok(wizard.render().includes('Ambição (opcional)'));
 });
@@ -344,4 +348,47 @@ test('v9.2: limites permanentes das características também são respeitados na
   const p = evaluateCreation(source, game).character;
   p.xp = 1000;
   assert.throws(() => upgradeQuote(p, game, 'atributes', 5, 1));
+});
+test('criação obrigatória: API recusa reservas incompletas, descarte de bônus e retirada do plano', async () => {
+  const f = await fixture();
+  for (const [key, family] of [
+    ['atributes', 'atributes'],
+    ['talents', 'talents'],
+    ['precedents', 'precedents'],
+    ['disciplines', 'disciplines']
+  ]) {
+    const source = creationSource(game);
+    source.creation.initial[family][Object.keys(source.creation.initial[family])[0]]--;
+    await rejected(() =>
+      f.request('/api/submissions', 'POST', { character: source }, f.player.token)
+    );
+  }
+  const source = creationSource(game);
+  source.creation.bonus.precedents[background('Aliados')]--;
+  await rejected(() =>
+    f.request('/api/submissions', 'POST', { character: source }, f.player.token)
+  );
+  source.creation.bonus.precedents[background('Aliados')]++;
+  const s = await f.request('/api/submissions', 'POST', { character: source }, f.player.token);
+  source.creation.bonus.precedents[background('Aliados')]--;
+  await rejected(() =>
+    f.request(
+      '/api/submissions/' + s.id,
+      'PATCH',
+      { character: source, revision: s._revision },
+      f.player.token
+    )
+  );
+  delete source.creation;
+  await rejected(() =>
+    f.request(
+      '/api/submissions/' + s.id,
+      'PATCH',
+      { character: source, revision: s._revision },
+      f.player.token
+    )
+  );
+  const unchanged = await f.request('/api/submissions/' + s.id, 'GET', {}, f.player.token);
+  assert.equal(unchanged._revision, s._revision);
+  assert.equal(unchanged.report.totals.bonus.remaining, 0);
 });

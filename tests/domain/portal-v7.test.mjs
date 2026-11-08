@@ -5,6 +5,7 @@ import { CampaignStore } from '../../core/store.js';
 import { PortalService } from '../../core/portal-service.js';
 import { documentSeed, blank } from '../../core/model.js';
 import { gameSettings } from '../../core/settings.js';
+import { creationSource } from './creation-fixture.mjs';
 import { workspaceExport, validateWorkspace } from '../../core/workspace.js';
 import { workspaceDocuments, assembleDocuments } from '../../core/documents.js';
 const game = gameSettings(
@@ -197,8 +198,7 @@ test('v7: apagar notificações não altera a caixa dos demais narradores', asyn
     username: 'co-narrador',
     password: 'senha-teste-123'
   });
-  const p = blank(game, 456789);
-  Object.assign(p, { char: 'Proposta', player: 'Marina', cla: 'Livre' });
+  const p = creationSource(game, 'brujah', 456789);
   await f.call('/api/submissions', 'POST', { character: p }, f.one.token);
   const notice = (await f.call('/api/notifications'))[0];
   await rejected(() => f.call('/api/notifications/' + notice.id, 'DELETE', {}, f.two.token), 404);
@@ -414,8 +414,7 @@ test('v7: apagar log financeiro não muda saldo e respeita revisão e permissão
 });
 test('v7: proposta pode ser apagada pelo autor sem remover ficha aprovada', async () => {
   const f = await fixture(),
-    p = blank(game, 456789);
-  Object.assign(p, { char: 'Nova pessoa', player: 'Marina', cla: 'Livre' });
+    p = creationSource(game, 'brujah', 456789);
   const proposal = await f.call('/api/submissions', 'POST', { character: p }, f.one.token);
   await rejected(
     () =>
@@ -428,9 +427,7 @@ test('v7: proposta pode ser apagada pelo autor sem remover ficha aprovada', asyn
     404
   );
   const approved = await f.call('/api/submissions/' + proposal.id + '/approve', 'POST', {
-    revision: proposal._revision,
-    override: true,
-    reason: 'Proposta legada conferida manualmente para testar a exclusão.'
+    revision: proposal._revision
   });
   await f.call(
     '/api/submissions/' + proposal.id,

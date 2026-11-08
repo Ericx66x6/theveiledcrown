@@ -1,6 +1,13 @@
 .creation-intro {
   max-width: 840px;
 }
+.creation-compact-title {
+  font:
+    25px Georgia,
+    serif;
+  color: #f2dce5;
+  margin: 0 0 16px;
+}
 .creation-steps {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -32,6 +39,171 @@
   color: #fff0f4;
   background: linear-gradient(110deg, #4b1228, #150d16);
   box-shadow: 0 0 24px #c5163322;
+}
+.creation-steps button:disabled,
+.creation-sequence button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+.creation-steps button[aria-current='step']:disabled,
+.creation-sequence [aria-current='step'] button:disabled {
+  opacity: 1;
+}
+.creation-progress {
+  margin: 24px 0 4px;
+}
+.creation-progress > span {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: #bca4b5;
+}
+.creation-progress strong {
+  font-size: 13px;
+  letter-spacing: 0;
+  text-align: right;
+  color: #f5d4e4;
+}
+.creation-progress > div,
+.creation-budget-track {
+  height: 5px;
+  background: #412035;
+  border-radius: 6px;
+  margin-top: 12px;
+  overflow: hidden;
+}
+.creation-progress i,
+.creation-budget-track i {
+  display: block;
+  height: 100%;
+  max-width: 100%;
+  background: linear-gradient(90deg, #8c163b, #ff5b8f);
+  transition: width 0.25s ease;
+}
+.creation-sequence {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  list-style: none;
+  margin: 0 0 18px;
+}
+.creation-sequence button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 9px 12px;
+  color: #bca4b5;
+  border: 1px solid #503047;
+  border-radius: 10px;
+  background: #140d16;
+  font-size: 12px;
+}
+.creation-sequence [aria-current='step'] button {
+  background: #5b1430;
+  border-color: #e83c70;
+  color: #fff2f8;
+}
+.creation-sequence .icon {
+  width: 16px;
+  height: 16px;
+}
+.creation-sequence button > span {
+  font-size: 10px;
+  color: #eaa6c7;
+}
+.creation-budget {
+  border: 1px solid #ab2a51;
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin: 20px 0;
+  background: radial-gradient(ellipse at top right, #7c183740, transparent 65%), #190d18;
+}
+.creation-budget > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+.creation-budget span {
+  color: #e1b0c8;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+.creation-budget strong {
+  color: #ff8eb0;
+  font:
+    48px Georgia,
+    serif;
+}
+.creation-budget p {
+  color: #d0b3c5;
+  font-size: 13px;
+  margin: 12px 0 0;
+  line-height: 1.6;
+}
+.creation-budget small {
+  display: block;
+  color: #bca4b5;
+  margin-top: 8px;
+  font-size: 12px;
+}
+.creation-budget.complete {
+  border-color: #527264;
+}
+.creation-budget.complete strong {
+  color: #a3d4b8;
+}
+.creation-budget.complete i {
+  background: #639b7b;
+}
+.creation-budget.warning {
+  border-color: #f05b6d;
+}
+.creation-step-feedback {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+.creation-step-feedback p {
+  margin: 0 0 5px;
+  color: #e5b9cc;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.creation-step-feedback small {
+  color: #ad94a5;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.creation-step-feedback .creation-ready {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  color: #a3d4b8;
+}
+.creation-step-feedback .text-button {
+  min-height: 44px;
+  margin-right: 12px;
+}
+.creation-footer .creation-draft {
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #af8f9f;
+}
+.creation-footer .creation-footer-actions {
+  flex: 0 1 auto;
+  flex-wrap: nowrap;
+}
+.creation-footer .button.primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 .creation-context {
   display: flex;
@@ -281,6 +453,7 @@
 }
 .creation-footer {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 18px;
@@ -549,6 +722,86 @@
   }
 }
 @media (max-width: 600px) {
+  .creation-steps,
+  .creation-sequence {
+    display: none;
+  }
+  .creation-compact-title {
+    font-size: 20px;
+    margin-bottom: 12px;
+  }
+
+  .creation-intro h1 {
+    font-size: 32px;
+  }
+  .creation-intro > p {
+    font-size: 13px;
+  }
+  .creation-progress {
+    margin-top: 16px;
+  }
+  .creation-sequence {
+    gap: 5px;
+  }
+  .creation-sequence button {
+    padding: 8px 9px;
+    font-size: 10px;
+    gap: 5px;
+  }
+  .creation-budget {
+    padding: 14px 16px;
+  }
+  .creation-budget strong {
+    font-size: 40px;
+  }
+  .creation-budget span {
+    max-width: 175px;
+    font-size: 10px;
+    line-height: 1.6;
+  }
+  body:has(#creation-wizard) .mobile-bottom {
+    display: none;
+  }
+  #creation-navigation {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+  }
+  .creation-footer {
+    background: #100b11f5;
+    border: 1px solid #5d3049;
+    border-radius: 14px;
+    padding: 12px 12px max(12px, env(safe-area-inset-bottom, 0px));
+    gap: 10px;
+    box-shadow: 0 -8px 30px #08060bcc;
+    backdrop-filter: blur(12px);
+  }
+  .creation-footer .creation-footer-actions {
+    display: flex;
+    width: 100%;
+  }
+  .creation-footer-actions .primary {
+    flex: 1;
+    min-width: 0;
+    white-space: normal;
+    line-height: 1.5;
+    min-height: 48px;
+  }
+  .creation-footer .creation-step-feedback {
+    display: block;
+    flex-basis: 100%;
+  }
+  .creation-step-feedback > small {
+    display: none;
+  }
+  .creation-step-feedback p {
+    font-size: 11px;
+    margin: 0;
+  }
+  .creation-draft .text-button {
+    min-height: 32px;
+    font-size: 11px;
+  }
   .creation-steps {
     gap: 6px;
   }
@@ -559,21 +812,36 @@
     font-size: 10px;
     line-height: 1.5;
   }
+  .creation-section-heading {
+    margin: 12px 0 18px;
+  }
+  .creation-section-heading p {
+    line-height: 1.6;
+    margin-bottom: 0;
+  }
   .creation-steps button > span {
     height: 26px;
     flex-basis: 26px;
     width: 26px;
   }
   .creation-context {
-    padding: 12px 0;
-    margin-bottom: 18px;
+    padding: 8px 0;
+    margin-bottom: 12px;
     font-size: 13px;
   }
   .creation-context small {
     font-size: 11px;
+    margin-top: 4px;
+  }
+  .creation-effect-note {
+    padding: 10px 12px;
+    margin: 12px 0;
+    font-size: 12px;
+    line-height: 1.5;
   }
   .creation-section-heading h2 {
-    font-size: 28px;
+    font-size: 26px;
+    margin: 8px 0;
   }
   .creation-section-heading p {
     font-size: 13px;

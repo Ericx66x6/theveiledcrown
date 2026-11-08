@@ -73,6 +73,22 @@ export function reconcileCreation(plan, game) {
     } else if (next.initial.atributes[d.id] < c.attribute_base)
       next.initial.atributes[d.id] = c.attribute_base;
   }
+  // Structural traits can lower a cap after the initial distribution. Refund the
+  // affected allocations; the wizard sends the player back to spend them again.
+  for (const [key, caps, grants] of [
+    ['atributes', e.attribute_caps, {}],
+    ['disciplines', e.discipline_caps, e.discipline_grants]
+  ]) {
+    for (const [id, cap] of Object.entries(caps)) {
+      if (key === 'disciplines' && !next.disciplines.includes(Number(id))) continue;
+      const limit = Math.max(0, cap - (grants[id] || 0));
+      next.initial[key][id] = Math.min(next.initial[key][id] || 0, limit);
+      next.bonus[key][id] = Math.min(
+        next.bonus[key][id] || 0,
+        Math.max(0, limit - next.initial[key][id])
+      );
+    }
+  }
   return next;
 }
 function cleanPlan(source, game) {
@@ -149,7 +165,8 @@ export function evaluateCreation(source, game) {
     effects = creationConstraints(plan, game),
     issues = [],
     warnings = [],
-    issue = (key, message, stage = 'review') => issues.push({ key, message, stage });
+    issue = (key, message, stage = 'review', details = {}) =>
+      issues.push({ key, message, stage, ...details });
   const clan = c.clans.find((row) => row.id === plan.clan);
   if (!clan && plan.clan !== 'custom')
     issue('clan', 'Escolha um clã ou a opção Clã personalizado.', 'identity');
@@ -297,7 +314,8 @@ export function evaluateCreation(source, game) {
         issue(
           'caracteristics',
           `${d.name} exige ${game[r.key].find((x) => x.id === r.id)?.name} ${r.value}.`,
-          'bonus'
+          'bonus',
+          { requires: family(r.key) }
         );
     for (const id of e.forbidden_disciplines || [])
       if ((p.disciplines.find((d) => d.id === id)?.nivel || 0) > 0)
@@ -369,10 +387,11 @@ export function evaluateCreation(source, game) {
       `Faltam ${bonusUsed - available} pontos bônus. Reduza compras ou escolha um defeito válido.`,
       'bonus'
     );
-  // Keeping unused bonus points is explicit and never converts them into XP.
   if (bonusUsed < available)
-    warnings.push(
-      `${available - bonusUsed} ponto(s) bônus não utilizados. Eles não viram XP e não poderão ser gastos depois da aprovação.`
+    issue(
+      'bonus',
+      `Distribua os ${available - bonusUsed} ponto(s) bônus restantes antes de enviar a ficha.`,
+      'bonus'
     );
   const report = {
     guided: true,

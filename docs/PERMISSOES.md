@@ -60,8 +60,8 @@ O narrador pode criar, mover e remover posições de personagens ativos. Cada jo
 
 **Testar como jogador** cria um workspace isolado e uma conta temporária com papel de jogador, vinculada somente à ficha de teste. Não muda o papel do narrador, sua senha ou seus vínculos na campanha real. O teste não recebe notas privadas, murais pessoais, mensagens ou contas de jogadores reais. A navegação administrativa permanece bloqueada no servidor e no cliente.
 
-## Criação e leitura (9.2)
+## Criação e leitura (9.2.1)
 
-Jogadores distribuem os pontos iniciais e bônus em uma proposta; não alteram os custos do catálogo, não digitam livremente geração/XP/capital e não aprovam personagens. O servidor reconstrói a ficha pelas escolhas, valida limites e calcula Geração e Recursos. Qualidades e defeitos usam os pontos bônus. Um clã personalizado continua dependendo da aprovação manual.
+Jogadores distribuem os pontos iniciais e bônus em uma proposta; não alteram os custos do catálogo, não digitam livremente geração/XP/capital e não aprovam personagens. O servidor reconstrói a ficha pelas escolhas, valida limites, exige gasto integral das reservas e calcula Geração e Recursos. Com o assistente ativo, jogadores não podem enviar nem reenviar uma ficha removendo o plano de pontos. Qualidades e defeitos usam os pontos bônus. Um clã personalizado continua dependendo da aprovação manual.
 
 O narrador consulta o livro sem abrir edição; Gerenciar livro habilita os formulários. Continua podendo transcrever fichas, ajustar propostas e aprovar exceções justificadas. Atualizar regras não recalcula fichas antigas nem concede capital novamente. Propostas legadas sem etapas registradas precisam de conferência manual.

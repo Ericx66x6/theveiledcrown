@@ -17,6 +17,8 @@ function own(s, a) {
     fail('Esta proposta pertence a outro jogador.', 403);
 }
 function sanitizeCharacter(source, d, account, narrator = false) {
+  if (!narrator && d.game.character_creation.guided.enabled && !source?.creation)
+    fail('Use o passo a passo de criação e distribua todos os pontos antes de enviar.');
   if (source?.creation && !narrator) {
     const result = evaluateCreation({ ...source, player: account.display_name }, d.game);
     if (result.report.issues.length) fail(result.report.issues[0].message);

@@ -1,6 +1,6 @@
-# Atualizar para A Coroa Velada 9.2 · Beta
+# Atualizar para A Coroa Velada 9.2.1 · Beta
 
-A versão 9.2 usa seus serviços atuais: GitHub, API Node.js 24 no Render, Supabase e Vercel. **Não há SQL, bucket ou variável obrigatória nova.** Para domínio próprio, há uma variável pública opcional para o compartilhamento. As contas, fichas, campanhas e imagens atuais continuam no mesmo Supabase.
+A versão 9.2.1 usa seus serviços atuais: GitHub, API Node.js 24 no Render, Supabase e Vercel. **Não há SQL, bucket ou variável obrigatória nova.** Para domínio próprio, há uma variável pública opcional para o compartilhamento. As contas, fichas, campanhas e imagens atuais continuam no mesmo Supabase.
 
 ## 1. Faça um backup e envie o código completo
 
@@ -15,7 +15,7 @@ Esta entrega tem mais de 100 arquivos; o GitHub limita o upload pelo navegador a
 3. Abra a pasta clonada pelo **Show in Explorer**.
 4. Copie todo o conteúdo extraído de `theveiledcrown` para essa pasta e confirme a substituição. Inclua os arquivos iniciados por ponto, como `.gitignore` e `.env.render.example`.
 5. Apague um eventual **`vercel.json` antigo**. O projeto usa somente **`vercel.mjs`**. Não apague a pasta `.git` do checkout.
-6. No Desktop, revise as alterações, escreva `Beta 9.2 — posições no mapa e jogador de testes`, faça **Commit to main** e depois **Push origin**.
+6. No Desktop, revise as alterações, escreva `Beta 9.2.1 — criação em etapas obrigatórias`, faça **Commit to main** e depois **Push origin**.
 
 Se preferir o navegador, envie primeiro `client`, `core`, `shared`, `server`, `tools` e `data` em um commit; depois envie os outros arquivos e pastas. Faça os deploys finais somente depois que o pacote inteiro estiver no GitHub. Não envie o ZIP fechado, `node_modules`, `dist`, `.qa`, `.git` ou um arquivo `.env` com credenciais.
 
@@ -33,7 +33,7 @@ Mantenha o serviço existente e confira:
 
 Mantenha suas variáveis atuais: `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_IMAGE_BUCKET`, `BOOTSTRAP_TOKEN`, `NODE_ENV`, `NODE_VERSION`, `TRUST_PROXY` e `ALLOWED_ORIGINS`. A chave privada continua somente no Render. Confira `TRUST_PROXY=1` e o domínio de produção do Vercel em `ALLOWED_ORIGINS`.
 
-Use **Manual Deploy → Deploy latest commit** se o deploy automático estiver desligado. Aguarde **Live** e abra a URL do Render seguida de `/api/health`. A resposta precisa conter **`"version":"9.2.0"`**.
+Use **Manual Deploy → Deploy latest commit** se o deploy automático estiver desligado. Aguarde **Live** e abra a URL do Render seguida de `/api/health`. A resposta precisa conter **`"version":"9.2.1"`**.
 
 ## 3. Atualize o frontend no Vercel
 
@@ -48,9 +48,9 @@ Mantenha `vercel.mjs` e a variável **`COROA_API_BASE` com a URL HTTPS atual do 
 | Output | `dist` |
 | Node | 24.x |
 
-Após a API 9.2 ficar Live, publique o commit completo no Vercel. Se o Vercel compilou um upload incompleto ou publicou antes do Render terminar, faça **Redeploy**. Um aviso de que `engines` escolheu Node 24 em vez da versão configurada no painel não é erro; selecionar 24.x no painel deixa as configurações alinhadas.
+Após a API 9.2.1 ficar Live, publique o commit completo no Vercel. Se o Vercel compilou um upload incompleto ou publicou antes do Render terminar, faça **Redeploy**. Um aviso de que `engines` escolheu Node 24 em vez da versão configurada no painel não é erro; selecionar 24.x no painel deixa as configurações alinhadas.
 
-Não crie outro narrador e não importe o backup para efetuar a atualização. Abra seu domínio normal e confira o indicador **V9.2 BETA**. Se houver um erro de rota nova, confira primeiro se o Render já informa versão 9.2.0.
+Não crie outro narrador e não importe o backup para efetuar a atualização. Abra seu domínio normal e confira o indicador **V9.2.1 BETA**. Se houver um erro de rota nova, confira primeiro se o Render já informa versão 9.2.1.
 
 ## 4. Personalize sua campanha
 
@@ -148,9 +148,9 @@ Referências: [GitHub — envio de arquivos](https://docs.github.com/pt/reposito
 Não exige SQL, buckets, contas ou variáveis novas. Atualize o **Render antes do Vercel**, pois o novo botão depende da nova API.
 
 
-## Criação guiada da versão 9.2
+## Criação guiada da versão 9.2.1
 
-O jogador usa **Meus personagens → Criar personagem**. A ficha é montada em quatro telas: identidade e clã, distribuição inicial, pontos bônus e revisão. Ambição, desejo, história e convicções são opcionais. A ficha só entra no jogo depois de **Avaliar fichas → Aprovar personagem**.
+O jogador usa **Meus personagens → Criar personagem**. A criação tem 11 passos: identidade → atributos → habilidades → antecedentes → disciplinas → qualidades e defeitos → bônus em atributos → bônus em habilidades → bônus em antecedentes → bônus em disciplinas → revisão. Cada tela cuida de uma distribuição; avançar exige seguir a ordem. Ambição, desejo, história e convicções são opcionais. A ficha só entra no jogo depois de **Avaliar fichas → Aprovar personagem**.
 
 - Atributos começam em 1, com mais 15 pontos e limite inicial 4.
 - Talentos, perícias e conhecimentos compartilham 27 pontos, com limite inicial 3.
@@ -160,14 +160,16 @@ O jogador usa **Meus personagens → Criar personagem**. A ficha é montada em q
 - Geração começa em 13 e diminui um por ponto no antecedente, até 8. Recursos fornece o capital inicial uma única vez: 0 → R$ 0; 1 → R$ 1.000; 2 → R$ 8.000; 3 → R$ 50.000; 4 → R$ 500.000; 5 → R$ 5.000.000. Não há renda periódica automática.
 - Giovanni escolhe a linha inicial de Necromancia; Tremere escolhe a de Taumaturgia. A linha acompanha a pontuação na criação, sem consumir a reserva duas vezes. Na evolução com XP, disciplina e linha primária permanecem vinculadas e a compra é cobrada uma vez.
 - **Clã personalizado** permite digitar o nome e escolher três disciplinas cadastradas. A escolha fica sinalizada para a aprovação manual do narrador. As combinações da lista seguem as regras da mesa, inclusive Toreador com Potência.
-- Pontos bônus restantes são avisados na confirmação. Enviar sem gastá-los encerra a distribuição; eles não se convertem em XP. Retirar um defeito depois de usar seus pontos exige ajustar as compras antes de enviar.
+- **Cada reserva inicial precisa ser gasta por completo.** Os bônus são uma reserva única: escolha quanto gastar em cada categoria e siga a ordem. Se sobrarem bônus no fim, o botão abre uma nova volta pelo ciclo. O envio exige **zero restante**, com conferência também na API. Voltar mantém as escolhas; retirar um defeito exige ajustar compras se o saldo ficar negativo.
 
 Em **Livro de regras**, o modo inicial é **Consultar**. Use **Visualizar** para abrir o texto inteiro e os poderes sem formulário de edição. **Gerenciar livro** exibe as ferramentas de alteração. Em **Regras e criação de fichas**, o narrador pode ajustar reservas, limites, custos e máximo de defeitos. Campos avançados e clãs permanecem em `character_creation.guided` no game-data.
 
 ### Atualizar o livro de uma campanha que já existe
 
+**Se você já usa o game-data de criação entregue com a versão 9.2, não precisa importar outro JSON para esta correção 9.2.1.** A ordem das telas e a obrigatoriedade de gastar os pontos estão no código. Os valores e os catálogos personalizados continuam no seu game-data. Atualize frontend e API.
+
 Atualizar o código não substitui automaticamente os catálogos personalizados no Supabase. Depois de fazer backup, importe o JSON de regras entregue em **Livro de regras → Gerenciar livro → Importar game-data**. O arquivo separado mantém as configurações do game-data que serviu de origem e acrescenta os antecedentes e a criação; confira os preços de legados e suas configurações antes de aplicar. O `data/game_data.json` do projeto é o modelo para novas instalações, com configuração inicial neutra.
 
-A importação é somente do **game-data**; não importe um portal completo para atualizar regras. Fichas já aprovadas não recebem dinheiro de novo nem têm geração ou traços recalculados. IDs anteriores dos catálogos foram preservados. Uma proposta antiga sem distribuição por etapas continua visível e exige conferência e justificativa de aprovação manual.
+A importação é somente do **game-data**; não importe um portal completo para atualizar regras. Fichas já aprovadas não recebem dinheiro de novo nem têm geração ou traços recalculados. IDs anteriores dos catálogos foram preservados. Uma proposta antiga sem distribuição por etapas continua visível para revisão manual do narrador. Se o jogador a editar, ela abre no assistente: nome e narrativa são mantidos e os pontos precisam ser redistribuídos. A aprovação manual de exceções pelo narrador continua exigindo justificativa.
 
 Os efeitos estruturados são mostrados na consulta e conferidos no envio. Monstruoso fixa Aparência; Criança impõe os limites e requisito; as versões do Beijo de Procuração concedem os pontos indicados. Bônus situacionais de testes, acontecimentos do roleplay e efeitos ainda descritos como manuais continuam sob aplicação do narrador. Consulte **docs/CRIACAO.md** para os campos e limites desta versão.

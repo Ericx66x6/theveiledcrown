@@ -1,6 +1,26 @@
-# Criação guiada · 9.2
+# Criação guiada · 9.2.1
 
 O acesso de jogador usa **Meus personagens → Criar personagem**. O narrador continua podendo transcrever fichas manualmente e ajustar propostas antes da aprovação. **Testar como jogador** também permite experimentar o assistente, sem gravar na campanha real.
+
+## Passo a passo obrigatório
+
+1. Nome, clã, três disciplinas e linha inicial quando necessária.
+2. Atributos: distribua todos os 15 pontos extras.
+3. Habilidades: distribua todos os 27 entre os três grupos.
+4. Antecedentes: distribua todos os 5 pontos.
+5. Disciplinas: distribua exatamente 3 pontos entre os dons do clã.
+6. Qualidades e defeitos: escolha os opcionais antes de distribuir bônus.
+7. Bônus em atributos.
+8. Bônus em habilidades.
+9. Bônus em antecedentes.
+10. Bônus em disciplinas.
+11. Revisão e envio para aprovação.
+
+Cada reserva inicial tem uma tela e só libera a seguinte com gasto exato. As abas de talentos, perícias e conhecimentos compartilham a mesma reserva. O menu permite voltar; avançar acontece somente pelo botão de continuar. Alterar uma etapa anterior exige conferir as seguintes novamente, mantendo as escolhas.
+
+Os bônus formam **uma única reserva**, não uma reserva por categoria. O jogador escolhe quanto gastar em cada tela e segue a ordem, mesmo se decidir não comprar nada naquela categoria. Ao terminar as disciplinas, qualquer sobra leva a **mais uma volta pelos atributos → habilidades → antecedentes → disciplinas**. Só abre a revisão quando a reserva chega a zero e as regras estão atendidas. Por exemplo, um bônus restante pode comprar um ponto de antecedente numa nova volta, sem descartar pontos.
+
+Qualidades e defeitos podem devolver investimentos quando fixam um atributo ou reduzem seu limite. O assistente informa isso, oferece **Reajustar** na etapa correspondente e preserva o resto da ficha. Requisitos compráveis com bônus, como Carisma 3 para Líder Nato, podem ser atendidos na categoria apropriada antes do envio.
 
 ## Pontos
 
@@ -20,7 +40,7 @@ As três disciplinas são conservadas mesmo no nível 0. A linha primária escol
 | Disciplina | 6 |
 | Antecedente | 1 |
 
-Na segunda distribuição, o limite é 5, sujeito às restrições das características. Até quatro defeitos concedem seu valor em bônus. Qualidades consomem seu preço; não se usa XP. Versões do mesmo defeito/qualidade não são somadas quando compartilham `mutually_exclusive_group`. Retirar um defeito devolve seus pontos à contagem e pode exigir reduzir compras. Bônus restantes aparecem na confirmação e são encerrados com a criação, sem conversão para XP.
+Na segunda distribuição, o limite é 5, sujeito às restrições das características. Até quatro defeitos concedem seu valor em bônus. Qualidades consomem seu preço; não se usa XP. Versões do mesmo defeito/qualidade não são somadas quando compartilham `mutually_exclusive_group`. Retirar um defeito devolve seus pontos à contagem e pode exigir reduzir compras. **Nenhum ponto inicial ou bônus pode sobrar no envio.** Retirar um defeito pode deixar a reserva negativa; reduza as compras ou escolha outra combinação válida antes de continuar.
 
 ## Geração e capital
 
@@ -67,11 +87,11 @@ Os números do exemplo são IDs e devem corresponder ao catálogo da campanha. O
 
 ## Aprovação e compatibilidade
 
-Cada proposta guarda `character.creation` com as duas distribuições, escolhas de clã, linhas e características. O servidor reconstrói os valores; dinheiro, XP, geração ou pontos finais enviados pelo cliente não são aceitos como cálculo confiável. O narrador recebe o relatório e a notificação, pode pedir ajustes, editar e aprovar. Exceções que alterem o resultado calculado exigem confirmação e justificativa.
+Cada proposta guarda `character.creation` com as duas distribuições, escolhas de clã, linhas e características. O servidor exige que cada reserva inicial e a reserva final de bônus estejam totalmente utilizadas, inclusive no reenvio. Quando a criação guiada está ativa, novos envios de jogadores sem o plano de pontos são recusados. O servidor reconstrói os valores; dinheiro, XP, geração ou pontos finais enviados pelo cliente não são aceitos como cálculo confiável. O narrador recebe o relatório e a notificação, pode pedir ajustes, editar e aprovar. Exceções que alterem o resultado calculado exigem confirmação e justificativa.
 
 O clã personalizado exige nome e três disciplinas. A aprovação do narrador permanece obrigatória, inclusive quando a contagem está correta. As listas dos clãs seguem as combinações fornecidas por Eric, sem substituir por outra edição do jogo.
 
-Fichas já aprovadas continuam com os saldos e gerações atuais. Propostas anteriores ao assistente permanecem disponíveis para análise manual; não se tenta reconstruir uma distribuição inexistente. A validação de novas regras não aplica retroativamente capital ou efeitos de criação nas fichas antigas.
+Fichas já aprovadas continuam com os saldos e gerações atuais. Propostas anteriores ao assistente permanecem disponíveis para análise manual do narrador. Ao editá-las pelo acesso de jogador, o assistente preserva nome e narrativa e pede uma nova distribuição; os valores antigos não são inventados como gastos iniciais ou bônus. A validação de novas regras não aplica retroativamente capital ou efeitos de criação nas fichas antigas.
 
 No livro, **Consultar → Visualizar** abre conteúdo completo sem edição. **Gerenciar livro → Regras e criação de fichas** permite alterar as reservas e custos. `character_creation.guided` guarda os demais parâmetros em JSON. O modelo do projeto atende instalações novas; em campanhas existentes, importe o game-data atualizado após fazer backup, seguindo **ATUALIZAR.md**.
 

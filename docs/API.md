@@ -123,11 +123,11 @@ Navegação, filtros e rascunho de rolagem ficam na memória do cliente. O hist�
 Em `PUT/PATCH/DELETE /api/maps/:map/characters/:character`, narradores podem posicionar ou remover qualquer personagem ativo da campanha; jogadores só os próprios. `revision` da posição é obrigatória. O narrador mantém a visibilidade existente; uma posição criada por ele começa privada. Só o jogador altera `visibility` entre `private` e `campaign`. Coordenadas e acesso ao mapa continuam validados.
 
 
-## Criação guiada 9.2
+## Criação guiada 9.2.1
 
 `POST /api/submissions` e `PATCH /api/submissions/:id` conservam o contrato `{character, revision}`. A ficha do assistente inclui `character.creation`: `version:1`, `clan`, três IDs em `disciplines`, `primary_paths`, seleções `traits` e mapas `initial`/`bonus`. As categorias usam os mesmos nomes dos catálogos, incluindo `atributes` e `precedents`. Em atributos, o mapa inicial contém o nível absoluto; nos bônus, contém quantos níveis adicionais foram comprados.
 
-Para jogadores, a API reconstrói todos os traços pelo plano, recalcula geração, potência, XP inicial e capital e recusa distribuições inválidas. `caracteristics` recebe as seleções e detalhes aprováveis; os custos vêm do catálogo, não do cliente. A conta dona e o nome do jogador são determinados pela autenticação. Os campos narrativos continuam opcionais.
+Para jogadores, a API reconstrói todos os traços pelo plano, recalcula geração, potência, XP inicial e capital e recusa distribuições inválidas. Cada reserva inicial deve ter gasto exatamente igual ao orçamento; bônus devem terminar em zero, sem descarte. POST e PATCH recusam sobras ou a remoção de `character.creation` por jogadores quando o assistente está ativo. `caracteristics` recebe as seleções e detalhes aprováveis; os custos vêm do catálogo, não do cliente. A conta dona e o nome do jogador são determinados pela autenticação. Os campos narrativos continuam opcionais.
 
 O relatório contém `issues`, `warnings`, `totals` das reservas e `derived` para geração/capital. Propostas antigas sem plano são mantidas, com exigência de revisão manual quando o assistente está ativo. A aprovação continua exclusiva do narrador, com revisão obrigatória; divergências exigem `override:true` e justificativa em `reason`. A aprovação repetida é recusada, sem duplicar ficha ou capital.
 

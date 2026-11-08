@@ -1,10 +1,10 @@
-# Validação · A Coroa Velada 9.2.0 · Beta
+# Validação · A Coroa Velada 9.2.1 · Beta
 
 Verificação em 07/11/2026. Código para frontend Vercel, API Node.js 24 no Render e documentos JSONB/imagens privadas no Supabase. Nenhum serviço ou dado de produção do usuário foi alterado.
 
 ## Testes automatizados
 
-`npm run test:all` passou com **192 testes, sem falhas**. O comando compila o frontend, executa regras, domínio, gestos, áudio, API HTTP, SQL e Storage e confere sintaxe e referências aos assets.
+`npm run test:all` passou com **203 testes, sem falhas**. O comando compila o frontend, executa regras, domínio, gestos, áudio, API HTTP, SQL e Storage e confere sintaxe e referências aos assets.
 
 - O narrador cria, move e remove posições de personagens ativos em mapas por imagem e geográficos. A visibilidade definida pelo jogador é preservada; outros jogadores continuam impedidos de alterar a posição alheia. Revisões concorrentes e mapas sem acesso são recusados.
 - Gestos conferem o ponteiro principal, ignoram um segundo dedo e cancelam sem salvar ao perder a captura. A posição final considera as coordenadas ao soltar, mesmo sem o último evento de movimento. Arraste simples não muda a posição salva.
@@ -25,6 +25,18 @@ Verificação em 07/11/2026. Código para frontend Vercel, API Node.js 24 no Ren
 - Frontend sem localStorage, sessionStorage ou IndexedDB. Build de produção sem as identidades fictícias da prévia. Não foi acrescentado cache offline de fichas.
 
 As migrações SQL e funções foram executadas em PostgreSQL via PGlite, com transações, conflito de revisão, RLS e recusa das permissões `anon`/`authenticated`. O adaptador Supabase usa transporte REST simulado com funções SQL reais. O adaptador de imagens usa Storage simulado para conferir upload privado, reconstituição, deduplicação e falhas. **Não houve conexão ao Supabase do usuário.**
+
+## Sequência obrigatória da versão 9.2.1
+
+- Uma categoria por tela, na ordem: identidade, atributos, habilidades, antecedentes, disciplinas, qualidades/defeitos, bônus em atributos, habilidades, antecedentes e disciplinas, revisão.
+- Cada reserva inicial exige gasto exato. A API recusa pontos faltantes, excedentes, bônus não gastos e a remoção do plano de criação em POST/PATCH de jogadores com o assistente ativo. Tentativas recusadas não alteram a revisão da proposta.
+- Bônus são uma única reserva: podem ser reservados para categorias posteriores. Uma sobra no fim volta ao ciclo, mantendo as compras; a revisão só abre com zero restante.
+- Requisitos de qualidades atendíveis numa categoria posterior não bloqueiam sua escolha antecipadamente. Características que reduzem limites devolvem investimentos; pontos iniciais devolvidos precisam ser redistribuídos antes de seguir aos bônus.
+- Testes novos cobrem as transições, bloqueios, retorno sem perda de escolhas, sobras ímpares, requisitos tardios, reembolso por defeitos e validação no envio/reenvio. As regras continuam configuráveis no game-data existente, sem novo SQL ou importação para quem já usa o catálogo 9.2. Propostas antigas abertas pelo jogador passam pelo assistente, conservando nome e narrativa enquanto reconstroem a distribuição; o narrador mantém a edição manual para revisão.
+
+No navegador em 360 px, a distribuição inicial foi preenchida com 15 atributos, 27 habilidades divididas entre os três grupos, 5 antecedentes e 3 disciplinas. Com 14/15 atributos ou 2/3 disciplinas, Continuar permaneceu bloqueado. Vingança acrescentou 2 bônus e Concentração consumiu 1, deixando 16 para níveis. Voltar manteve as compras. Ao terminar com 1 bônus sobrando, o botão abriu outra volta pelos atributos; a compra de +1 Aliados nos antecedentes zerou a reserva. O reenvio confirmou 15/15, 27/27, 5/5, 3/3 e 17/17, e o narrador aprovou a ficha com a distribuição completa. Uma proposta de teste previamente preenchida permitiu retomar a conferência após reiniciar a prévia; os dados de teste não fazem parte da instalação.
+
+O layout final foi conferido em 360 e 390 px, com larguras de conteúdo/rolagem iguais (345/345 e 375/375), e em desktop (1348/1348). O cabeçalho móvel foi compactado, os controles de avanço ficam à mão e tocar em + atualiza o saldo com foco preservado. O envio continua bloqueado enquanto faltam pontos.
 
 ## Criação e consulta da versão 9.2
 
@@ -63,7 +75,7 @@ Não houve ensaio de carga nem teste em celular físico. Presença e novidades u
 
 ## Publicação
 
-Siga **[ATUALIZAR.md](ATUALIZAR.md)**. Não há SQL, bucket ou variável obrigatória nova. Faça backup, envie o conteúdo completo do ZIP, publique primeiro a API no Render e confira `/api/health` com versão 9.2.0; depois publique no Vercel.
+Siga **[ATUALIZAR.md](ATUALIZAR.md)**. Não há SQL, bucket ou variável obrigatória nova. Faça backup, envie o conteúdo completo do ZIP, publique primeiro a API no Render e confira `/api/health` com versão 9.2.1; depois publique no Vercel.
 
 Favicon e imagem social foram gerados e servidos pela prévia. A miniatura real no WhatsApp depende da publicação no domínio final e da leitura/cache do serviço. A origem padrão do Vercel é detectada automaticamente; domínio próprio pode ser indicado em `COROA_SITE_URL` no Vercel.
 
