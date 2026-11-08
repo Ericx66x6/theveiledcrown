@@ -1,4 +1,4 @@
-# The Veiled Crown · A Coroa Velada 9.3.0 · Beta
+# The Veiled Crown · A Coroa Velada 9.3.1 · Beta
 
 Portal de RPG exclusivamente online: **Vercel → API Node.js no Render → Supabase**.
 
@@ -67,3 +67,5 @@ A versão 9.2.1 organiza a criação em passos obrigatórios, uma categoria por 
 A versão 9.3.0 adiciona recompensas de presença, cadastro sujeito à aprovação, celebrações persistentes e um repertório ampliado de rituais. Leia [docs/JOGO-VIVO.md](docs/JOGO-VIVO.md) e [docs/IMPORTACAO.md](docs/IMPORTACAO.md).
 
 Validação desta entrega: [228 testes e revisão visual](docs/VALIDACAO-V93.md).
+
+Correção 9.3.1: indicador de carregamento centralizado na tela inteira, com fundo escuro e sem borda. Não altera game-data ou dados da campanha.

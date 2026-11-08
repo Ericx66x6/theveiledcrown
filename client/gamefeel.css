@@ -1,12 +1,19 @@
 /* Living crimson, durable rewards and a quieter loading surface. */
 #portal-loading {
+  position: fixed;
+  inset: 0;
+  margin: 0;
+  box-sizing: border-box;
+  width: 100vw;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
   border: 0 !important;
   outline: 0 !important;
   box-shadow: none !important;
   background: transparent !important;
   border-radius: 0;
   padding: 30px;
-  max-width: min(520px, 95vw);
   color: #e8dfe2;
 }
 #portal-loading:not([open]) {

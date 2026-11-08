@@ -1,6 +1,6 @@
-# Atualizar para A Coroa Velada 9.3.0 · Beta
+# Atualizar para A Coroa Velada 9.3.1 · Beta
 
-A versão 9.3.0 usa seus serviços atuais: GitHub, API Node.js 24 no Render, Supabase e Vercel. **Não há SQL, bucket ou variável obrigatória nova.** Para domínio próprio, há uma variável pública opcional para o compartilhamento. As contas, fichas, campanhas e imagens atuais continuam no mesmo Supabase.
+A versão 9.3.1 usa seus serviços atuais: GitHub, API Node.js 24 no Render, Supabase e Vercel. **Não há SQL, bucket ou variável obrigatória nova.** Para domínio próprio, há uma variável pública opcional para o compartilhamento. As contas, fichas, campanhas e imagens atuais continuam no mesmo Supabase.
 
 ## 1. Faça um backup e envie o código completo
 
@@ -15,7 +15,7 @@ Esta entrega tem mais de 100 arquivos; o GitHub limita o upload pelo navegador a
 3. Abra a pasta clonada pelo **Show in Explorer**.
 4. Copie todo o conteúdo extraído de `theveiledcrown` para essa pasta e confirme a substituição. Inclua os arquivos iniciados por ponto, como `.gitignore` e `.env.render.example`.
 5. Apague um eventual **`vercel.json` antigo**. O projeto usa somente **`vercel.mjs`**. Não apague a pasta `.git` do checkout.
-6. No Desktop, revise as alterações, escreva `Beta 9.3.0 — recompensas, celebrações e novos rituais`, faça **Commit to main** e depois **Push origin**.
+6. No Desktop, revise as alterações, escreva `Beta 9.3.1 — recompensas, celebrações e novos rituais`, faça **Commit to main** e depois **Push origin**.
 
 Se preferir o navegador, envie primeiro `client`, `core`, `shared`, `server`, `tools` e `data` em um commit; depois envie os outros arquivos e pastas. Faça os deploys finais somente depois que o pacote inteiro estiver no GitHub. Não envie o ZIP fechado, `node_modules`, `dist`, `.qa`, `.git` ou um arquivo `.env` com credenciais.
 
@@ -33,7 +33,7 @@ Mantenha o serviço existente e confira:
 
 Mantenha suas variáveis atuais: `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_IMAGE_BUCKET`, `BOOTSTRAP_TOKEN`, `NODE_ENV`, `NODE_VERSION`, `TRUST_PROXY` e `ALLOWED_ORIGINS`. A chave privada continua somente no Render. Confira `TRUST_PROXY=1` e o domínio de produção do Vercel em `ALLOWED_ORIGINS`.
 
-Use **Manual Deploy → Deploy latest commit** se o deploy automático estiver desligado. Aguarde **Live** e abra a URL do Render seguida de `/api/health`. A resposta precisa conter **`"version":"9.3.0"`**.
+Use **Manual Deploy → Deploy latest commit** se o deploy automático estiver desligado. Aguarde **Live** e abra a URL do Render seguida de `/api/health`. A resposta precisa conter **`"version":"9.3.1"`**.
 
 ## 3. Atualize o frontend no Vercel
 
@@ -48,9 +48,9 @@ Mantenha `vercel.mjs` e a variável **`COROA_API_BASE` com a URL HTTPS atual do 
 | Output | `dist` |
 | Node | 24.x |
 
-Após a API 9.3.0 ficar Live, publique o commit completo no Vercel. Se o Vercel compilou um upload incompleto ou publicou antes do Render terminar, faça **Redeploy**. Um aviso de que `engines` escolheu Node 24 em vez da versão configurada no painel não é erro; selecionar 24.x no painel deixa as configurações alinhadas.
+Após a API 9.3.1 ficar Live, publique o commit completo no Vercel. Se o Vercel compilou um upload incompleto ou publicou antes do Render terminar, faça **Redeploy**. Um aviso de que `engines` escolheu Node 24 em vez da versão configurada no painel não é erro; selecionar 24.x no painel deixa as configurações alinhadas.
 
-Não crie outro narrador e não importe o backup para efetuar a atualização. Abra seu domínio normal e confira o indicador **V9.3.0 BETA**. Se houver um erro de rota nova, confira primeiro se o Render já informa versão 9.3.0.
+Não crie outro narrador e não importe o backup para efetuar a atualização. Abra seu domínio normal e confira o indicador **V9.3.1 BETA**. Se houver um erro de rota nova, confira primeiro se o Render já informa versão 9.3.1.
 
 ## 4. Personalize sua campanha
 
@@ -200,3 +200,8 @@ No menu da campanha, **Recompensas de login** permite ao narrador ajustar dias, 
 Efeitos e trilha vêm ligados. Na primeira migração de contas antigas, a trilha é ativada se o áudio geral não estava silenciado. Escolhas feitas depois no botão de áudio são preservadas. O navegador libera o som a partir de um toque ou tecla.
 
 Consulte [docs/JOGO-VIVO.md](docs/JOGO-VIVO.md) para as regras de ciclo, segurança de resgate e catálogo.
+
+
+## Correção de carregamento da versão 9.3.1
+
+Restaura a largura de tela inteira do diálogo de carregamento, centralizando o indicador e os avisos em desktop e mobile. A borda branca continua removida. A mudança não altera game-data, fichas, contas ou banco; não é necessário reimportar JSON nem executar SQL. Atualize os arquivos do projeto e publique o frontend no Vercel.
