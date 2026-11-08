@@ -375,7 +375,18 @@ export function publicNote(note, doc) {
   };
 }
 export function publicCampaign(c, a) {
-  const result = clone(c);
+  const privateKeys = new Set([
+    'accounts',
+    'sessions',
+    'format',
+    'snapshots',
+    'characters',
+    'game',
+    'deleted_characters',
+    'deleted_maps',
+    'xp_distributions'
+  ]);
+  const result = clone(Object.fromEntries(Object.entries(c).filter(([k]) => !privateKeys.has(k))));
   result.roster = c.roster || [
     ...c.characters.map((p) => ({ id: p.id, char: p.char })),
     ...(c.retired_roster || [])

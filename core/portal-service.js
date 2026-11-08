@@ -46,7 +46,7 @@ export class PortalService extends CampaignService {
     if (!special) return super.request(path, options);
     const doc = await this.store.get(),
       a = this.auth(doc, token),
-      root = await this.store.workspace();
+      root = await this.store.workspace({ readOnly: true });
     if (path === '/api/portal-state' && a.role !== 'admin' && !a._campaign_member)
       return {
         account: publicAccount(a),
@@ -82,6 +82,14 @@ export class PortalService extends CampaignService {
       return commerceRequest(this, path, method, data, token, doc, a);
     }
     if (path === '/api/portal-state') {
+      const incremental =
+        data.incremental === true &&
+        data.known_campaign_id === doc.id &&
+        data.known_account_id === a.id;
+      const players = doc.characters.filter(
+        (p) =>
+          (a.role === 'admin' || a.character_ids.includes(p.id)) && (data.archived || !p.archived)
+      );
       const campaign = publicCampaign(doc, a);
       delete campaign.social;
       campaign.submissions = await submissionsRequest(
@@ -111,16 +119,27 @@ export class PortalService extends CampaignService {
                 .map((x) => ({ ...publicAccount(x), registration: clone(x.registration) }))
             : [],
         campaign,
-        game: clone(doc.game),
-        players: doc.characters
-          .filter(
-            (p) =>
-              (a.role === 'admin' || a.character_ids.includes(p.id)) &&
-              (data.archived || !p.archived)
-          )
+        game:
+          incremental && data.known_game_revision === doc.game._revision ? null : clone(doc.game),
+        game_revision: doc.game._revision,
+        players: players
+          .filter((p) => !incremental || data.known_character_revisions?.[p.id] !== p._revision)
           .map(publicPlayer),
-        campaigns: await super.request('/api/campaigns', { token }),
-        accounts: a.role === 'admin' ? await super.request('/api/admin/accounts', { token }) : [],
+        ...(data.incremental === true ? { player_ids: players.map((p) => p.id) } : {}),
+        campaigns: root.campaigns
+          .filter((c) => a.role === 'admin' || Object.hasOwn(a.memberships || {}, c.id))
+          .map((c) => ({
+            id: c.id,
+            title: c.title,
+            cover: c.cover || '',
+            accent: c.accent,
+            _revision: c._revision,
+            status: c.status,
+            description: c.description,
+            characters: c.characters.length,
+            quests: c.quests.filter((q) => !['completed', 'cancelled'].includes(q.status)).length
+          })),
+        accounts: a.role === 'admin' ? doc.accounts.map(publicAccount) : [],
         social: root.campaigns.some((c) => c.id === doc.id)
           ? socialSnapshot(root, doc, a)
           : { members: [], posts: [] }

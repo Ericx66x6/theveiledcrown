@@ -1,11 +1,19 @@
 import { createServer } from 'node:http';
 import { timingSafeEqual } from 'node:crypto';
+import { gzip } from 'node:zlib';
+import { promisify } from 'node:util';
+import { performance } from 'node:perf_hooks';
 import { readFile, stat } from 'node:fs/promises';
 import { resolve, extname, sep } from 'node:path';
 import { CampaignStore } from '../core/store.js';
 import { PortalService } from '../core/portal-service.js';
 import { publicAccount } from '../core/model.js';
 import { PlayerTestSessions } from './player-test.mjs';
+import { Conflict } from './repository.mjs';
+import { allowedMedia, assertMediaInput } from './media-access.mjs';
+import { hydrateMedia, compactMediaResult } from './media.mjs';
+import { isMediaURL } from '../core/media-reference.js';
+const compress = promisify(gzip);
 const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
@@ -22,6 +30,8 @@ const MIME = {
   '.xml': 'application/xml; charset=utf-8'
 };
 const routes = [
+  [/^\/api\/media\/portable$/, ['POST']],
+  [/^\/api\/media\/[a-f0-9]{64}\.(jpg|png|webp)$/, ['GET', 'HEAD']],
   [/^\/auth\/(bootstrap|login|logout|password|register)$/, ['POST']],
   [/^\/api\/admin\/registrations$/, ['GET']],
   [/^\/api\/admin\/registrations\/[^/]+\/(approve|reject)$/, ['POST']],
@@ -116,6 +126,7 @@ export function createPortalServer({
   staticDir,
   allowedOrigins = [],
   trustProxy = false,
+  maintenance = false,
   allowSameOriginFrames = false,
   maxBytes = 100 * 1024 * 1024
 }) {
@@ -123,6 +134,8 @@ export function createPortalServer({
     throw new Error('BOOTSTRAP_TOKEN precisa ter pelo menos 32 caracteres.');
   const directory = staticDir && resolve(staticDir);
   const presence = new Map();
+  const mediaPermissions = new Map();
+  let mediaRevision;
   const playerTests = new PlayerTestSessions();
   const attempts = new Map(),
     limits = new Map();
@@ -133,18 +146,42 @@ export function createPortalServer({
     return result;
   };
   const server = createServer(async (req, res) => {
+    const started = performance.now();
+    let databaseMs = 0,
+      commitMs = 0;
     const origin = req.headers.origin;
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader('X-Coroa-Protocol', '10');
     res.setHeader('X-Frame-Options', allowSameOriginFrames ? 'SAMEORIGIN' : 'DENY');
     const url = new URL(req.url, 'http://local.invalid');
     const api = url.pathname.startsWith('/api/') || url.pathname.startsWith('/auth/');
-    const respond = (status, data) => {
-      res.writeHead(status, {
+    const respond = async (status, data) => {
+      let bytes = Buffer.from(JSON.stringify(data));
+      const headers = {
         'Content-Type': 'application/json; charset=utf-8',
         'Cache-Control': 'no-store'
+      };
+      if (
+        bytes.length > 2048 &&
+        /(?:^|[,\s])gzip(?:[,\s]|$)/.test(req.headers['accept-encoding'] || '')
+      ) {
+        bytes = await compress(bytes, { level: 5 });
+        headers['Content-Encoding'] = 'gzip';
+        res.setHeader(
+          'Vary',
+          [res.getHeader('Vary'), 'Accept-Encoding'].filter(Boolean).join(', ')
+        );
+      }
+      res.setHeader(
+        'Server-Timing',
+        `db;dur=${databaseMs.toFixed(1)}, commit;dur=${commitMs.toFixed(1)}, app;dur=${(performance.now() - started).toFixed(1)}`
+      );
+      res.writeHead(status, {
+        ...headers,
+        'Content-Length': bytes.length
       });
-      res.end(JSON.stringify(data));
+      res.end(bytes);
     };
     try {
       if (origin) {
@@ -161,10 +198,13 @@ export function createPortalServer({
         res.setHeader('Vary', 'Origin');
         res.setHeader(
           'Access-Control-Allow-Headers',
-          'Authorization, Content-Type, X-Campaign-ID, X-Portal-Session, X-Player-Test'
+          'Authorization, Content-Type, X-Campaign-ID, X-Portal-Session, X-Player-Test, X-Coroa-Client'
         );
         res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-        res.setHeader('Access-Control-Expose-Headers', 'X-Portal-Revision');
+        res.setHeader(
+          'Access-Control-Expose-Headers',
+          'X-Portal-Revision, Server-Timing, X-Coroa-Protocol'
+        );
       }
       if (req.method === 'OPTIONS') {
         res.writeHead(204);
@@ -196,16 +236,35 @@ export function createPortalServer({
         return;
       }
       if (url.pathname === '/api/health') {
-        respond(200, { status: 'ok', version: '9.3.1' });
+        await respond(200, {
+          status: 'ok',
+          version: '10.0.0',
+          storage: 'incremental-v10',
+          maintenance
+        });
         return;
       }
+      if (maintenance)
+        throw Object.assign(
+          error(
+            'O portal está sendo atualizado pelo narrador. Tente novamente em alguns minutos.',
+            503
+          ),
+          { code: 'MAINTENANCE' }
+        );
       const ip = trustProxy
         ? String(req.headers['x-forwarded-for'] || req.socket.remoteAddress)
             .split(',')
             .at(-1)
             .trim()
         : req.socket.remoteAddress;
-      const rateKey = ip + (url.pathname.startsWith('/auth/') ? ':auth' : ':api');
+      const rateKey =
+        ip +
+        (url.pathname.startsWith('/auth/')
+          ? ':auth'
+          : isMediaURL(url.pathname)
+            ? ':media'
+            : ':api');
       const now = Date.now(),
         window = limits.get(rateKey) || { start: now, count: 0 };
       if (now - window.start > 60000) {
@@ -216,7 +275,10 @@ export function createPortalServer({
       limits.set(rateKey, window);
       if (limits.size > 10000)
         for (const [key, value] of limits) if (now - value.start > 60000) limits.delete(key);
-      if (window.count > (url.pathname.startsWith('/auth/') ? 40 : 400))
+      if (
+        window.count >
+        (url.pathname.startsWith('/auth/') ? 40 : isMediaURL(url.pathname) ? 1200 : 400)
+      )
         throw error('Muitas solicitações. Aguarde um minuto.', 429);
       const data =
         req.method === 'GET' && url.searchParams.has('data')
@@ -229,6 +291,8 @@ export function createPortalServer({
                   ? Math.min(maxBytes, 16384)
                   : maxBytes
             );
+      const view = data.__portal_view;
+      delete data.__portal_view;
       if (url.pathname !== '/auth/status' && url.pathname !== '/api/sync') {
         const route = routes.find(([pattern]) => pattern.test(url.pathname));
         if (!route) throw error('Recurso não encontrado.', 404);
@@ -260,18 +324,97 @@ export function createPortalServer({
         (/^[A-Za-z0-9_-]{20,200}$/.test(cookieToken || '') ? cookieToken : undefined);
       if (!bearerHeader && cookieToken && !['GET', 'HEAD'].includes(req.method) && !origin)
         throw error('Origem obrigatória para alterações autenticadas.', 403);
-      const result = await run(async () => {
-        const loaded = await repository.load();
-        if (url.pathname === '/auth/status')
+      const mutation =
+        !['GET', 'HEAD'].includes(req.method) && url.pathname !== '/api/media/portable';
+      const execute = async () => {
+        const loadStarted = performance.now();
+        const loaded = await repository.load({
+          fresh: mutation || url.pathname.startsWith('/auth/') || isMediaURL(url.pathname),
+          readOnly: true
+        });
+        databaseMs += performance.now() - loadStarted;
+        if (url.pathname === '/auth/status') {
+          const session = loaded.root.sessions.find(
+            (s) => s.token === bearer && (s.expires === null || s.expires > Date.now())
+          );
+          const actor =
+            session &&
+            loaded.root.accounts.find(
+              (a) => a.id === session.account && a.active && a.session_version === session.version
+            );
+          const permitted = actor
+            ? loaded.root.campaigns.filter(
+                (c) => actor.role === 'admin' || Object.hasOwn(actor.memberships || {}, c.id)
+              )
+            : [];
+          const campaign = permitted.find((c) => c.id === session?.campaign_id) || permitted[0];
           return {
             response: {
               needs_bootstrap: !loaded.root.accounts.length,
               registration_open: loaded.root.accounts.some((a) => a.role === 'admin' && a.active),
-              remote: true
+              remote: true,
+              ...(actor
+                ? {
+                    session: {
+                      account: publicAccount({
+                        ...actor,
+                        character_ids: actor.memberships?.[campaign?.id] || [],
+                        _campaign_member: !!campaign
+                      }),
+                      campaign_id: campaign?.id || null,
+                      mode: 'online'
+                    }
+                  }
+                : {})
             },
             revision: loaded.revision
           };
-        const baseline = JSON.stringify(loaded.root),
+        }
+        const liveSession = loaded.root.sessions.find(
+          (s) => s.token === bearer && (s.expires === null || s.expires > Date.now())
+        );
+        const liveAccount =
+          liveSession &&
+          loaded.root.accounts.find(
+            (a) =>
+              a.id === liveSession.account && a.active && a.session_version === liveSession.version
+          );
+        if (url.pathname === '/api/sync' && !req.headers['x-player-test']) {
+          if (!liveAccount) throw error('Entre com seu login e senha.', 401);
+          const requested = req.headers['x-campaign-id'] || liveSession.campaign_id;
+          const permitted = loaded.root.campaigns.filter(
+            (c) =>
+              liveAccount.role === 'admin' || Object.hasOwn(liveAccount.memberships || {}, c.id)
+          );
+          if (req.headers['x-campaign-id'] && !permitted.some((c) => c.id === requested))
+            throw error('Você não pertence a esta campanha.', 403);
+          const current = permitted.find((c) => c.id === requested) || permitted[0];
+          if (current) presence.set(current.id + '|' + liveAccount.id, Date.now());
+          return { response: { revision: loaded.revision }, revision: loaded.revision };
+        }
+        if (url.pathname === '/api/media/portable' || isMediaURL(url.pathname)) {
+          if (!liveAccount) throw error('Entre com seu login e senha.', 401);
+          if (mediaRevision !== loaded.revision) {
+            mediaPermissions.clear();
+            mediaRevision = loaded.revision;
+          }
+          let allowed = mediaPermissions.get(liveAccount.id);
+          if (!allowed) {
+            allowed = allowedMedia(loaded.root, liveAccount);
+            mediaPermissions.set(liveAccount.id, allowed);
+          }
+          if (url.pathname === '/api/media/portable') {
+            if (!data.document || typeof data.document !== 'object')
+              throw error('Escolha um documento JSON para exportar.');
+            assertMediaInput(data.document, loaded.root, liveAccount);
+            return { response: data.document, revision: loaded.revision, portable: true };
+          }
+          if (!repository.media || !allowed.has(url.pathname))
+            throw error('Esta imagem não está disponível para o seu acesso.', 403);
+          return { media: repository.media.resolve(url.pathname), revision: loaded.revision };
+        }
+        if (mutation) assertMediaInput(data, loaded.root, liveAccount);
+        const baseline = mutation ? JSON.stringify(loaded.root) : null,
           store = await new CampaignStore(loaded.root).open(),
           service = new PortalService(store);
         service.attempts = attempts;
@@ -384,14 +527,15 @@ export function createPortalServer({
           const s = store.root.sessions.find((s) => s.token === bearer);
           if (s) s.campaign_id = store.root.active_campaign_id;
         }
+        const requestCampaign = store.root.campaigns.find(
+          (c) => c.id === store.root.active_campaign_id
+        );
         if (store.root.campaigns.some((c) => c.id === originalCampaign))
           store.root.active_campaign_id = originalCampaign;
         const presentUser =
           user ||
           (response?.account && store.root.accounts.find((a) => a.id === response.account.id));
-        const currentCampaign = store.root.campaigns.find(
-          (c) => c.id === store.root.active_campaign_id
-        );
+        const currentCampaign = requestCampaign;
         if (presentUser && currentCampaign && url.pathname !== '/auth/logout')
           presence.set(currentCampaign.id + '|' + presentUser.id, Date.now());
         if (url.pathname === '/auth/logout' && presentUser)
@@ -407,11 +551,92 @@ export function createPortalServer({
           }
         if (presence.size > 10000)
           for (const [key, at] of presence) if (Date.now() - at > 3600000) presence.delete(key);
+        let viewState = null;
+        if (
+          mutation &&
+          view &&
+          !req.headers['x-player-test'] &&
+          !/\/auth\/|\/api\/(json\/replace|admin\/reset|campaigns|player-test|admin\/snapshots\/restore)/.test(
+            url.pathname
+          )
+        ) {
+          try {
+            // Restore the caller's selected campaign for the response projection only.
+            const prior = store.root.active_campaign_id;
+            if (requestCampaign) store.root.active_campaign_id = requestCampaign.id;
+            viewState = await service.request('/api/portal-state', { token: bearer, data: view });
+            for (const member of viewState.social?.members || []) {
+              const at = presence.get(requestCampaign.id + '|' + member.id);
+              member.online = !!at && Date.now() - at < 90000;
+              member.last_seen = at ? new Date(at).toISOString() : null;
+            }
+            store.root.active_campaign_id = prior;
+          } catch {
+            viewState = null;
+            store.root.active_campaign_id = originalCampaign;
+          }
+        }
         let revision = loaded.revision;
-        if (JSON.stringify(store.root) !== baseline)
+        if (mutation && JSON.stringify(store.root) !== baseline) {
+          const commitStarted = performance.now();
           revision = await repository.save(store.root, loaded.revision);
-        return { response, revision };
-      });
+          commitMs += performance.now() - commitStarted;
+        }
+        return {
+          response: viewState
+            ? {
+                _coroa_update: 10,
+                result: response,
+                state: viewState,
+                view: { character_id: view.character_id, archived: !!view.archived }
+              }
+            : response,
+          revision
+        };
+      };
+      const retry = async () => {
+        for (let attempt = 0; ; attempt++) {
+          try {
+            return await execute();
+          } catch (e) {
+            if (!(e instanceof Conflict) || attempt >= 2) throw e;
+          }
+        }
+      };
+      // Reads and image downloads never wait behind another player's upload or save.
+      const result = mutation ? await run(retry) : await execute();
+      if (result.response?._coroa_update === 10)
+        result.response.state._portal_revision = result.revision;
+      else if (url.pathname === '/api/portal-state' && result.response)
+        result.response._portal_revision = result.revision;
+      if (result.media) {
+        const ref = result.media,
+          etag = '"' + ref.sha256 + '"';
+        res.setHeader('Cache-Control', 'private, max-age=300');
+        res.setHeader('Vary', 'Cookie, Authorization');
+        res.setHeader('ETag', etag);
+        res.setHeader('Content-Type', ref.mime);
+        res.setHeader('X-Portal-Revision', String(result.revision));
+        if (req.headers['if-none-match'] === etag) {
+          res.writeHead(304);
+          res.end();
+          return;
+        }
+        const bytes = await repository.media.getBytes(ref);
+        res.setHeader('Content-Length', bytes.length);
+        res.writeHead(200);
+        res.end(req.method === 'HEAD' ? undefined : bytes);
+        return;
+      }
+      const portable =
+        result.portable ||
+        req.headers['x-coroa-client'] !== '10' ||
+        (req.method === 'GET' &&
+          /^\/api\/(json\/(workspace|player)|exchange\/submission)$/.test(url.pathname));
+      if (repository.media)
+        result.response = portable
+          ? await hydrateMedia(result.response, repository.media)
+          : compactMediaResult(result.response, repository.media);
       const forwardedSecure =
         trustProxy &&
         String(req.headers['x-forwarded-proto'] || '')
@@ -424,19 +649,25 @@ export function createPortalServer({
         res.setHeader('Set-Cookie', cookie('', 0));
       else if (result.response?.token)
         res.setHeader('Set-Cookie', cookie(result.response.token, 34560000));
-      else if (url.pathname === '/auth/me' && bearer)
+      else if (
+        (url.pathname === '/auth/me' ||
+          (url.pathname === '/auth/status' && result.response?.session)) &&
+        bearer
+      )
         res.setHeader('Set-Cookie', cookie(bearer, 34560000));
       if (req.headers['x-portal-session'] === 'cookie' && result.response?.token)
         delete result.response.token;
       res.setHeader('X-Portal-Revision', String(result.revision));
-      respond(200, result.response);
+      await respond(200, result.response);
     } catch (e) {
       if (e.status === 401)
         res.setHeader('Set-Cookie', 'coroa_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0');
       if (!res.headersSent)
-        respond(e.status || 500, {
+        await respond(e.status || 500, {
           error: e.status ? e.message : 'Não foi possível concluir a operação.',
-          ...(e.code === 'PLAYER_TEST_EXPIRED' ? { code: e.code } : {})
+          ...(['PLAYER_TEST_EXPIRED', 'MIGRATION_REQUIRED', 'MAINTENANCE'].includes(e.code)
+            ? { code: e.code }
+            : {})
         });
       else res.end();
     }

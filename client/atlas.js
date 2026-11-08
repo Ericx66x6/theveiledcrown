@@ -1,3 +1,4 @@
+import { isImageSource } from '../core/media-reference.js';
 import { guardedMarker } from './map-gesture.js';
 import { straightDistanceKm } from '../core/map-state.js';
 import L from 'leaflet';
@@ -415,7 +416,7 @@ class Atlas {
 }
 function markerHTML(p) {
   if (p.personal)
-    return `<span class="character-pin-face">${p.character.profilepicture?.startsWith('data:image/') ? `<img src="${esc(p.character.profilepicture)}" alt="">` : esc(p.title.slice(0, 1))}</span><small class="character-pin-name">${esc(p.title)}</small>`;
+    return `<span class="character-pin-face">${isImageSource(p.character.profilepicture) ? `<img src="${esc(p.character.profilepicture)}" alt="">` : esc(p.title.slice(0, 1))}</span><small class="character-pin-name">${esc(p.title)}</small>`;
   const color = /^#[a-f\d]{6}$/i.test(p.color || '') ? p.color : '#df345b';
   return `<span style="--pin-color:${color}">${pinSymbol(p)}</span>`;
 }
@@ -620,7 +621,7 @@ function personalMapPanel(ctx, m) {
           character.id
         )}${button(my ? (ctx.admin() ? 'Mudar posição' : 'Mudar minha posição') : ctx.admin() ? 'Marcar posição' : 'Marcar minha posição', 'map-my-position', '', 'button primary')}${my ? (!ctx.admin() ? button(my.visibility === 'campaign' ? 'Ocultar dos outros jogadores' : 'Compartilhar com os jogadores', 'map-share-position', '', 'button ghost') : '') + button('Remover posição', 'map-remove-position', '', 'text-button danger') : ''}</div><p class="hint">${ctx.admin() ? 'Escolha o personagem e toque no mapa para posicioná-lo. A decisão de compartilhar a posição continua com o jogador.' : my?.visibility === 'campaign' ? 'Sua posição está visível para toda a campanha.' : 'Sua posição fica reservada a você e ao narrador até você compartilhar.'}</p>`
       : ''
-  }<div class="map-character-roster">${people.map((p) => button(`<span class="avatar small">${p.character.profilepicture?.startsWith('data:image/') ? `<img src="${esc(p.character.profilepicture)}" alt="">` : esc(p.character.char.slice(0, 1))}</span><span><strong>${esc(p.character.char)}</strong><small>${p.visibility === 'private' ? 'RESERVADO' : 'COMPARTILHADO'}</small></span>`, 'map-focus', `data-id="character-${p.character_id}"`, 'map-character-card')).join('') || '<span class="hint">Nenhum personagem marcou sua posição neste mapa ainda.</span>'}</div>${m.mode === 'geographic' ? '<p class="map-scale-hint">Base geográfica · distâncias pelas coordenadas.</p>' : m.scale ? `<p class="map-scale-hint">Escala: ${m.scale.pixels.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} pixels da imagem = ${m.scale.meters.toLocaleString('pt-BR')} metros.</p>` : '<p class="map-scale-hint">O narrador precisa calibrar a escala da imagem para medir quilômetros.</p>'}</section>`;
+  }<div class="map-character-roster">${people.map((p) => button(`<span class="avatar small">${isImageSource(p.character.profilepicture) ? `<img src="${esc(p.character.profilepicture)}" alt="">` : esc(p.character.char.slice(0, 1))}</span><span><strong>${esc(p.character.char)}</strong><small>${p.visibility === 'private' ? 'RESERVADO' : 'COMPARTILHADO'}</small></span>`, 'map-focus', `data-id="character-${p.character_id}"`, 'map-character-card')).join('') || '<span class="hint">Nenhum personagem marcou sua posição neste mapa ainda.</span>'}</div>${m.mode === 'geographic' ? '<p class="map-scale-hint">Base geográfica · distâncias pelas coordenadas.</p>' : m.scale ? `<p class="map-scale-hint">Escala: ${m.scale.pixels.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} pixels da imagem = ${m.scale.meters.toLocaleString('pt-BR')} metros.</p>` : '<p class="map-scale-hint">O narrador precisa calibrar a escala da imagem para medir quilômetros.</p>'}</section>`;
 }
 function atlasOptions(ctx, m) {
   return {

@@ -1,3 +1,4 @@
+import { isImageSource } from '../core/media-reference.js';
 import { $, esc, field, modal } from '../shared/ui.js';
 import { readImage } from './media.js';
 export function portraitStyle(p) {
@@ -5,7 +6,7 @@ export function portraitStyle(p) {
   return `object-position:${f.x}% ${f.y}%;transform-origin:${f.x}% ${f.y}%;transform:scale(${f.zoom})`;
 }
 export function portraitDialog(p, onSave) {
-  let image = p.profilepicture?.startsWith('data:image/') ? p.profilepicture : '',
+  let image = isImageSource(p.profilepicture) ? p.profilepicture : '',
     frame = { x: 50, y: 50, zoom: 1, ...p.portrait_frame },
     reading = false;
   modal(

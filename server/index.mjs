@@ -28,11 +28,12 @@ const server = createPortalServer({
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean),
-  trustProxy: process.env.TRUST_PROXY === '1'
+  trustProxy: process.env.TRUST_PROXY === '1',
+  maintenance: process.env.COROA_MAINTENANCE === '1'
 });
 await repository.load();
 server.listen(Number(process.env.PORT || 3000), '0.0.0.0', () =>
-  console.log('A Coroa Velada 9.2.2 · servidor iniciado.')
+  console.log('A Coroa Velada 10.0.0 · servidor iniciado.')
 );
 function shutdown() {
   server.close(() => process.exit(0));

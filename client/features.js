@@ -15,31 +15,36 @@ import {
   dots,
   empty
 } from '../shared/ui.js';
-import { api, session, saveSession } from './api.js';
+import { api, session, saveSession, setViewCache, takePortalState } from './api.js';
 import { heroImage, readImage, currency } from './media.js';
 import { clone } from '../core/model.js';
+import { applyPortalState } from './view-state.js';
+export function portalView(state) {
+  return {
+    character_id: state.player?.id,
+    archived: state.archived === true,
+    incremental: true,
+    known_campaign_id: state.campaign?.id,
+    known_account_id: state.account?.id,
+    known_game_revision: state.game?._revision,
+    known_character_revisions: Object.fromEntries(
+      (state.players || []).map((p) => [p.id, p._revision])
+    )
+  };
+}
+export function refreshViewCache(state) {
+  setViewCache(portalView(state));
+}
 export async function loadFeatureState(state, { silent = false } = {}) {
-  const payload = await api('/api/portal-state', {
-    data: { character_id: state.player?.id, archived: state.archived === true },
-    silent
-  });
-  const previousId = state.player?.id;
-  state.account = payload.account;
-  state.campaign = payload.campaign;
-  state.game = payload.game;
-  state.players = payload.players;
-  state.player =
-    state.players.find((p) => p.id === previousId) ||
-    (state.account.role === 'player' ? state.players[0] || null : null);
-  state.campaigns = payload.campaigns;
-  state.notes = payload.campaign.notes;
-  state.quests = payload.campaign.quests;
-  state.submissions = payload.campaign.submissions;
-  state.notifications = payload.campaign.notifications;
-  state.accounts = payload.accounts;
-  state.social = payload.social;
-  state.rewards = payload.rewards || null;
-  state.registrations = payload.registrations || [];
+  const request = portalView(state);
+  const payload =
+    takePortalState(request) ||
+    (await api('/api/portal-state', {
+      data: request,
+      silent
+    }));
+  if (!applyPortalState(state, payload, session()?.player_test?.id)) return;
+  refreshViewCache(state);
 }
 export function campaignHub(ctx) {
   const { state, admin } = ctx;

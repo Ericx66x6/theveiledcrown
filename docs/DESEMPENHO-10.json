@@ -1,0 +1,54 @@
+{
+  "generated_at": "2026-11-08T21:01:13.566Z",
+  "method": "Aferição HTTP local com PostgreSQL PGlite e latência RPC/Storage simulada. Dados fictícios; tempos não preveem a produção ou cold start do Render.",
+  "samples": [
+    {
+      "version": "9.3.1",
+      "fixture": {
+        "characters": 12,
+        "maps": 4,
+        "pins": 32,
+        "snapshots": 30,
+        "history_per_character": 30,
+        "portrait_bytes": 346271
+      },
+      "simulated_rpc_latency_ms": 10,
+      "cold_portal_ms": 1288,
+      "cold_image_downloads": 1,
+      "warm_portal_median_ms": 1095,
+      "warm_portal_average_wire_bytes": 23155533,
+      "full_portal_wire_bytes": 23155533,
+      "save_and_refresh_median_ms": 1636,
+      "save_average_database_upload_bytes": 2308584,
+      "save_average_http_requests": 2,
+      "save_average_response_wire_bytes": 4722026,
+      "sync_median_ms": 721,
+      "sync_database_calls": 4,
+      "requests_measured": 22
+    },
+    {
+      "version": "10.0.0",
+      "fixture": {
+        "characters": 12,
+        "maps": 4,
+        "pins": 32,
+        "snapshots": 30,
+        "history_per_character": 30,
+        "portrait_bytes": 346271
+      },
+      "simulated_rpc_latency_ms": 10,
+      "cold_portal_ms": 285,
+      "cold_image_downloads": 0,
+      "warm_portal_median_ms": 54,
+      "warm_portal_average_wire_bytes": 1371,
+      "full_portal_wire_bytes": 143764,
+      "save_and_refresh_median_ms": 286,
+      "save_average_database_upload_bytes": 38887,
+      "save_average_http_requests": 1,
+      "save_average_response_wire_bytes": 3482,
+      "sync_median_ms": 1,
+      "sync_database_calls": 0,
+      "requests_measured": 9
+    }
+  ]
+}

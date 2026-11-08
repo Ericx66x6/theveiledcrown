@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { isMediaURL, mediaPath, mediaURL } from '../core/media-reference.js';
 const MIME = { jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp' };
 const EXT = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
 const pathPattern = /^portal-v6\/media\/([a-f0-9]{64})\.(jpg|png|webp)$/;
@@ -52,6 +53,8 @@ export class SupabaseMedia {
     this.fetcher = fetcher;
     this.cache = new Map();
     this.cacheBytes = 0;
+    this.refs = new Map();
+    this.inflight = new Map();
     if (!/^[a-z0-9][a-z0-9_-]{1,62}$/.test(bucket)) throw new Error('Nome de bucket inválido.');
   }
   headers() {
@@ -77,13 +80,30 @@ export class SupabaseMedia {
     const bucket = await r.json();
     if (bucket.public !== false) throw failure('O bucket de imagens precisa ser privado.');
   }
+  register(ref) {
+    validateRef(ref);
+    this.refs.set(ref.path, ref);
+    return mediaURL(ref);
+  }
+  resolve(value) {
+    const ref = this.refs.get(mediaPath(value));
+    if (!ref)
+      throw Object.assign(
+        new Error(
+          'Imagem não encontrada. Exporte um backup com imagens antes de mover os dados para outro portal.'
+        ),
+        { status: 404 }
+      );
+    return ref;
+  }
   remember(ref, data) {
+    this.register(ref);
     const before = this.cache.get(ref.path);
     if (before) this.cacheBytes -= before.bytes;
     this.cache.delete(ref.path);
     this.cache.set(ref.path, { data, bytes: data.length });
     this.cacheBytes += data.length;
-    while (this.cacheBytes > 64 * 1024 * 1024 || this.cache.size > 256) {
+    while (this.cacheBytes > 32 * 1024 * 1024 || this.cache.size > 256) {
       const key = this.cache.keys().next().value;
       this.cacheBytes -= this.cache.get(key).bytes;
       this.cache.delete(key);
@@ -91,36 +111,64 @@ export class SupabaseMedia {
   }
   async put(data) {
     const { bytes, ref } = info(data);
-    if (!this.cache.has(ref.path)) {
-      const response = await this.send(
-        'object/' + encodeURIComponent(this.bucket) + '/' + ref.path,
-        { method: 'POST', headers: { 'Content-Type': ref.mime, 'x-upsert': 'true' }, body: bytes }
-      );
-      if (!response.ok)
-        throw failure('Não foi possível salvar a imagem. Confira o bucket e seus limites.');
-      this.remember(ref, data);
+    this.register(ref);
+    const key = 'put:' + ref.path;
+    if (this.inflight.has(key)) return this.inflight.get(key);
+    const write = (async () => {
+      if (!this.cache.has(ref.path)) {
+        const response = await this.send(
+          'object/' + encodeURIComponent(this.bucket) + '/' + ref.path,
+          { method: 'POST', headers: { 'Content-Type': ref.mime, 'x-upsert': 'true' }, body: bytes }
+        );
+        if (!response.ok)
+          throw failure('Não foi possível salvar a imagem. Confira o bucket e seus limites.');
+        this.remember(ref, bytes);
+      }
+      return ref;
+    })();
+    this.inflight.set(key, write);
+    try {
+      return await write;
+    } finally {
+      this.inflight.delete(key);
     }
-    return ref;
   }
-  async get(ref) {
+  async getBytes(ref) {
     validateRef(ref);
+    this.register(ref);
     const cached = this.cache.get(ref.path);
     if (cached) {
       this.cache.delete(ref.path);
       this.cache.set(ref.path, cached);
       return cached.data;
     }
-    const response = await this.send('object/' + encodeURIComponent(this.bucket) + '/' + ref.path);
-    if (!response.ok) throw failure('Uma imagem da campanha não foi encontrada.');
-    const bytes = Buffer.from(await response.arrayBuffer());
-    if (bytes.length !== ref.size || digest(bytes) !== ref.sha256)
-      throw failure('A imagem armazenada não corresponde à referência.');
-    const data = `data:${ref.mime};base64,${bytes.toString('base64')}`;
-    this.remember(ref, data);
-    return data;
+    const key = 'get:' + ref.path;
+    if (this.inflight.has(key)) return this.inflight.get(key);
+    const read = (async () => {
+      const response = await this.send(
+        'object/' + encodeURIComponent(this.bucket) + '/' + ref.path
+      );
+      if (!response.ok) throw failure('Uma imagem da campanha não foi encontrada.');
+      const bytes = Buffer.from(await response.arrayBuffer());
+      if (bytes.length !== ref.size || digest(bytes) !== ref.sha256)
+        throw failure('A imagem armazenada não corresponde à referência.');
+      this.remember(ref, bytes);
+      return bytes;
+    })();
+    this.inflight.set(key, read);
+    try {
+      return await read;
+    } finally {
+      this.inflight.delete(key);
+    }
+  }
+  async get(ref) {
+    const bytes = await this.getBytes(ref);
+    return `data:${ref.mime};base64,${bytes.toString('base64')}`;
   }
 }
 export async function externalizeMedia(value, media) {
+  if (isMediaURL(value)) return { _coroa_media: media.resolve(value) };
   if (typeof value === 'string' && value.startsWith('data:image/'))
     return { _coroa_media: await media.put(value) };
   if (Array.isArray(value)) {
@@ -137,6 +185,7 @@ export async function externalizeMedia(value, media) {
   return value;
 }
 export async function hydrateMedia(value, media) {
+  if (isMediaURL(value)) return media.get(media.resolve(value));
   if (reference(value)) {
     validateRef(value._coroa_media);
     return media.get(value._coroa_media);
@@ -151,5 +200,31 @@ export async function hydrateMedia(value, media) {
     for (const [key, item] of Object.entries(value)) result[key] = await hydrateMedia(item, media);
     return result;
   }
+  return value;
+}
+export function referenceMedia(value, media) {
+  if (reference(value)) {
+    validateRef(value._coroa_media);
+    return media.register(value._coroa_media);
+  }
+  if (Array.isArray(value)) return value.map((v) => referenceMedia(v, media));
+  if (value && typeof value === 'object')
+    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, referenceMedia(v, media)]));
+  return value;
+}
+export function compactMediaResult(value, media) {
+  if (typeof value === 'string' && value.startsWith('data:image/')) {
+    try {
+      const { ref } = info(value);
+      return media.refs.has(ref.path) ? mediaURL(ref) : value;
+    } catch {
+      return value;
+    }
+  }
+  if (Array.isArray(value)) return value.map((v) => compactMediaResult(v, media));
+  if (value && typeof value === 'object')
+    return Object.fromEntries(
+      Object.entries(value).map(([k, v]) => [k, compactMediaResult(v, media)])
+    );
   return value;
 }

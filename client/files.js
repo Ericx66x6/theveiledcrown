@@ -64,7 +64,7 @@ export async function exportTable() {
   const root = await api(
     session()?.account.role === 'admin' ? '/api/json/workspace' : '/api/json/player'
   );
-  download('coroa-portal.json', root);
+  await download('coroa-portal.json', root);
   toast('Backup JSON gerado.');
 }
 export async function exportZip() {
@@ -73,7 +73,7 @@ export async function exportZip() {
   toast('Pacote de JSONs gerado.');
 }
 export async function exportPlayer(id) {
-  download(
+  await download(
     `personagem-${id}-backup.json`,
     await api('/api/json/player', { data: { character_id: id } })
   );

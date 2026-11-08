@@ -115,4 +115,4 @@ const html = (await readFile(resolve(root, 'client/index.html'), 'utf8'))
     `<meta http-equiv="Content-Security-Policy" content="${csp}; manifest-src 'self'"><meta name="description"`
   );
 await writeFile(resolve(out, 'index.html'), html);
-console.log('Coroa Velada 9 online compilada em dist/.');
+console.log('Coroa Velada 10.0.0 online compilada em dist/.');

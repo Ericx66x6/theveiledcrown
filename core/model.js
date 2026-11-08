@@ -1,3 +1,4 @@
+import { isImageSource } from './media-reference.js';
 import { imageData } from './image-data.js';
 import { jsonDestinationError } from './json-kind.js';
 import { limits, xpCost, newId } from '../shared/rules.js';
@@ -248,7 +249,7 @@ export function validatePlayer(source, game) {
   text(p.profilepicture, 'Retrato', 2000000);
   if (
     p.profilepicture &&
-    !p.profilepicture.startsWith('data:image/') &&
+    !isImageSource(p.profilepicture) &&
     !p.profilepicture.startsWith('https://') &&
     p.profilepicture !== 'image_link'
   )

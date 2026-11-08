@@ -942,3 +942,67 @@ body.reduce-effects .game-finale {
   clip-path: inset(50%) !important;
   white-space: nowrap !important;
 }
+
+/* Persistent feedback for ordinary saves, without freezing the sheet. */
+#portal-activity {
+  position: fixed;
+  top: 82px;
+  right: 24px;
+  z-index: 11000;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  max-width: calc(100vw - 32px);
+  padding: 13px 18px;
+  border: 1px solid #8d304b;
+  border-radius: 12px;
+  background: #170e17f5;
+  color: #efd5df;
+  box-shadow: 0 8px 35px #0008;
+  font: 12px/1.5 system-ui;
+  pointer-events: none;
+}
+#portal-activity[hidden] {
+  display: none;
+}
+.activity-spinner {
+  width: 17px;
+  height: 17px;
+  border: 2px solid #72314b;
+  border-top-color: #f68dae;
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: activity-spin 0.85s linear infinite;
+}
+#portal-activity button {
+  pointer-events: auto;
+  color: #ffc2d5;
+  background: transparent;
+  border: 0;
+  text-decoration: underline;
+  cursor: pointer;
+  font: inherit;
+}
+@keyframes activity-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (max-width: 650px) {
+  #portal-activity {
+    top: 65px;
+    right: 12px;
+    left: 12px;
+    justify-content: center;
+    padding: 11px 14px;
+    font-size: 11px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .activity-spinner {
+    animation: none;
+  }
+}
+body.reduce-effects .activity-spinner {
+  animation: none;
+}

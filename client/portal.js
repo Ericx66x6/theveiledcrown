@@ -1,3 +1,4 @@
+import { isImageSource } from '../core/media-reference.js';
 import { NavigationTrail } from './navigation.js';
 import { queueExperience, disposeExperience, animatePage } from './game-experience.js';
 import { loyaltyPage, loyaltyAction } from './loyalty.js';
@@ -44,6 +45,7 @@ import { api, session, saveSession, clearSession, isDemo, store } from './api.js
 import { labels, limits, newId } from '../shared/rules.js';
 import {
   loadFeatureState,
+  refreshViewCache,
   campaignHub,
   notesPage,
   questsPage,
@@ -292,7 +294,7 @@ function initShell() {
   document.body.classList.remove('login-page');
   document.querySelector('.skip-link')?.setAttribute('href', '#main-content');
   $('#app').innerHTML =
-    `<aside id="sidebar" class="sidebar"><a href="#campaigns" class="brand"><span class="brand-crest">${crown}</span><span>A COROA VELADA<small>ONDE AS HISTÓRIAS VIVEM</small></span></a><button type="button" data-action="close-menu" class="icon-button drawer-close" aria-label="Fechar navegação">${icon('close')}</button><div data-nav-root></div><div class="sidebar-footer"><p>O sangue lembra.<br><span>A noite nunca esquece.</span></p><span class="version">PORTAL ONLINE · V9.3.1 BETA</span></div></aside><div class="workspace"><header class="topbar"><div class="breadcrumb"><button data-action="menu" class="icon-button mobile-menu" aria-label="Abrir navegação">${icon('menu')}</button><span class="campaign-breadcrumb"></span><i>/</i><strong id="breadcrumb-current"></strong></div><div class="topbar-right">${button(icon('search'), 'global-search', 'aria-label="Pesquisar em toda a campanha" title="Pesquisar"', 'icon-button')}${soundButton()}${button(icon('download') + ' <span>Salvar JSON</span>', 'backup-table', 'aria-label="Salvar JSONs do portal"', 'button ghost top-export')}<button type="button" class="icon-button notification-button" data-action="nav-notifications" aria-label="Notificações">${icon('notes')}<span data-notification-count hidden></span></button><button type="button" class="user-button" data-action="nav-profile" aria-label="Abrir meu perfil" title="Meu perfil"><span class="avatar small" data-user-avatar></span><span data-user-name></span></button><button class="icon-button" data-action="logout" aria-label="Sair">${icon('logout')}</button></div></header><div class="connection-banner"><span>${icon('save')} <span data-sync-label></span></span><span>Atualização automática da campanha</span></div><div class="route-toolbar" aria-label="Navegação da página"><button type="button" class="button ghost" data-action="route-back"><span class="back-arrow">${icon('arrow')}</span> Voltar</button><span data-route-label></span><button type="button" class="text-button" data-action="route-home">Início</button></div><div id="xp-hud"></div><main id="main-content" tabindex="-1"></main><footer class="app-footer"><span>A COROA VELADA</span><span>Suas histórias, além do véu.</span><span>◇</span></footer></div><button type="button" class="drawer-backdrop" data-action="close-menu" aria-label="Fechar menu"></button><nav class="mobile-bottom" aria-label="Navegação principal"></nav>`;
+    `<aside id="sidebar" class="sidebar"><a href="#campaigns" class="brand"><span class="brand-crest">${crown}</span><span>A COROA VELADA<small>ONDE AS HISTÓRIAS VIVEM</small></span></a><button type="button" data-action="close-menu" class="icon-button drawer-close" aria-label="Fechar navegação">${icon('close')}</button><div data-nav-root></div><div class="sidebar-footer"><p>O sangue lembra.<br><span>A noite nunca esquece.</span></p><span class="version">PORTAL ONLINE · V10.0 OFICIAL</span></div></aside><div class="workspace"><header class="topbar"><div class="breadcrumb"><button data-action="menu" class="icon-button mobile-menu" aria-label="Abrir navegação">${icon('menu')}</button><span class="campaign-breadcrumb"></span><i>/</i><strong id="breadcrumb-current"></strong></div><div class="topbar-right">${button(icon('search'), 'global-search', 'aria-label="Pesquisar em toda a campanha" title="Pesquisar"', 'icon-button')}${soundButton()}${button(icon('download') + ' <span>Salvar JSON</span>', 'backup-table', 'aria-label="Salvar JSONs do portal"', 'button ghost top-export')}<button type="button" class="icon-button notification-button" data-action="nav-notifications" aria-label="Notificações">${icon('notes')}<span data-notification-count hidden></span></button><button type="button" class="user-button" data-action="nav-profile" aria-label="Abrir meu perfil" title="Meu perfil"><span class="avatar small" data-user-avatar></span><span data-user-name></span></button><button class="icon-button" data-action="logout" aria-label="Sair">${icon('logout')}</button></div></header><div class="connection-banner"><span>${icon('save')} <span data-sync-label></span></span><span>Atualização automática da campanha</span></div><div class="route-toolbar" aria-label="Navegação da página"><button type="button" class="button ghost" data-action="route-back"><span class="back-arrow">${icon('arrow')}</span> Voltar</button><span data-route-label></span><button type="button" class="text-button" data-action="route-home">Início</button></div><div id="xp-hud"></div><main id="main-content" tabindex="-1"></main><footer class="app-footer"><span>A COROA VELADA</span><span>Suas histórias, além do véu.</span><span>◇</span></footer></div><button type="button" class="drawer-backdrop" data-action="close-menu" aria-label="Fechar menu"></button><nav class="mobile-bottom" aria-label="Navegação principal"></nav>`;
   document.addEventListener('click', handleClick, { signal: events.signal });
   document.querySelector('.route-toolbar').insertAdjacentHTML('beforebegin', playerTestBanner());
   document.addEventListener('submit', handleSubmit, { signal: events.signal });
@@ -350,7 +352,7 @@ async function mutate(path, data, method = 'POST') {
     if (result?.id === player()?.id && result?.status && typeof result.status === 'object')
       state.player = result;
     try {
-      await loadPlayers();
+      await loadFeatureState(state, { silent: true });
     } catch {
       toast('A alteração foi salva. A lista de personagens não pôde ser atualizada agora.', true);
     }
@@ -426,10 +428,6 @@ async function reloadCampaign() {
   state.editor = null;
   state.archived = false;
   await refreshAll();
-  if (!admin() && state.campaigns.length) {
-    state.rewards = await api('/api/rewards/check-in', { method: 'POST', data: {}, silent: true });
-    queueExperience(context());
-  }
   await go(
     !state.campaigns.length
       ? 'campaigns'
@@ -439,8 +437,47 @@ async function reloadCampaign() {
           ? 'overview'
           : 'my-characters'
   );
+  registerPresence();
+}
+let presenceFlight;
+function registerPresence() {
+  const r = state.rewards;
+  if (admin() || !r?.enabled || document.hidden) return;
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: r.time_zone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).formatToParts(new Date());
+  const part = (key) => parts.find((p) => p.type === key).value;
+  const day = part('year') + '-' + part('month') + '-' + part('day');
+  if (r.checked_today && r.today === day) return;
+  const scope = state.account.id + ':' + state.campaign.id,
+    signal = events.signal;
+  if (presenceFlight?.scope === scope) return presenceFlight.promise;
+  const flight = { scope };
+  presenceFlight = flight;
+  flight.promise = api('/api/rewards/check-in', { method: 'POST', data: {}, silent: true })
+    .then((rewards) => {
+      if (signal.aborted || state.account.id + ':' + state.campaign.id !== scope) return;
+      state.rewards = rewards;
+      queueExperience(context());
+      if (
+        ['rewards', 'my-characters'].includes(state.view) &&
+        !state.editor &&
+        !document.querySelector('#modal[open]') &&
+        !document.activeElement?.matches('input,textarea,select')
+      )
+        render();
+    })
+    .catch(() => {})
+    .finally(() => {
+      if (presenceFlight === flight) presenceFlight = null;
+    });
+  return flight.promise;
 }
 function render() {
+  refreshViewCache(state);
   if (
     !state.campaigns?.length &&
     !['campaigns', 'profile', 'storage', 'trash', 'notifications', 'registrations'].includes(
@@ -578,7 +615,10 @@ function render() {
         ? empty('Nenhum personagem selecionado.', 'Selecione uma ficha para continuar.')
         : views[state.view]();
   }
-  $('#main-content').innerHTML = html;
+  $('#main-content').innerHTML = html.replace(
+    /<img\b(?![^>]*\bloading=)/g,
+    '<img loading="lazy" decoding="async"'
+  );
   queueExperience(context());
   if (state.view === 'characters') bindSearch();
   if (state.view === 'new-player' || state.view === 'proposal-editor') state.editor?.bind();
@@ -608,7 +648,7 @@ function overview() {
   const experience = admin()
     ? `<span class="metric-label">RECOMPENSAS DA MESA</span>${button('Distribuir XP ' + icon('arrow'), 'distribute-xp', '', 'button primary')}<p class="hint">Escolha vários personagens e conceda a recompensa de uma vez.</p>`
     : `<span class="metric-label">Experiência disponível</span><strong>${p.xp}<small>XP</small></strong>${button('Evoluir traços ' + icon('arrow'), 'nav-attributes', '', 'text-button')}`;
-  return `<div class="welcome-row"><span class="eyebrow">O LIVRO DA NOITE · FICHA #${p.id}</span><span class="save-state">${icon('save')} ${p.updated_at ? 'Salvo em ' + date(p.updated_at) : 'Ficha carregada'} ${button(icon('refresh'), 'refresh', 'aria-label="Atualizar ficha"', 'icon-button')}</span></div><section class="character-hero"><div class="hero-lines" aria-hidden="true"></div><div class="character-avatar" data-action="view-portrait" role="button" tabindex="0" aria-label="Ver retrato ampliado">${p.profilepicture?.startsWith('data:image/') ? `<img src="${esc(p.profilepicture)}" alt="Retrato de ${esc(p.char)}" style="${portraitStyle(p)}" loading="lazy" referrerpolicy="no-referrer">` : `<span>${esc(p.char.slice(0, 1))}</span>`}<span class="portrait-caption">RETRATO DO PERSONAGEM</span><span class="avatar-diamond">◇</span></div><div class="character-identity"><div class="hero-tags"><span class="tag red">${esc(p.cla)}</span><span class="tag">${p.generation}ª GERAÇÃO</span>${p.archived ? '<span class="tag red">ARQUIVADO</span>' : ''}</div><h1>${esc(p.char)}</h1><p>Interpretado por <strong>${esc(p.player)}</strong></p></div><div class="hero-emblem" aria-hidden="true">${crown}</div><div class="hero-actions">${button(icon('edit') + ' Retrato', 'portrait', '', 'button ghost')}${button(icon('download') + ' Salvar JSON', 'export', '', 'button ghost')}${admin() ? button(icon('edit') + ' Editar ficha', 'identity', '', 'button ghost') : ''}</div></section><div class="overview-grid"><section class="panel vitae-panel"><div class="panel-heading"><span class="eyebrow">A ESSÊNCIA DO PERSONAGEM</span><span class="tiny-diamond">◇</span></div><div class="vitae-numbers"><div>${experience}</div><div><span class="metric-label">Potência do sangue</span><strong>${p.bloodpotency}<small>NÍVEL</small></strong>${dots(p.bloodpotency, 10)}</div></div><div class="panel-bottom">A experiência molda o monstro. O sangue revela seu poder.</div></section><section class="panel ambition-panel"><span class="eyebrow">SEU CADERNO DA CRÔNICA</span><h2>As pistas ficam. As histórias continuam.</h2><p>Anotações pessoais e compartilhadas, reunidas em um único lugar.</p>${button('Abrir anotações ' + icon('arrow'), 'nav-notes', '', 'text-button')}${button('Ambição e desejo ' + icon('arrow'), 'nav-aspirations', '', 'button ghost')}</section></div>${sectionHead('Entre a humanidade e a besta', 'Ajuste os recursos. A confirmação aparece após uma breve pausa.')}${pendingStatus ? `<div class="pending-status" role="status">${icon('clock')} Prévia de alteração · aguardando confirmação ${button('Desfazer', 'cancel-status', '', 'button ghost compact')}</div>` : ''}<div class="status-grid">${Object.entries(
+  return `<div class="welcome-row"><span class="eyebrow">O LIVRO DA NOITE · FICHA #${p.id}</span><span class="save-state">${icon('save')} ${p.updated_at ? 'Salvo em ' + date(p.updated_at) : 'Ficha carregada'} ${button(icon('refresh'), 'refresh', 'aria-label="Atualizar ficha"', 'icon-button')}</span></div><section class="character-hero"><div class="hero-lines" aria-hidden="true"></div><div class="character-avatar" data-action="view-portrait" role="button" tabindex="0" aria-label="Ver retrato ampliado">${isImageSource(p.profilepicture) ? `<img loading="eager" decoding="async" fetchpriority="high" src="${esc(p.profilepicture)}" alt="Retrato de ${esc(p.char)}" style="${portraitStyle(p)}" loading="lazy" referrerpolicy="no-referrer">` : `<span>${esc(p.char.slice(0, 1))}</span>`}<span class="portrait-caption">RETRATO DO PERSONAGEM</span><span class="avatar-diamond">◇</span></div><div class="character-identity"><div class="hero-tags"><span class="tag red">${esc(p.cla)}</span><span class="tag">${p.generation}ª GERAÇÃO</span>${p.archived ? '<span class="tag red">ARQUIVADO</span>' : ''}</div><h1>${esc(p.char)}</h1><p>Interpretado por <strong>${esc(p.player)}</strong></p></div><div class="hero-emblem" aria-hidden="true">${crown}</div><div class="hero-actions">${button(icon('edit') + ' Retrato', 'portrait', '', 'button ghost')}${button(icon('download') + ' Salvar JSON', 'export', '', 'button ghost')}${admin() ? button(icon('edit') + ' Editar ficha', 'identity', '', 'button ghost') : ''}</div></section><div class="overview-grid"><section class="panel vitae-panel"><div class="panel-heading"><span class="eyebrow">A ESSÊNCIA DO PERSONAGEM</span><span class="tiny-diamond">◇</span></div><div class="vitae-numbers"><div>${experience}</div><div><span class="metric-label">Potência do sangue</span><strong>${p.bloodpotency}<small>NÍVEL</small></strong>${dots(p.bloodpotency, 10)}</div></div><div class="panel-bottom">A experiência molda o monstro. O sangue revela seu poder.</div></section><section class="panel ambition-panel"><span class="eyebrow">SEU CADERNO DA CRÔNICA</span><h2>As pistas ficam. As histórias continuam.</h2><p>Anotações pessoais e compartilhadas, reunidas em um único lugar.</p>${button('Abrir anotações ' + icon('arrow'), 'nav-notes', '', 'text-button')}${button('Ambição e desejo ' + icon('arrow'), 'nav-aspirations', '', 'button ghost')}</section></div>${sectionHead('Entre a humanidade e a besta', 'Ajuste os recursos. A confirmação aparece após uma breve pausa.')}${pendingStatus ? `<div class="pending-status" role="status">${icon('clock')} Prévia de alteração · aguardando confirmação ${button('Desfazer', 'cancel-status', '', 'button ghost compact')}</div>` : ''}<div class="status-grid">${Object.entries(
     state.game.status_rules
   )
     .map(([key, rule]) => {
@@ -755,7 +795,7 @@ function characterRows() {
       `${p.char} ${p.player} ${p.cla}`.toLowerCase().includes(q)
     );
   return matches.length
-    ? `<div class="admin-character-grid">${matches.map((p) => `<article class="admin-character-card ${p.archived ? 'archived' : ''}"><div class="admin-character-top"><span class="character-initial">${p.profilepicture?.startsWith('data:image/') ? `<img src="${esc(p.profilepicture)}" alt="${esc(p.char)}">` : esc(p.char.slice(0, 1))}</span><div><span class="eyebrow">FICHA #${p.id}${p.archived ? ' · ARQUIVADA' : ''}</span><h3>${esc(p.char)}</h3><p>${esc(p.player)}</p></div><span class="xp-pill">${p.xp} XP</span></div><div class="admin-character-meta"><span class="tag red">${esc(p.cla)}</span><span>${p.generation}ª geração</span></div><div class="admin-character-actions">${button('Abrir ficha', 'open-character', `data-id="${p.id}"`, 'button primary')}${button(icon('edit') + ' Editar', 'edit-full', `data-id="${p.id}" ${p.archived ? 'disabled' : ''}`, 'button ghost')}${button('Conceder XP', 'xp', `data-id="${p.id}" ${p.archived ? 'disabled' : ''}`, 'button ghost')}${button('Transferir controle', 'assign-character', `data-id="${p.id}"`, 'button ghost')}${button(icon('download') + ' Download', 'player-package', `data-id="${p.id}"`, 'button ghost')}${button('Remover', 'delete-character', `data-id="${p.id}"`, 'text-button danger')}${button(p.archived ? 'Restaurar' : 'Arquivar', 'archive', `data-id="${p.id}"`, 'text-button danger')}</div></article>`).join('')}</div>`
+    ? `<div class="admin-character-grid">${matches.map((p) => `<article class="admin-character-card ${p.archived ? 'archived' : ''}"><div class="admin-character-top"><span class="character-initial">${isImageSource(p.profilepicture) ? `<img src="${esc(p.profilepicture)}" alt="${esc(p.char)}">` : esc(p.char.slice(0, 1))}</span><div><span class="eyebrow">FICHA #${p.id}${p.archived ? ' · ARQUIVADA' : ''}</span><h3>${esc(p.char)}</h3><p>${esc(p.player)}</p></div><span class="xp-pill">${p.xp} XP</span></div><div class="admin-character-meta"><span class="tag red">${esc(p.cla)}</span><span>${p.generation}ª geração</span></div><div class="admin-character-actions">${button('Abrir ficha', 'open-character', `data-id="${p.id}"`, 'button primary')}${button(icon('edit') + ' Editar', 'edit-full', `data-id="${p.id}" ${p.archived ? 'disabled' : ''}`, 'button ghost')}${button('Conceder XP', 'xp', `data-id="${p.id}" ${p.archived ? 'disabled' : ''}`, 'button ghost')}${button('Transferir controle', 'assign-character', `data-id="${p.id}"`, 'button ghost')}${button(icon('download') + ' Download', 'player-package', `data-id="${p.id}"`, 'button ghost')}${button('Remover', 'delete-character', `data-id="${p.id}"`, 'text-button danger')}${button(p.archived ? 'Restaurar' : 'Arquivar', 'archive', `data-id="${p.id}"`, 'text-button danger')}</div></article>`).join('')}</div>`
     : empty(
         'A próxima história começa aqui.',
         'Cadastre o jogador e transcreva a ficha de papel. O arquivo JSON e o acesso serão criados para você.',
@@ -1064,11 +1104,11 @@ async function handleClick(event) {
         toast('Ficha atualizada.');
         break;
       case 'export':
-        download(`coroa-ficha-${player().id}.json`, player());
+        await download(`coroa-ficha-${player().id}.json`, player());
         toast('Ficha exportada sem credenciais.');
         break;
       case 'export-game':
-        download('game_data.json', state.game);
+        await download('game_data.json', state.game);
         break;
       case 'status':
         queueStatus(key, Number(control.dataset.delta));
@@ -1103,7 +1143,7 @@ async function handleClick(event) {
       case 'view-portrait':
         modal(
           player().char,
-          player().profilepicture?.startsWith('data:image/')
+          isImageSource(player().profilepicture)
             ? `<img class="full-portrait" src="${esc(player().profilepicture)}" alt="${esc(player().char)}">`
             : '<p>Envie um retrato para dar um rosto à sua história.</p>',
           null,
@@ -1649,26 +1689,15 @@ export async function restartPortal(view, nextSession) {
   }
 }
 export async function startPortal() {
+  state.game = null;
+  state.campaign = null;
+  state.rewards = null;
   events.abort();
   events = new AbortController();
   state.editor = null;
   state.player = null;
   await loadFeatureState(state);
   saveSession({ ...session(), account: state.account });
-  if (state.account.role === 'player' && state.campaigns.length) {
-    try {
-      state.rewards = await api('/api/rewards/check-in', {
-        method: 'POST',
-        data: {},
-        silent: true
-      });
-    } catch (error) {
-      toast(
-        'Não foi possível registrar sua presença. Você pode tentar em Presença na crônica.',
-        true
-      );
-    }
-  }
   state.evolution = null;
   state.reviewId = null;
   state.mapId = null;
@@ -1703,11 +1732,13 @@ export async function startPortal() {
   );
   updateSelect();
   render();
+  registerPresence();
   {
     let seen = store.remoteRevision,
       checking = false;
     const synchronize = async () => {
       if (checking || document.hidden) return;
+      registerPresence();
       checking = true;
       try {
         const status = await api('/api/sync', { silent: true });
@@ -1716,7 +1747,8 @@ export async function startPortal() {
           state.editor ||
           pendingStatus ||
           state.view === 'evolution' ||
-          document.querySelector('#modal[open]') ||
+          document.body.classList.contains('drawer-open') ||
+          document.querySelector('dialog[open]') ||
           document.activeElement?.matches('input,textarea,select') ||
           document.querySelector('form[data-dirty="true"]');
         if (editing) return;
@@ -1742,23 +1774,7 @@ export async function startPortal() {
     clearInterval(syncTimer);
     syncTimer = setInterval(synchronize, 20000);
     const returnToPortal = async () => {
-      if (!admin() && state.campaigns.length && !document.hidden) {
-        try {
-          const previous = state.rewards;
-          state.rewards = await api('/api/rewards/check-in', {
-            method: 'POST',
-            data: {},
-            silent: true
-          });
-          queueExperience(context());
-          if (
-            state.view === 'rewards' &&
-            previous?.today !== state.rewards.today &&
-            !document.querySelector('#modal[open]')
-          )
-            render();
-        } catch {}
-      }
+      await registerPresence();
       await synchronize();
     };
     window.addEventListener('focus', returnToPortal, { signal: events.signal });

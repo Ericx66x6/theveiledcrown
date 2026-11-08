@@ -1,3 +1,4 @@
+import { isImageSource } from './media-reference.js';
 import { clone, fail, newId, text, timestamp } from './model.js';
 import { notification } from './notifications.js';
 import {
@@ -29,7 +30,7 @@ export function publicMember(account, campaign, full = false) {
         id: p.id,
         char: p.char,
         cla: p.cla,
-        profilepicture: full && p.profilepicture?.startsWith('data:image/') ? p.profilepicture : ''
+        profilepicture: full && isImageSource(p.profilepicture) ? p.profilepicture : ''
       }))
   };
 }

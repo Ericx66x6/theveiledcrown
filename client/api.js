@@ -3,6 +3,10 @@ import { RemoteClient } from './transport.js';
 let activeSession = null,
   transport;
 export const session = () => activeSession;
+export const setViewCache = (value) => {
+  if (transport) transport.viewCache = value;
+};
+export const takePortalState = (request) => transport?.takePortalState(request) || null;
 export const store = {
   drafts: {},
   remoteRevision: 0,
@@ -33,14 +37,27 @@ export async function initialize() {
 }
 export async function api(
   path,
-  { method = 'GET', data, allowUnauthorized = false, silent = false } = {}
+  { method = 'GET', data, allowUnauthorized = false, silent = false, blocking } = {}
 ) {
   if (!transport) throw new Error('A conexão da campanha ainda não foi inicializada.');
   const controller = new AbortController();
   const done = silent
     ? () => {}
-    : beginLoading(method === 'GET' ? 'Carregando a crônica…' : 'Salvando na crônica…', () =>
-        controller.abort()
+    : beginLoading(
+        method === 'GET'
+          ? 'Carregando a crônica…'
+          : path === '/api/media/portable'
+            ? 'Preparando seu download…'
+            : 'Salvando na crônica…',
+        () => controller.abort(),
+        {
+          blocking:
+            blocking ??
+            (!document.querySelector('#main-content') ||
+              /\/api\/(json\/|exchange\/import|admin\/reset|campaigns\/[^/]+\/select|media\/portable)/.test(
+                path
+              ))
+        }
       );
   try {
     const result = await transport.request(path, {
@@ -50,7 +67,8 @@ export async function api(
       signal: controller.signal
     });
     store.remoteRevision = transport.store.remoteRevision;
-    if (method !== 'GET') window.dispatchEvent(new CustomEvent('portal:saved'));
+    if (method !== 'GET' && path !== '/api/media/portable')
+      window.dispatchEvent(new CustomEvent('portal:saved'));
     return result;
   } catch (error) {
     if (error.code === 'PLAYER_TEST_EXPIRED')

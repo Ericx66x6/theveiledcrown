@@ -10,7 +10,7 @@ if (!qa) {
 } else {
   const { build } = await import('esbuild');
   const { previewFixture } = await import('../tests/preview/fixture.mjs');
-  const { MemoryRepository } = await import('../server/repository.mjs');
+  const { previewRepository } = await import('../tests/preview/repository.mjs');
   const { createPortalServer } = await import('../server/app.mjs');
   await import('./build.mjs');
   const { root, identities } = await previewFixture();
@@ -25,7 +25,7 @@ if (!qa) {
   for (const role of ['admin', 'player']) {
     await build({
       stdin: {
-        contents: `import {startApp} from './client/app.js';import {api} from './client/api.js';(async()=>{await startApp({identity:window.COROA_QA_IDENTITIES.${role}});await api('/auth/me');})();`,
+        contents: `import {startApp} from './client/app.js';import {api,initialize,saveSession} from './client/api.js';(async()=>{const identity=window.COROA_QA_IDENTITIES.${role};await initialize();saveSession(identity);await api('/auth/me');await startApp({identity});})();`,
         resolveDir: process.cwd(),
         sourcefile: 'preview-entry.js'
       },
@@ -51,12 +51,14 @@ if (!qa) {
     resolve(out, 'mobile.js'),
     `document.querySelectorAll('[data-width]').forEach(b=>b.onclick=()=>document.querySelector('iframe').style.width=b.dataset.width+'px');document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>document.querySelector('iframe').src=b.dataset.page+'.html');`
   );
+  const { repository, close } = await previewRepository(root);
   const server = createPortalServer({
-    repository: new MemoryRepository(root),
+    repository,
     bootstrapToken: 'instalacao-ficticia-da-previa-0123456789',
     staticDir: out,
     allowSameOriginFrames: true
   });
+  server.on('close', close);
   server.listen(Number(process.env.PORT || 4173), '0.0.0.0', () =>
     console.log('Prévia HTTP com dados fictícios.')
   );

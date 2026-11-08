@@ -1,4 +1,4 @@
-# A Coroa Velada 8 · instalação online
+# A Coroa Velada 10.0 oficial · instalação online
 
 Para atualizar uma instalação existente, siga primeiro [ATUALIZAR.md](ATUALIZAR.md).
 
@@ -21,7 +21,7 @@ No botão **Connect** do projeto, copie a **Project URL**, no formato `https://S
 1. No Supabase, abra **SQL Editor → New query**.
 2. No ZIP extraído, abra `supabase/INSTALAR.sql` com um editor de texto.
 3. Copie **todo** o conteúdo para a consulta e clique em **Run**.
-4. Confira no **Table Editor** as tabelas `coroa_documents` e `coroa_revision`.
+4. Confira no **Table Editor** as tabelas `coroa_documents`, `coroa_revision` e `coroa_deleted_documents`.
 5. Confira em **Storage** o novo bucket **`coroa-imagens`**, marcado como **Private**.
 
 O instalador não apaga seus buckets antigos de imagens ou fichas. Pode mantê-los. Esta versão passa a usar:
@@ -32,7 +32,7 @@ O instalador não apaga seus buckets antigos de imagens ou fichas. Pode mantê-l
 | `public.coroa_revision` | Revisão usada para impedir que dois salvamentos sobrescrevam dados silenciosamente |
 | Storage `coroa-imagens` | Fotos, retratos, imagens de NPCs e mapas JPG, PNG ou WebP |
 
-JSONB é o documento JSON armazenado no banco. Você continua podendo baixar os JSONs pelo painel, mas não precisa criar arquivos nem fazer upload manual de cada ficha no Supabase. As imagens são enviadas ao Storage pela API; os documentos guardam referências. Os backups autorizados reconstituem as imagens dentro do JSON.
+JSONB é o documento JSON armazenado no banco. Você continua podendo baixar os JSONs pelo painel, mas não precisa criar arquivos nem fazer upload manual de cada ficha no Supabase. Na versão 10, contas, fichas, notas, mapas e históricos têm registros próprios. Só os registros alterados são enviados no salvamento. As imagens são enviadas ao Storage privado e abertas sob autorização, conforme aparecem na tela. Os backups autorizados reconstituem as imagens dentro do JSON.
 
 O bucket novo tem limite de 45 MiB por objeto. Em **Storage → Settings**, deixe o limite global de upload em pelo menos 45 MiB, respeitando o limite do seu plano. A interface pode reduzir imagens antes do envio e também possui limites de tamanho. Não marque o bucket como público e não adicione políticas de acesso anônimo para ele: só o servidor deve acessá-lo. O SQL inclui proteção mesmo se seu projeto já tiver políticas antigas mais amplas para outros buckets.
 
@@ -100,7 +100,7 @@ Clique em **Deploy Web Service**. Ao ficar **Live**, copie o endereço HTTPS que
 Abra `URL-DO-RENDER/api/health`. A resposta esperada contém:
 
 ```json
-{"status":"ok","version":"9.0.0"}
+{"status":"ok","version":"10.0.0","storage":"incremental-v10","maintenance":false}
 ```
 
 Depois abra somente `URL-DO-RENDER`. Clique em **Entrar** para chegar ao formulário do primeiro acesso. Preencha nome, login, senha com pelo menos dez caracteres e a `BOOTSTRAP_TOKEN` configurada no Render. Clique em **Criar portal e entrar**.

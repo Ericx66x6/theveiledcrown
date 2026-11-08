@@ -1,3 +1,4 @@
+import { isImageSource } from '../core/media-reference.js';
 import { presenceWidget } from './loyalty.js';
 import { showChallenge } from './community.js';
 import { realMoney } from './rule-content.js';
@@ -27,7 +28,7 @@ const statusLabels = {
   rejected: 'RECUSADO'
 };
 const cardPortrait = (p) =>
-  p.profilepicture?.startsWith('data:image/')
+  isImageSource(p.profilepicture)
     ? `<img src="${esc(p.profilepicture)}" alt="${esc(p.char)}">`
     : `<span>${esc(p.char.slice(0, 1))}</span>`;
 export function narratorDashboard(ctx) {
@@ -160,14 +161,14 @@ export async function administrationAction(action, data, ctx) {
   }
   if (action === 'export-submission') {
     const packet = await api('/api/exchange/submission', { data: { id: data.id } });
-    download('solicitacao-' + packet.submission.character.id + '.json', packet);
+    await download('solicitacao-' + packet.submission.character.id + '.json', packet);
     toast('Solicitação exportada. Envie o JSON ao narrador.');
     return true;
   }
   if (action === 'export-account') {
     const account = s.accounts.find((a) => a.id === data.id),
       packet = await api('/api/json/player', { data: { account_id: account.id } });
-    download('acesso-' + account.username + '-coroa.json', packet);
+    await download('acesso-' + account.username + '-coroa.json', packet);
     toast('Download do acesso concluído.');
     return true;
   }

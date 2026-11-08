@@ -300,7 +300,7 @@ export async function evolutionAction(action, data, ctx) {
       });
       ctx.state.player = result;
       await new Promise((resolve) =>
-        setTimeout(resolve, ctx.state.account.preferences?.animations === false ? 0 : 650)
+        setTimeout(resolve, ctx.state.account.preferences?.animations === false ? 0 : 120)
       );
       u.stage = 'success';
       u.busy = false;

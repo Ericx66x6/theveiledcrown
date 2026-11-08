@@ -151,3 +151,16 @@ O game-data pode informar `format: coroa-game-data-v1`; arquivos antigos com os 
 | `POST /api/rewards/ack` | Jogador: `ids`, de 1 a 50 recibos próprios. Reconhece animações sem remover histórico ou notificações. |
 
 `GET /api/portal-state` inclui `rewards` para o jogador e `registrations` para o narrador. A configuração fica em `game.login_rewards`; é salva na rota existente `PUT /api/game`, com `_expected_revision`. Ver [JOGO-VIVO.md](JOGO-VIVO.md).
+# Protocolo de desempenho da versão 10
+
+O contrato anterior continua disponível. O frontend 10 envia `X-Coroa-Client: 10` e negocia o suporte pelo cabeçalho de resposta `X-Coroa-Protocol: 10`. Sem esse cabeçalho, o cliente não envia os metadados de atualização de tela para servidores antigos.
+
+- `GET /api/portal-state` aceita `incremental`, `known_account_id`, `known_campaign_id`, `known_game_revision` e `known_character_revisions`. Responde `game:null` quando o livro não mudou e `players` apenas com fichas alteradas; `player_ids` contém a lista autorizada completa, permitindo remover fichas excluídas, arquivadas ou redesignadas. Os dados são filtrados novamente no servidor em toda consulta.
+- Mutações podem incluir `__portal_view` com a mesma visão conhecida. A API remove esse controle antes da operação de domínio e responde `{_coroa_update:10,result,state,view}` após o commit. O transporte entrega `result` ao chamador e aplica `state` uma vez no contexto correspondente. Mudanças de conta, campanha ou modo de teste descartam respostas antigas.
+- `GET /api/sync` mantém `{revision}`; não remonta o livro nem baixa imagens. Leituras usam cache de revisão curto (750 ms), e mutações consultam a revisão do banco antes de gravar. Outra aba verifica a revisão a cada 20 s ou ao recuperar o foco.
+- `GET|HEAD /api/media/<sha256>.<jpg|png|webp>` exige sessão e autorização para a imagem. Os bytes são privados, com ETag e `Vary: Cookie, Authorization`; o bucket não se torna público. Novas requisições consultam a autorização antes de servir o cache. Uma cópia já baixada pelo usuário não pode ser desfeita retroativamente.
+- `POST /api/media/portable` recebe `{document}` e substitui referências autorizadas por imagens embutidas, para download de JSONs parciais. Não grava o documento. Os endpoints de backup completo e pacote do jogador já retornam JSON portátil.
+- `Server-Timing` apresenta `db`, `commit` e `app` em milissegundos. JSONs maiores podem usar gzip. Respostas de dados continuam `no-store`; o cache persistente de documentos não fica no navegador.
+- `COROA_MAINTENANCE=1` mantém `GET /api/health` disponível e responde 503 / `MAINTENANCE` às demais rotas de dados e autenticação. A configuração é aplicada ao iniciar o processo.
+
+O codec de persistência `coroa-storage-v10` é interno. Backups continuam no formato portátil existente. Escritas usam revisão esperada e uma transação SQL; somente conflitos conhecidos podem ser reavaliados automaticamente. Uma falha de confirmação não é repetida cegamente. As RPCs novas `coroa_poll_state` e `coroa_commit_documents` são exclusivas de `service_role` e exigem a migração documentada em `ATUALIZAR.md`.

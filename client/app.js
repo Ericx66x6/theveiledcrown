@@ -48,16 +48,14 @@ export async function startApp({ identity } = {}) {
   try {
     await initialize();
     await initializeFiles();
+    let loginStatus;
     if (identity) saveSession(identity);
     else {
-      try {
-        saveSession(await api('/auth/me', { allowUnauthorized: true }));
-      } catch (error) {
-        if (error.status !== 401) throw error;
-      }
+      loginStatus = await api('/auth/status', { allowUnauthorized: true });
+      if (loginStatus.session) saveSession(loginStatus.session);
     }
     if (session()) await enter();
-    else await showLogin(enter);
+    else await showLogin(enter, loginStatus);
   } catch (error) {
     document.querySelector('#app').innerHTML =
       `<main class="loading-screen"><h1>Não foi possível abrir o livro.</h1><p>${esc(error.message)}</p><p>Confira sua conexão com a campanha e tente novamente.</p><button type="button" class="button primary" id="retry-portal">Tentar novamente</button></main>`;

@@ -41,6 +41,9 @@ test('SQL real: migração, permissões e transação de documentos com revisão
     (e) => e.code === '42501'
   );
   await db.exec('reset role');
+  const installer = await readFile(new URL('../../supabase/INSTALAR.sql', import.meta.url), 'utf8');
+  await db.exec(installer);
+  await db.exec(installer);
 
   const docs = {
     'portal.json': { format: 'test' },
@@ -96,6 +99,12 @@ test('adaptador Supabase atravessa as funções SQL e preserva contas, sessões 
       'utf8'
     )
   );
+  await db.exec(
+    await readFile(
+      new URL('../../supabase/migrations/202611080001_incremental_v10.sql', import.meta.url),
+      'utf8'
+    )
+  );
   await db.exec('set role service_role');
   const initial = await seed();
   const fetcher = async (url, options) => {
@@ -105,12 +114,23 @@ test('adaptador Supabase atravessa as funções SQL e preserva contas, sessões 
     try {
       const name = new URL(url).pathname.split('/').at(-1);
       const q =
-        name === 'coroa_load_state'
-          ? await db.query('select public.coroa_load_state() as result')
-          : await db.query('select public.coroa_save_state($1,$2::jsonb) as result', [
-              args.p_expected_revision,
-              JSON.stringify(args.p_documents)
-            ]);
+        name === 'coroa_poll_state'
+          ? await db.query('select public.coroa_poll_state($1) as result', [args.p_known_revision])
+          : name === 'coroa_commit_documents'
+            ? await db.query(
+                'select public.coroa_commit_documents($1,$2::jsonb,$3::jsonb) as result',
+                [
+                  args.p_expected_revision,
+                  JSON.stringify(args.p_upserts),
+                  JSON.stringify(args.p_deleted_paths)
+                ]
+              )
+            : name === 'coroa_load_state'
+              ? await db.query('select public.coroa_load_state() as result')
+              : await db.query('select public.coroa_save_state($1,$2::jsonb) as result', [
+                  args.p_expected_revision,
+                  JSON.stringify(args.p_documents)
+                ]);
       return new Response(JSON.stringify(q.rows[0].result), { status: 200 });
     } catch (e) {
       return new Response(JSON.stringify({ code: e.code }), {

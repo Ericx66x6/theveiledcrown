@@ -1,6 +1,6 @@
 {
   "name": "theveiledcrown",
-  "version": "9.3.1",
+  "version": "10.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,7 +11,10 @@
     "test": "node --test tests/rules.test.mjs tests/domain/*.test.mjs tests/server/*.test.mjs",
     "test:all": "npm run build && npm test && npm run check",
     "format": "prettier --write \"client/*.{js,css}\" \"core/*.js\" \"server/*.mjs\" \"tests/**/*.mjs\" \"tools/*.mjs\"",
-    "qa:prepare": "node tools/prepare-preview.mjs"
+    "qa:prepare": "node tools/prepare-preview.mjs",
+    "benchmark": "node tools/benchmark.mjs",
+    "storage:migrate": "node --env-file-if-exists=.env tools/storage-maintenance.mjs migrate",
+    "storage:legacy": "node --env-file-if-exists=.env tools/storage-maintenance.mjs legacy"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.14",

@@ -73,8 +73,8 @@ export class CampaignStore {
       campaignRecord(this.root.default_game, { id: 'no-campaign', title: 'Escolha uma campanha' })
     );
   }
-  async workspace() {
-    return clone(this.root);
+  async workspace({ readOnly = false } = {}) {
+    return readOnly ? this.root : clone(this.root);
   }
   project() {
     const c = this.current();
