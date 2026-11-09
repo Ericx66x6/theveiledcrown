@@ -1,4 +1,5 @@
-import { clone, fail, number } from './model.js';
+import { clone, fail, number, text } from './model.js';
+import { clanGuides, commonDisciplineNames } from './clan-guide.js';
 export const creationKeys = [
   'atributes',
   'talents',
@@ -140,6 +141,26 @@ export function configureCreation(g) {
       }[key],
       ...old[key]
     };
+  const clans = g.character_creation.guided.clans;
+  if (!g.character_creation.clan_guide_version) {
+    if (!clans.some((c) => c.id === 'caitiff'))
+      clans.push({
+        id: 'caitiff',
+        name: 'Caitiff',
+        disciplines: [],
+        discipline_choices: commonDisciplineNames
+          .map((name) => find('disciplines', name))
+          .filter((id) => id !== null)
+      });
+    g.character_creation.clan_guide_version = 1;
+  }
+  for (const clan of clans) {
+    const preset = clanGuides.find((guide) => guide.id === clan.id);
+    if (preset) {
+      const { id, ...details } = preset;
+      clan.guide = { ...clone(details), ...clan.guide };
+    }
+  }
   for (const [parent, paths] of [
     [
       'Taumaturgia',
@@ -238,12 +259,44 @@ export function validateCreationConfig(g) {
     )
       fail('Clã de criação inválido.');
     ids.add(clan.id);
+    const flexible = Array.isArray(clan.discipline_choices);
     if (
       !Array.isArray(clan.disciplines) ||
-      clan.disciplines.length !== 3 ||
+      clan.disciplines.length !== (flexible ? 0 : 3) ||
       clan.disciplines.some((id) => id !== null && !g.disciplines.some((d) => d.id === id))
     )
       fail('Selecione três disciplinas cadastradas para o clã.');
+    if (
+      flexible &&
+      (clan.discipline_choices.length > 100 ||
+        new Set(clan.discipline_choices).size !== clan.discipline_choices.length ||
+        clan.discipline_choices.some(
+          (id) => !g.disciplines.some((d) => d.id === id && !d.parent_discipline_ids?.length)
+        ))
+    )
+      fail('As opções do clã precisam ser disciplinas diferentes e cadastradas.');
+    if (clan.guide) {
+      for (const key of [
+        'epithet',
+        'description',
+        'ideology',
+        'beginner_level',
+        'beginner_reason',
+        'beginner_tip',
+        'story_hook',
+        'weakness',
+        'source_url'
+      ])
+        if (clan.guide[key] !== undefined) text(clan.guide[key], 'Apresentação do clã', 3000);
+      for (const key of ['archetypes', 'attribute_tips', 'skill_tips'])
+        if (
+          clan.guide[key] !== undefined &&
+          (!Array.isArray(clan.guide[key]) ||
+            clan.guide[key].length > 20 ||
+            clan.guide[key].some((v) => typeof v !== 'string' || v.length > 300))
+        )
+          fail('Dicas do clã inválidas.');
+    }
   }
   for (const d of g.caracteristics) {
     const e = d.creation_effects;

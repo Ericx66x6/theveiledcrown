@@ -4,6 +4,8 @@ import { PortalService } from '../../core/portal-service.js';
 import { blank, documentSeed } from '../../core/model.js';
 import { gameSettings } from '../../core/settings.js';
 import { upgradeQuote } from '../../core/settings.js';
+import { creationSource } from '../domain/creation-fixture.mjs';
+import { evaluateCreation } from '../../core/character-creation.js';
 export async function previewFixture() {
   const game = gameSettings(
       JSON.parse(await readFile(new URL('../../data/game_data.json', import.meta.url), 'utf8'))
@@ -372,6 +374,28 @@ export async function previewFixture() {
     description: 'Por transformar escolhas em histórias que a mesa vai lembrar.',
     confirmed: true
   });
+  const campaign = await request('/api/campaign');
+  await request('/api/campaigns/' + campaign_id, 'PATCH', {
+    revision: campaign._revision,
+    moral_principle: 'Não sacrificar inocentes para proteger nossos segredos.'
+  });
+  const proposal = creationSource(game, 'brujah', 567890);
+  Object.assign(proposal, {
+    char: 'Dante, a primeira noite',
+    biography:
+      'Antes do Abraço eu organizava shows no bairro. Agora quero proteger quem ainda vive por lá.',
+    profilepicture: image,
+    moralityes: [{ id: 0, description: 'Não matar inocentes.' }]
+  });
+  await playerCall('/api/submissions', 'POST', {
+    character: evaluateCreation(proposal, game).character
+  });
+  const pending = (await playerCall('/api/rewards')).events;
+  if (pending.length)
+    await playerCall('/api/rewards/ack', 'POST', { ids: pending.map((e) => e.id) });
+  const marks = (await playerCall('/api/achievements')).events;
+  if (marks.length)
+    await playerCall('/api/achievements/ack', 'POST', { ids: marks.map((e) => e.id) });
   return {
     root: await store.workspace(),
     identities: { admin: { ...admin, campaign_id }, player: { ...player, campaign_id } }

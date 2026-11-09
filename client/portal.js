@@ -1,4 +1,5 @@
 import { isImageSource } from '../core/media-reference.js';
+import { moralPrinciple, clanWeakness } from './creation-guide.js';
 import {
   recapsPage,
   recapEditorPage,
@@ -168,7 +169,7 @@ const nav = [
   ['intel', 'Ecos do Véu'],
   ['legacies', 'Legados do Sangue'],
   ['network', 'Círculos de relações'],
-  ['chronicle', 'Histórico da ficha'],
+  ['chronicle', 'Histórico e convicções'],
   ['dice', 'Rolagem de dados']
 ];
 const sharedNav = [
@@ -177,7 +178,7 @@ const sharedNav = [
   ['my-characters', 'Meus personagens'],
   ['profile', 'Meu perfil'],
   ['notifications', 'Notificações'],
-  ['submissions', 'Propostas de personagens'],
+  ['submissions', 'Personagens em avaliação'],
   ['rewards', 'Presença na crônica']
 ];
 const adminNav = [
@@ -197,8 +198,8 @@ const internalNav = [
   ['document-detail', 'Documento da crônica'],
   ['evolution', 'Evoluir personagem'],
   ['power-detail', 'Consultar poder'],
-  ['proposal-editor', 'Criar proposta'],
-  ['review-submission', 'Avaliar proposta']
+  ['proposal-editor', 'Criar personagem'],
+  ['review-submission', 'Avaliação do personagem']
 ];
 const sheetViews = [
   'blood-bonds',
@@ -261,7 +262,7 @@ function renderNavigation() {
       : [
           ['my-characters', 'Meus personagens'],
           ['achievements', 'Galeria da eternidade'],
-          ['submissions', 'Minhas propostas']
+          ['submissions', 'Personagens em avaliação']
         ];
   const navButtons = (items) =>
     items
@@ -324,7 +325,7 @@ function initShell() {
   document.body.classList.remove('login-page');
   document.querySelector('.skip-link')?.setAttribute('href', '#main-content');
   $('#app').innerHTML =
-    `<aside id="sidebar" class="sidebar"><a href="#campaigns" class="brand"><span class="brand-crest">${crown}</span><span>A COROA VELADA<small>ONDE AS HISTÓRIAS VIVEM</small></span></a><button type="button" data-action="close-menu" class="icon-button drawer-close" aria-label="Fechar navegação">${icon('close')}</button><div data-nav-root></div><div class="sidebar-footer"><p>O sangue lembra.<br><span>A noite nunca esquece.</span></p><span class="version">PORTAL ONLINE · V10.1 OFICIAL</span></div></aside><div class="workspace"><header class="topbar"><div class="breadcrumb"><button data-action="menu" class="icon-button mobile-menu" aria-label="Abrir navegação">${icon('menu')}</button><span class="campaign-breadcrumb"></span><i>/</i><strong id="breadcrumb-current"></strong></div><div class="topbar-right">${button(icon('search'), 'global-search', 'aria-label="Pesquisar em toda a campanha" title="Pesquisar"', 'icon-button')}${soundButton()}${button(icon('download') + ' <span>Salvar JSON</span>', 'backup-table', 'aria-label="Salvar JSONs do portal"', 'button ghost top-export')}<button type="button" class="icon-button notification-button" data-action="nav-notifications" aria-label="Notificações">${icon('notes')}<span data-notification-count hidden></span></button><button type="button" class="user-button" data-action="nav-profile" aria-label="Abrir meu perfil" title="Meu perfil"><span class="avatar small" data-user-avatar></span><span data-user-name></span></button><button class="icon-button" data-action="logout" aria-label="Sair">${icon('logout')}</button></div></header><div class="connection-banner"><span>${icon('save')} <span data-sync-label></span></span><span>Atualização automática da campanha</span></div><div class="route-toolbar" aria-label="Navegação da página"><button type="button" class="button ghost" data-action="route-back"><span class="back-arrow">${icon('arrow')}</span> Voltar</button><span data-route-label></span><button type="button" class="text-button" data-action="route-home">Início</button></div><div id="xp-hud"></div><main id="main-content" tabindex="-1"></main><footer class="app-footer"><span>A COROA VELADA</span><span>Suas histórias, além do véu.</span><span>◇</span></footer></div><button type="button" class="drawer-backdrop" data-action="close-menu" aria-label="Fechar menu"></button><nav class="mobile-bottom" aria-label="Navegação principal"></nav>`;
+    `<aside id="sidebar" class="sidebar"><a href="#campaigns" class="brand"><span class="brand-crest">${crown}</span><span>A COROA VELADA<small>ONDE AS HISTÓRIAS VIVEM</small></span></a><button type="button" data-action="close-menu" class="icon-button drawer-close" aria-label="Fechar navegação">${icon('close')}</button><div data-nav-root></div><div class="sidebar-footer"><p>O sangue lembra.<br><span>A noite nunca esquece.</span></p><span class="version">PORTAL ONLINE · V10.2 OFICIAL</span></div></aside><div class="workspace"><header class="topbar"><div class="breadcrumb"><button data-action="menu" class="icon-button mobile-menu" aria-label="Abrir navegação">${icon('menu')}</button><span class="campaign-breadcrumb"></span><i>/</i><strong id="breadcrumb-current"></strong></div><div class="topbar-right">${button(icon('search'), 'global-search', 'aria-label="Pesquisar em toda a campanha" title="Pesquisar"', 'icon-button')}${soundButton()}${button(icon('download') + ' <span>Salvar JSON</span>', 'backup-table', 'aria-label="Salvar JSONs do portal"', 'button ghost top-export')}<button type="button" class="icon-button notification-button" data-action="nav-notifications" aria-label="Notificações">${icon('notes')}<span data-notification-count hidden></span></button><button type="button" class="user-button" data-action="nav-profile" aria-label="Abrir meu perfil" title="Meu perfil"><span class="avatar small" data-user-avatar></span><span data-user-name></span></button><button class="icon-button" data-action="logout" aria-label="Sair">${icon('logout')}</button></div></header><div class="connection-banner"><span>${icon('save')} <span data-sync-label></span></span><span>Atualização automática da campanha</span></div><div class="route-toolbar" aria-label="Navegação da página"><button type="button" class="button ghost" data-action="route-back"><span class="back-arrow">${icon('arrow')}</span> Voltar</button><span data-route-label></span><button type="button" class="text-button" data-action="route-home">Início</button></div><div id="xp-hud"></div><main id="main-content" tabindex="-1"></main><footer class="app-footer"><span>A COROA VELADA</span><span>Suas histórias, além do véu.</span><span>◇</span></footer></div><button type="button" class="drawer-backdrop" data-action="close-menu" aria-label="Fechar menu"></button><nav class="mobile-bottom" aria-label="Navegação principal"></nav>`;
   document.addEventListener('click', handleClick, { signal: events.signal });
   document.querySelector('.route-toolbar').insertAdjacentHTML('beforebegin', playerTestBanner());
   document.addEventListener('submit', handleSubmit, { signal: events.signal });
@@ -708,9 +709,12 @@ function overview() {
       const max = rule.max;
       return `<section class="status-card ${key === 'hunger' ? 'hunger' : ''} ${key === 'hunger' && displayedStatus()[key] >= state.game.interface.hunger_warning ? 'ravenous' : ''} ${pendingStatus && displayedStatus()[key] !== p.status[key] ? 'pending' : ''}"><div class="status-card-top"><span>${esc(state.game.labels?.[key] || labels[key])}</span><span class="status-symbol">${key === 'hunger' ? '◈' : key === 'humanity' ? '◇' : '✧'}</span></div><div class="status-value"><strong>${displayedStatus()[key]}</strong><span>/ ${max}</span></div><div class="status-track" aria-hidden="true">${Array.from({ length: max }, (_, i) => `<i class="${i < displayedStatus()[key] ? 'filled' : ''}"></i>`).join('')}</div><div class="status-controls">${button('−', 'status', `data-key="${key}" data-delta="-1" aria-label="Diminuir ${esc(state.game.labels?.[key] || labels[key])}" ${displayedStatus()[key] <= rule.min || p.archived ? 'disabled' : ''}`, 'step-button')}<span>${key.includes('damage') ? 'Marcas de dano' : 'Controle de recurso'}</span>${button('+', 'status', `data-key="${key}" data-delta="1" aria-label="Aumentar ${esc(state.game.labels?.[key] || labels[key])}" ${displayedStatus()[key] >= max || p.archived ? 'disabled' : ''}`, 'step-button')}</div></section>`;
     })
-    .join(
-      ''
-    )}</div><div class="overview-bottom"><section class="panel biography">${sectionHead('Sob o véu', 'A história por trás do nome.', button(icon('edit'), 'bio', 'aria-label="Editar história"', 'icon-button'))}<p class="prose">${esc(p.biography || 'Ainda há páginas em branco nesta história. Registre aqui a origem, os vínculos e os segredos do personagem.')}</p></section><section class="panel network-summary">${sectionHead('Sua influência', 'Os fios que sustentam o seu poder.')}<div class="network-tiles">${Object.entries(
+    .join('')}</div>${clanWeakness(
+    state.game.character_creation.guided.clans.find(
+      (c) => c.id === p.creation?.clan || c.name.toLowerCase() === p.cla.toLowerCase()
+    ),
+    p.clan_flaw_detail
+  )}<div class="overview-bottom"><section class="panel biography">${sectionHead('Sob o véu', 'A história por trás do nome.', button(icon('edit'), 'bio', 'aria-label="Editar história"', 'icon-button'))}<p class="prose">${esc(p.biography || 'Ainda há páginas em branco nesta história. Registre aqui a origem, os vínculos e os segredos do personagem.')}</p></section><section class="panel network-summary">${sectionHead('Sua influência', 'Os fios que sustentam o seu poder.')}<div class="network-tiles">${Object.entries(
     worldTypes
   )
     .map(
@@ -809,7 +813,7 @@ function possessions() {
 }
 function chronicle() {
   const p = player();
-  return `${sectionHead('Princípios e convicções', 'As linhas que você ainda se recusa a atravessar.', admin() ? button(icon('edit') + ' Editar', 'morality', '', 'button ghost') : '')}<section class="panel morality-list">${p.moralityes.map((x, i) => `<div><span class="gold">${String(i + 1).padStart(2, '0')}</span><p>${esc(x.description)}</p></div>`).join('') || '<p class="muted">O narrador ainda não registrou convicções.</p>'}</section>${sectionHead('Rastros na noite', 'Alterações, evoluções e mensagens do narrador, preservadas nesta ficha.', admin() ? button('Limpar histórico', 'delete-log', 'data-key="history" data-index="all"', 'text-button danger') : '')}<section class="panel history">${
+  return `${moralPrinciple(state.campaign)}${admin() ? button('Editar princípio da crônica', 'edit-campaign-principle', '', 'button ghost') : ''}${sectionHead('Convicções pessoais', 'As regras morais deste personagem. Quebrá-las afeta a Humanidade e é acompanhado pelo narrador.', button(icon('edit') + ' Editar convicções', 'morality', '', 'button ghost'))}<section class="panel morality-list">${p.moralityes.map((x, i) => `<div><span class="gold">${String(i + 1).padStart(2, '0')}</span><p>${esc(x.description)}</p></div>`).join('') || '<p class="muted">Você ainda não registrou convicções pessoais.</p>'}</section>${sectionHead('Rastros na noite', 'Alterações, evoluções e mensagens do narrador, preservadas nesta ficha.', admin() ? button('Limpar histórico', 'delete-log', 'data-key="history" data-index="all"', 'text-button danger') : '')}<section class="panel history">${
     [...(p.history || [])]
       .reverse()
       .slice(0, state.historyLimit || 40)
@@ -1264,13 +1268,14 @@ async function handleClick(event) {
         const p = player(),
           revision = p._revision;
         modal(
-          'Princípios e convicções',
-          area(
-            'morality',
-            'Uma convicção por linha',
-            p.moralityes.map((x) => x.description).join('\n'),
-            'maxlength="10000"'
-          ),
+          'Convicções do personagem',
+          '<p>Estas regras são pessoais. O princípio da crônica é compartilhado por toda a mesa e permanece na campanha.</p>' +
+            area(
+              'morality',
+              'Uma convicção por linha',
+              p.moralityes.map((x) => x.description).join('\n'),
+              'maxlength="10000"'
+            ),
           async (data) => {
             await patch(
               {
@@ -1560,6 +1565,7 @@ async function editProposal(record) {
     !admin() && state.game.character_creation.guided.enabled ? CreationWizard : SheetEditor;
   state.editor = new Editor({
     game: state.game,
+    campaign: state.campaign,
     character: record?.character,
     id,
     accountId: state.account.id,

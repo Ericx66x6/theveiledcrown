@@ -217,11 +217,33 @@ function questDialog(ctx, q) {
 }
 export async function featureAction(action, data, ctx) {
   const { state, admin } = ctx;
+  if (action === 'edit-campaign-principle') {
+    modal(
+      'O princípio que une a crônica',
+      '<p>Registre a regra moral escolhida em conjunto pela mesa. Todos os personagens da campanha verão o mesmo princípio.</p>' +
+        area(
+          'moral_principle',
+          'Princípio compartilhado',
+          state.campaign.moral_principle || '',
+          'maxlength="1000" placeholder="Ex.: Não sacrificar inocentes para proteger nossos segredos."'
+        ),
+      async (form) => {
+        await api('/api/campaigns/' + state.campaign.id, {
+          method: 'PATCH',
+          data: { moral_principle: form.get('moral_principle'), revision: state.campaign._revision }
+        });
+        await ctx.refresh();
+        toast('Princípio da crônica atualizado para toda a mesa.');
+      },
+      { wide: true, saveLabel: 'Registrar o acordo da mesa' }
+    );
+    return true;
+  }
   if (action === 'create-campaign' || action === 'edit-campaign') {
     const c = state.campaigns.find((c) => c.id === data.id);
     modal(
       c ? 'Configurar campanha' : 'Abra uma nova mesa',
-      `<div class="form-grid">${field('title', 'Nome da campanha', c?.title || '', 'text', 'required maxlength="150"')}${area('description', 'Sobre a campanha', c?.description || '', 'maxlength="2000"')}${field('accent', 'Cor de toda a campanha', c?.accent || '#d92343', 'color')}<label class="field full"><span>Capa da campanha</span><input type="file" name="cover_file" accept="image/png,image/jpeg,image/webp"></label>${c?.cover ? `<img class="campaign-edit-cover" src="${esc(c.cover)}" alt="Capa atual"><label class="checkbox full"><input type="checkbox" name="remove_cover"> Remover capa atual</label>` : ''}${
+      `<div class="form-grid">${field('title', 'Nome da campanha', c?.title || '', 'text', 'required maxlength="150"')}${area('description', 'Sobre a campanha', c?.description || '', 'maxlength="2000"')}${area('moral_principle', 'Princípio compartilhado da crônica', c?.moral_principle || '', 'maxlength="1000" placeholder="Ex.: Não sacrificar inocentes para proteger nossos segredos."')}<p class="hint full">Uma regra moral escolhida em conjunto pela mesa. Você registra aqui o acordo de todos; as convicções pessoais ficam em cada personagem.</p>${field('accent', 'Cor de toda a campanha', c?.accent || '#d92343', 'color')}<label class="field full"><span>Capa da campanha</span><input type="file" name="cover_file" accept="image/png,image/jpeg,image/webp"></label>${c?.cover ? `<img class="campaign-edit-cover" src="${esc(c.cover)}" alt="Capa atual"><label class="checkbox full"><input type="checkbox" name="remove_cover"> Remover capa atual</label>` : ''}${
         c
           ? select(
               'status',

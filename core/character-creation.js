@@ -35,7 +35,7 @@ export function chooseClan(plan, clanId, game) {
   next.initial.disciplines = Object.fromEntries(next.disciplines.map((id) => [id, 0]));
   next.bonus.disciplines = {};
   next.primary_paths = {};
-  return next;
+  return reconcileCreation(next, game);
 }
 export function selectedTraits(plan, game) {
   return (plan.traits || [])
@@ -59,6 +59,10 @@ export function creationConstraints(plan, game) {
           result[key][row.id] = Math.min(result[key][row.id] ?? 5, row.value);
         else result[key][row.id] = row.value;
       }
+  if (plan.clan === 'nosferatu') {
+    const appearance = catalogId(game, 'atributes', 'Aparência');
+    if (appearance !== null) result.attribute_set[appearance] = 0;
+  }
   return result;
 }
 export function reconcileCreation(plan, game) {
@@ -174,12 +178,16 @@ export function evaluateCreation(source, game) {
     issue('disciplines', 'Escolha as três disciplinas do clã.', 'identity');
   if (
     clan &&
-    (clan.disciplines.some((id) => id === null) ||
-      clan.disciplines.some((id) => !plan.disciplines.includes(id)))
+    (clan.discipline_choices
+      ? plan.disciplines.some((id) => !clan.discipline_choices.includes(id))
+      : clan.disciplines.some((id) => id === null) ||
+        clan.disciplines.some((id) => !plan.disciplines.includes(id)))
   )
     issue(
       'disciplines',
-      'As disciplinas precisam corresponder ao clã. Para outra combinação, use Clã personalizado.',
+      clan.discipline_choices
+        ? 'Caitiff escolhe três disciplinas diferentes entre os dons comuns permitidos, sem disciplinas exclusivas.'
+        : 'As disciplinas precisam corresponder ao clã. Para outra combinação, use Clã personalizado.',
       'identity'
     );
   const clanName = clan?.name || source.cla || '',
@@ -192,7 +200,14 @@ export function evaluateCreation(source, game) {
   p.char = source.char || '';
   p.player = source.player || '';
   p.cla = clanName;
-  for (const key of ['biography', 'profilepicture', 'portrait_frame', 'aspirations', 'moralityes'])
+  for (const key of [
+    'biography',
+    'profilepicture',
+    'portrait_frame',
+    'aspirations',
+    'moralityes',
+    'clan_flaw_detail'
+  ])
     if (source[key] !== undefined) p[key] = clone(source[key]);
   p.creation = plan;
   const used = { atributes: 0, skills: 0, precedents: 0, disciplines: 0 };
@@ -218,7 +233,7 @@ export function evaluateCreation(source, game) {
       if (forced !== undefined && (initial !== forced || bonus))
         issue(
           key,
-          `${d.name}: deve permanecer em ${forced} por causa de uma qualidade ou defeito.`,
+          `${d.name}: deve permanecer em ${forced} por causa da fraqueza do clã ou de uma característica.`,
           'bonus'
         );
       const grants = key === 'disciplines' ? effects.discipline_grants[d.id] || 0 : 0;

@@ -89,6 +89,7 @@ export class CampaignService extends CharacterService {
           _revision: c._revision,
           status: c.status,
           description: c.description,
+          moral_principle: c.moral_principle || '',
           characters: c.characters.length,
           quests: c.quests.filter((q) => !['completed', 'cancelled'].includes(q.status)).length
         }));
@@ -100,6 +101,11 @@ export class CampaignService extends CharacterService {
           title: text(data.title, 'Nome', 150, true),
           cover: imageData(data.cover || ''),
           description: text(data.description || '', 'Descrição', 2000),
+          moral_principle: text(
+            data.moral_principle || '',
+            'Princípio compartilhado da crônica',
+            1000
+          ),
           accent: data.accent || '#d92343'
         });
         if (!/^#[a-f\d]{6}$/i.test(campaign.accent)) fail('Cor inválida.');
@@ -138,6 +144,12 @@ export class CampaignService extends CharacterService {
         if (data.revision !== undefined && data.revision !== target._revision)
           fail('A campanha mudou. Reabra a edição.', 409);
         if (data.cover !== undefined) target.cover = imageData(data.cover);
+        if (data.moral_principle !== undefined)
+          target.moral_principle = text(
+            data.moral_principle,
+            'Princípio compartilhado da crônica',
+            1000
+          );
         target._revision++;
         target.updated_at = timestamp();
         result = Object.fromEntries(
@@ -146,6 +158,7 @@ export class CampaignService extends CharacterService {
             'title',
             'cover',
             'description',
+            'moral_principle',
             'status',
             'accent',
             '_revision',

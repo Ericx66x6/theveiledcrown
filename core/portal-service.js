@@ -144,6 +144,7 @@ export class PortalService extends CampaignService {
             _revision: c._revision,
             status: c.status,
             description: c.description,
+            moral_principle: c.moral_principle || '',
             characters: c.characters.length,
             quests: c.quests.filter((q) => !['completed', 'cancelled'].includes(q.status)).length
           })),

@@ -1,4 +1,4 @@
-# Criação guiada · 9.2.1
+# Criação guiada · 10.2
 
 O acesso de jogador usa **Meus personagens → Criar personagem**. O narrador continua podendo transcrever fichas manualmente e ajustar propostas antes da aprovação. **Testar como jogador** também permite experimentar o assistente, sem gravar na campanha real.
 
@@ -26,7 +26,7 @@ Qualidades e defeitos podem devolver investimentos quando fixam um atributo ou r
 
 | Reserva | Distribuição | Limite inicial |
 | --- | --- | --- |
-| Atributos | Todos em 1, mais 15 pontos | 4 |
+| Atributos | Base 1, mais 15 pontos; Aparência Nosferatu fixa em 0 | 4 |
 | Habilidades | 27 entre talentos, perícias e conhecimentos | 3 |
 | Antecedentes | 5 pontos | 5 |
 | Disciplinas | 3 pontos entre os três dons do clã | 3 |
@@ -96,3 +96,19 @@ Fichas já aprovadas continuam com os saldos e gerações atuais. Propostas ante
 No livro, **Consultar → Visualizar** abre conteúdo completo sem edição. **Gerenciar livro → Regras e criação de fichas** permite alterar as reservas e custos. `character_creation.guided` guarda os demais parâmetros em JSON. O modelo do projeto atende instalações novas; em campanhas existentes, importe o game-data atualizado após fazer backup, seguindo **ATUALIZAR.md**.
 
 Referência de antecedentes: https://vampiros-a-mascara.forumeiros.com/t99-antecedentes. Valores e efeitos da criação foram adaptados às regras da mesa, sem reintroduzir pontos de sangue ou dificuldade por face do dado.
+
+## Apresentação para iniciantes (10.2)
+
+O jogador explora os clãs pelo retrato e só confirma em **Escolher [clã]**. As abas apresentam conceito, ideologia, exemplos de personagens, disciplinas e fraqueza. Os exemplos orientam sem restringir a interpretação; não há rivalidades obrigatórias. Os resumos se baseiam na 3ª edição/Revised e as combinações de poderes mantêm as regras da mesa. Fontes e distinções estão em [CLAS-E-REFERENCIAS.md](CLAS-E-REFERENCIAS.md).
+
+Caitiff escolhe três disciplinas diferentes entre Animalismo, Auspícios, Rapidez, Dominação, Fortitude, Ofuscação, Potência e Presença. O grupo está em `discipline_choices`, no cadastro do clã. Os clãs tradicionais mantêm `disciplines`. O servidor recusa um dom fora das escolhas permitidas. Clã personalizado tem aviso e confirmação antes da seleção, nome livre e três dons existentes no livro; depende da avaliação do narrador.
+
+As etapas de atributos e habilidades sugerem caminhos conforme o clã e explicam o significado dos pontos. Um toque num aumento indisponível mostra o limite inicial ou o custo em falta, sem gastar nada. Aparência Nosferatu fica em 0 e não recebe bônus/XP nas novas criações guiadas. A fraqueza tem um espaço narrativo opcional, `clan_flaw_detail`. As fichas aprovadas antes da atualização não são recalculadas. As demais fraquezas são acompanhadas pelo narrador conforme a cena, sem relógio automático nem conversão presumida de dificuldade.
+
+Foto/enquadramento, história e convicções aparecem já na identidade. O ajudante de história junta quatro respostas num rascunho editável; não usa IA. Os exemplos de convicções podem ser acrescentados e reescritos. `moral_principle` é único por campanha, escolhido em conjunto e registrado pelo narrador; `moralityes` guarda as regras pessoais do personagem. Não há desconto automático de Humanidade.
+
+Qualidades e defeitos ficam em abas e cores distintas, com preço de PB, efeito consultável e até seis opções por página. São opcionais. Escolhidos podem ser retirados pelos chips, e a reserva aparece na barra inferior junto de Continuar. Restrições de clã ficam identificadas antes da compra; outros requisitos aparecem no efeito e na revisão. A barra não altera o percurso obrigatório nem permite enviar com sobra.
+
+O rascunho existe somente na memória da aba enquanto ela estiver aberta, sem localStorage ou IndexedDB. O envio completo é salvo na API, e passa a aparecer em **Personagens em avaliação**. Apagar um envio aprovado não remove a ficha já criada.
+
+A configuração recebe `clan_guide_version: 1` para acrescentar Caitiff uma vez às campanhas anteriores; descrições do narrador, limites e listas existentes são mantidos. `guide` em cada clã permite personalizar os textos no JSON avançado. Os retratos são arquivos WebP do projeto.

@@ -1,4 +1,4 @@
-# A Coroa Velada 10.1 oficial · instalação online
+# A Coroa Velada 10.2 oficial · instalação online
 
 Para atualizar uma instalação existente, siga primeiro [ATUALIZAR.md](ATUALIZAR.md).
 
@@ -100,7 +100,7 @@ Clique em **Deploy Web Service**. Ao ficar **Live**, copie o endereço HTTPS que
 Abra `URL-DO-RENDER/api/health`. A resposta esperada contém:
 
 ```json
-{"status":"ok","version":"10.1.0","storage":"incremental-v10.1","maintenance":false}
+{"status":"ok","version":"10.2.0","storage":"incremental-v10.1","maintenance":false}
 ```
 
 Depois abra somente `URL-DO-RENDER`. Clique em **Entrar** para chegar ao formulário do primeiro acesso. Preencha nome, login, senha com pelo menos dez caracteres e a `BOOTSTRAP_TOKEN` configurada no Render. Clique em **Criar portal e entrar**.

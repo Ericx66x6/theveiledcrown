@@ -8,6 +8,7 @@ export function normalizeCampaign(source) {
   delete c.universe;
   delete c.system;
   c.cover ??= '';
+  c.moral_principle ??= '';
   c._revision ??= 0;
   c.xp_distributions ??= [];
   c.game = gameSettings(c.game);

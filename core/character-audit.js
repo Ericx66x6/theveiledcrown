@@ -54,5 +54,7 @@ export function characterChanges(before, after, game) {
   if (before.profilepicture !== after.profilepicture) changes.push('Retrato atualizado');
   if (JSON.stringify(before.moralityes) !== JSON.stringify(after.moralityes))
     changes.push('Convicções atualizadas');
+  if ((before.clan_flaw_detail || '') !== (after.clan_flaw_detail || ''))
+    changes.push('Detalhe da fraqueza do clã atualizado');
   return changes.slice(0, 100).join(' · ');
 }

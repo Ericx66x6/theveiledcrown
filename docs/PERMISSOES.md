@@ -1,4 +1,4 @@
-# Permissões · Coroa Velada 10.1
+# Permissões · Coroa Velada 10.2
 
 | Recurso | Narrador | Jogador |
 |---|---|---|
@@ -86,3 +86,13 @@ Conquistas pertencem à pessoa: transferir/excluir uma ficha ou mudar de campanh
 Laços usam tempo narrativo manual, sem calendário. Alterar estágio não reduz nível; enfraquecimento exige confirmação. Quem controla a ficha pode ajustar os níveis para refletir o roleplay, sempre registrado no histórico. O narrador continua sendo o único que pode apagar o histórico da ficha.
 
 As novas áreas também funcionam no modo Testar como jogador dentro do workspace temporário. Relatos, feedbacks e alterações de vínculo desse teste não são gravados na campanha real.
+
+## Criação ilustrada e moralidade (10.2)
+
+- `moral_principle`: texto de até 1.000 caracteres por campanha, devolvido pelas consultas autorizadas. `POST /api/campaigns` e `PATCH /api/campaigns/:id` aceitam o campo somente para narrador; a edição usa a revisão da campanha. Jogadores leem o princípio e não o substituem.
+- `moralityes`: convicções pessoais da própria ficha, editáveis pelo jogador responsável ou narrador, com revisão e validação da ficha. Não altera automaticamente a Humanidade.
+- `clan_flaw_detail`: texto narrativo opcional de até 3.000 caracteres, preservado no envio, aprovação, ficha e backup. Não concede pontos.
+- `character_creation.guided.clans[].discipline_choices`: alternativas de disciplinas para um clã flexível. O jogador escolhe exatamente três IDs diferentes permitidos; os clãs fixos continuam usando `disciplines`. A API reconstrói a ficha e valida o gasto completo.
+- `guide`: textos introdutórios de cada clã, configuráveis no game-data; nenhum HTML ou código do JSON é executado.
+
+A aprovação continua exclusiva do narrador. Não há novas rotas públicas, mudança de autenticação, nova migração SQL ou novo formato interno nesta versão. A normalização acrescenta os valores ausentes; não sobrescreve fichas aprovadas nem saldos de campanhas anteriores.

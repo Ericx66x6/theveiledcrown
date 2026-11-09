@@ -146,6 +146,7 @@ export function validateWorkspace(source) {
       fail('Campanha repetida ou ID inválido.');
     campaignIds.add(c.id);
     text(c.title, 'Nome da campanha', 150, true);
+    text(c.moral_principle || '', 'Princípio compartilhado da crônica', 1000);
     imageData(c.cover || '');
     if (!['active', 'closed'].includes(c.status)) fail('Estado de campanha inválido.');
     if (!/^#[a-f\d]{6}$/i.test(c.accent || '#d92343')) fail('Cor de campanha inválida.');

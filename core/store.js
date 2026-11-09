@@ -9,6 +9,7 @@ export function campaignRecord(game, data = {}) {
     cover: data.cover || '',
     _revision: 0,
     description: data.description || 'Uma crônica entre o sangue e o poder.',
+    moral_principle: data.moral_principle || '',
     status: data.status || 'active',
     accent: data.accent || '#d92343',
     game: gameSettings(game),

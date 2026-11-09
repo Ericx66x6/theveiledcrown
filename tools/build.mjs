@@ -68,7 +68,8 @@ for (const name of [
   'beta',
   'creation',
   'gamefeel',
-  'chronicle'
+  'chronicle',
+  'creation-game'
 ])
   await writeFile(
     resolve(out, 'assets/styles', name + '.css'),
@@ -116,4 +117,4 @@ const html = (await readFile(resolve(root, 'client/index.html'), 'utf8'))
     `<meta http-equiv="Content-Security-Policy" content="${csp}; manifest-src 'self'"><meta name="description"`
   );
 await writeFile(resolve(out, 'index.html'), html);
-console.log('Coroa Velada 10.1.0 online compilada em dist/.');
+console.log('Coroa Velada 10.2.0 online compilada em dist/.');

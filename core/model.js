@@ -65,6 +65,7 @@ export function normalize(source) {
   p.money ??= 0;
   p.bloodpotency ??= 1;
   p.biography ??= '';
+  p.clan_flaw_detail ??= '';
   p.profilepicture ??= '';
   p.portrait_frame ??= { x: 50, y: 50, zoom: 1 };
   p.aspirations ??= { ambition: '', desire: '' };
@@ -215,6 +216,7 @@ export function validatePlayer(source, game) {
     text(row?.description, 'Convicção');
   }
   text(p.biography, 'História', 30000);
+  text(p.clan_flaw_detail || '', 'Detalhe da fraqueza do clã', 3000);
   if (
     !p.aspirations ||
     typeof p.aspirations !== 'object' ||

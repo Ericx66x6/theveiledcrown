@@ -1,11 +1,16 @@
-# The Veiled Crown · A Coroa Velada 10.1 oficial
+# The Veiled Crown · A Coroa Velada 10.2 oficial
 
 Portal de RPG exclusivamente online: **Vercel → API Node.js no Render → Supabase**.
 
-Já usa uma versão anterior? Siga **[ATUALIZAR.md](ATUALIZAR.md)**: quem já usa a 10.0 não precisa de SQL novo. A 10.1 converte a organização dos documentos durante uma pausa de manutenção, com instruções de retorno. Para instalar do zero, leia **[TUTORIAL.md](TUTORIAL.md)**. Os dados e o livro de regras atual são preservados; não importe o game-data inicial para atualizar.
+Já usa uma versão anterior? Siga **[ATUALIZAR.md](ATUALIZAR.md)**. Da 10.1 para a 10.2, basta atualizar o código: sem SQL novo nem conversão de armazenamento. Quem vem da 10.0 ou 9.x encontra o caminho específico no tutorial. Para instalar do zero, leia **[TUTORIAL.md](TUTORIAL.md)**. Fichas e regras personalizadas são preservadas; não importe o game-data inicial para atualizar.
 
-A 10.0 reduz o trabalho de cada operação: grava somente registros alterados, busca mudanças por revisão, carrega imagens privadas separadamente e aproveita a resposta do salvamento para atualizar a tela. As ações que aguardam o servidor usam um indicador central com fundo escuro; consultas locais e sincronização silenciosa não bloqueiam a navegação. Veja o [relatório de desempenho](docs/DESEMPENHO-10.md) e a [validação da entrega 10.1](docs/VALIDACAO-V101.md).
+A 10.0 reduz o trabalho de cada operação: grava somente registros alterados, busca mudanças por revisão, carrega imagens privadas separadamente e aproveita a resposta do salvamento para atualizar a tela. As ações que aguardam o servidor usam um indicador central com fundo escuro; consultas locais e sincronização silenciosa não bloqueiam a navegação. Veja o [relatório de desempenho](docs/DESEMPENHO-10.md) e a [validação da entrega 10.2](docs/VALIDACAO-V102.md).
 
+- Criação para iniciantes: **14 clãs ilustrados**, conceito, ideologia, poderes, fraqueza e sugestões de atributos/habilidades.
+- Caitiff com escolha de três dons comuns; clã personalizado com aviso e aprovação manual.
+- História guiada, foto com enquadramento, convicções pessoais e princípio compartilhado por campanha.
+- Qualidades e defeitos opcionais em catálogos distintos, com preços e barra de pontos sempre visível.
+- **Personagens em avaliação** com status e parecer claros.
 - **Onde paramos?** por personagem, rascunhos e envio guiado: o narrador pede complemento, registra a leitura ou concede +1 XP uma vez.
 - **Galeria da eternidade** da conta: evoluções e disciplinas registradas, feitos e títulos concedidos pelo narrador, com celebração no próximo acesso.
 - **Documentos da crônica** em texto/imagem, liberados à campanha inteira ou a jogadores selecionados.
@@ -46,7 +51,8 @@ A 10.0 reduz o trabalho de cada operação: grava somente registros alterados, b
 | `core/` | Regras, modelos, permissões e serviços |
 | `server/` | API, Supabase e imagens privadas |
 | `shared/` | Componentes e regras compartilhadas |
-| `public/images/` | Arte da apresentação |
+| `public/images/` | Arte da apresentação e retratos dos clãs |
+| `data/clan_guide.json` | Resumos, fraquezas e dicas dos 14 clãs |
 | `data/game_data.json` | Livro inicial de regras |
 | `supabase/INSTALAR.sql` | Instalação das tabelas, funções e bucket |
 | `supabase/migrations/202611080001_incremental_v10.sql` | Atualização aditiva para instalações existentes |
@@ -78,3 +84,5 @@ A versão 9.2.1 organiza a criação em passos obrigatórios, uma categoria por 
 A versão 9.3.0 adiciona recompensas de presença, cadastro sujeito à aprovação, celebrações persistentes e um repertório ampliado de rituais. Leia [docs/JOGO-VIVO.md](docs/JOGO-VIVO.md) e [docs/IMPORTACAO.md](docs/IMPORTACAO.md).
 
 O indicador central cobre carregamentos e salvamentos iniciados pelo usuário, sem atraso artificial mínimo. O modo de manutenção temporário bloqueia a API durante conversões sem derrubar o health check. O histórico das versões anteriores está em `docs/HISTORICO-ATUALIZACOES-V9.md`.
+
+A 10.2 preserva as reservas obrigatórias e os custos da mesa, acrescentando orientação visual em cada etapa. [Guia da criação](docs/CRIACAO.md) · [Clãs e referências](docs/CLAS-E-REFERENCIAS.md).

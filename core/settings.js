@@ -232,7 +232,14 @@ export function upgradeQuote(p, g, key, id, target) {
     key === 'bloodpotency'
       ? g.bloodpotency_generation[p.generation].max
       : g.maxvalue_generation[p.generation];
-  const personal = creationConstraints({ traits: p.caracteristics || [] }, g);
+  const personal = creationConstraints(
+    { clan: p.creation?.clan, traits: p.caracteristics || [] },
+    g
+  );
+  if (key === 'atributes' && personal.attribute_set[id] !== undefined)
+    fail(
+      'Este atributo tem valor fixo pela fraqueza do clã ou por uma característica e não pode ser evoluído com XP.'
+    );
   const attributeLimit =
     key === 'atributes' ? (personal.attribute_set[id] ?? personal.attribute_caps[id]) : undefined;
   const max = Math.min(

@@ -31,6 +31,8 @@ const EDITABLE = new Set([
   'biography',
   'profilepicture',
   'portrait_frame',
+  'moralityes',
+  'clan_flaw_detail',
   'aspirations'
 ]);
 export function accountRecord(data, passwordHash) {

@@ -253,7 +253,7 @@ export function createPortalServer({
       if (url.pathname === '/api/health') {
         await respond(200, {
           status: 'ok',
-          version: '10.1.0',
+          version: '10.2.0',
           storage: 'incremental-v10.1',
           maintenance
         });

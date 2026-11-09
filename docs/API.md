@@ -1,4 +1,4 @@
-# API · A Coroa Velada 10.1
+# API · A Coroa Velada 10.2
 
 Servidor: `server/index.mjs`. As operações usam JSON. O site autentica por cookie HttpOnly; clientes programáticos podem usar `Authorization: Bearer <token>`. Login e instalação retornam token somente no modo Bearer. `X-Campaign-ID` seleciona explicitamente uma campanha autorizada; o servidor conserva uma escolha por sessão quando esse cabeçalho está ausente.
 
@@ -199,3 +199,13 @@ Laços recebem `name`, `description`, `last_scene`, `image`, `direction: bound_t
 A galeria pertence à conta: entradas automáticas de evolução/disciplinas e títulos manuais. O portal inicial traz contagem, últimas marcas e recibos; a lista completa é buscada ao abrir a galeria. Os recibos manuais são reconhecidos por `/api/achievements/ack`; XP/evolução/laços continuam usando `/api/rewards/ack`.
 
 O formato interno é `coroa-storage-v10.1`, com leitura de v10 e v4. O protocolo HTTP `X-Coroa-Client:10` e o formato dos backups portáteis permanecem compatíveis. Não é necessária RPC ou migração SQL nova para quem já aplicou a da 10.0. Revisar evolução no cliente calcula a cotação localmente; `upgrade-preview` continua disponível a integrações, e `upgrade` valida a compra no servidor.
+
+## Criação ilustrada e moralidade (10.2)
+
+- `moral_principle`: texto de até 1.000 caracteres por campanha, devolvido pelas consultas autorizadas. `POST /api/campaigns` e `PATCH /api/campaigns/:id` aceitam o campo somente para narrador; a edição usa a revisão da campanha. Jogadores leem o princípio e não o substituem.
+- `moralityes`: convicções pessoais da própria ficha, editáveis pelo jogador responsável ou narrador, com revisão e validação da ficha. Não altera automaticamente a Humanidade.
+- `clan_flaw_detail`: texto narrativo opcional de até 3.000 caracteres, preservado no envio, aprovação, ficha e backup. Não concede pontos.
+- `character_creation.guided.clans[].discipline_choices`: alternativas de disciplinas para um clã flexível. O jogador escolhe exatamente três IDs diferentes permitidos; os clãs fixos continuam usando `disciplines`. A API reconstrói a ficha e valida o gasto completo.
+- `guide`: textos introdutórios de cada clã, configuráveis no game-data; nenhum HTML ou código do JSON é executado.
+
+A aprovação continua exclusiva do narrador. Não há novas rotas públicas, mudança de autenticação, nova migração SQL ou novo formato interno nesta versão. A normalização acrescenta os valores ausentes; não sobrescreve fichas aprovadas nem saldos de campanhas anteriores.

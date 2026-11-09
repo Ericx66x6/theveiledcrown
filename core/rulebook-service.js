@@ -34,8 +34,11 @@ export async function deleteCatalogEntry(service, key, id, data, token) {
     if (key === 'disciplines') {
       g.discipline_market.allowed_ids = g.discipline_market.allowed_ids.filter((x) => x !== id);
       delete g.discipline_market.costs[id];
-      for (const clan of g.character_creation.guided.clans)
+      for (const clan of g.character_creation.guided.clans) {
         clan.disciplines = clan.disciplines.map((x) => (x === id ? null : x));
+        if (clan.discipline_choices)
+          clan.discipline_choices = clan.discipline_choices.filter((x) => x !== id);
+      }
       for (const d of g.disciplines)
         if (d.parent_discipline_ids)
           d.parent_discipline_ids = d.parent_discipline_ids.filter((x) => x !== id);

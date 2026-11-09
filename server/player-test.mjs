@@ -101,6 +101,7 @@ export class PlayerTestSessions {
       title: ('Testes · ' + (source?.title || 'A Coroa Velada')).slice(0, 150),
       description: 'Ambiente temporário: tudo que você alterar aqui será descartado ao sair.',
       accent: source?.accent || '#d92343',
+      moral_principle: source?.moral_principle || '',
       cover: source?.cover || '',
       characters: [character],
       maps:

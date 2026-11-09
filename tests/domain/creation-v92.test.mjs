@@ -49,13 +49,13 @@ async function fixture() {
   });
   return { store, request, admin, player };
 }
-test('v9.2: regras exatas da mesa e os treze clãs, incluindo as combinações personalizadas', () => {
+test('criação: regras exatas da mesa, os treze clãs e Caitiff, incluindo combinações personalizadas', () => {
   const c = game.character_creation.guided;
   assert.deepEqual(c.initial, { atributes: 15, skills: 27, precedents: 5, disciplines: 3 });
   assert.deepEqual(c.bonus_costs, { atributes: 4, skills: 2, disciplines: 6, precedents: 1 });
   assert.equal(c.attribute_base, 1);
   assert.equal(c.max_flaws, 4);
-  assert.equal(c.clans.length, 13);
+  assert.equal(c.clans.length, 14);
   assert.deepEqual(c.clans.find((c) => c.id === 'toreador').disciplines, [0, 1, 5]);
   assert.deepEqual(c.clans.find((c) => c.id === 'ravnos').disciplines, [11, 4, 14]);
   assert.deepEqual(c.clans.find((c) => c.id === 'tzimisce').disciplines, [11, 2, 25]);
@@ -327,7 +327,7 @@ test('v9.2: assistente começa com atributos em um, identidade sem geração liv
   wizard.step = 1;
   assert.ok(wizard.render().includes('data-creation-change="1"'));
   wizard.step = 10;
-  assert.ok(wizard.render().includes('História e motivações'));
+  assert.ok(wizard.render().includes('História do personagem'));
   assert.ok(wizard.render().includes('Ambição (opcional)'));
 });
 test('v9.2: renomear Geração/Recursos preserva cálculo pelo efeito e não recria o catálogo', () => {

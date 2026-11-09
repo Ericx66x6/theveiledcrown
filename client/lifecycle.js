@@ -89,8 +89,8 @@ export async function lifecycleAction(action, data, ctx) {
   if (action === 'delete-submission') {
     const record = ctx.state.submissions.find((r) => r.id === data.id);
     modal(
-      'Apagar esta proposta?',
-      `<p>${esc(record.character.char)}</p><p class="hint">O registro da proposta será removido. Um personagem já aprovado continua na campanha.</p>`,
+      'Apagar este envio para avaliação?',
+      `<p>${esc(record.character.char)}</p><p class="hint">O envio e seu parecer serão removidos. Um personagem já aprovado continua na campanha.</p>`,
       async () => {
         await api('/api/submissions/' + record.id, {
           method: 'DELETE',
@@ -99,7 +99,7 @@ export async function lifecycleAction(action, data, ctx) {
         await ctx.refresh();
         await ctx.go('submissions');
       },
-      { saveLabel: 'Apagar proposta' }
+      { saveLabel: 'Apagar envio' }
     );
     return true;
   }

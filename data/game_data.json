@@ -29552,7 +29552,33 @@
             16,
             4,
             5
-          ]
+          ],
+          "guide": {
+            "epithet": "O julgamento nas sombras",
+            "description": "Disciplina, precisão e um código pessoal levado a sério. Funciona para um caçador silencioso, vigilante ou executor que pensa antes de agir.",
+            "ideology": "Um código pessoal pode organizar a não-vida. A decisão de julgar alguém exige saber de quem você está sendo instrumento.",
+            "archetypes": [
+              "Vigilante silencioso",
+              "Guardião de um código",
+              "Investigador obstinado"
+            ],
+            "beginner_level": "Intermediário",
+            "beginner_reason": "Disciplina e precisão para quem prefere agir com um propósito.",
+            "beginner_tip": "Defina o que seu personagem considera justo e um limite que ele se recusa a ultrapassar.",
+            "attribute_tips": [
+              "Destreza",
+              "Força",
+              "Raciocínio"
+            ],
+            "skill_tips": [
+              "Furtividade",
+              "Armas Brancas",
+              "Percepção"
+            ],
+            "story_hook": "O seu código vale mesmo quando ninguém está olhando?",
+            "weakness": "Provar vitae vampírica pode causar dependência e desencadear frenesi de fome quando ela reaparece.",
+            "source_url": "https://whitewolf.fandom.com/wiki/Banu_Haqim"
+          }
         },
         {
           "id": "brujah",
@@ -29561,7 +29587,33 @@
             1,
             5,
             7
-          ]
+          ],
+          "guide": {
+            "epithet": "Uma causa que não morre",
+            "description": "Revolta, paixão e ação. Pode ser um punk de rua, ativista ou pensador disposto a enfrentar o poder por uma causa.",
+            "ideology": "Sentir demais também pode mover o mundo. Lutar por uma causa é descobrir o que ainda merece ser protegido.",
+            "archetypes": [
+              "Punk idealista",
+              "Protetor do bairro",
+              "Filósofo de rua"
+            ],
+            "beginner_level": "Bom para começar",
+            "beginner_reason": "Uma causa clara e poderes diretos ajudam a entrar no jogo.",
+            "beginner_tip": "Escolha uma causa concreta e alguém que seu personagem protegeria mesmo quando perde a calma.",
+            "attribute_tips": [
+              "Força",
+              "Vigor",
+              "Carisma"
+            ],
+            "skill_tips": [
+              "Briga",
+              "Atletismo",
+              "Liderança"
+            ],
+            "story_hook": "Qual injustiça você se recusa a aceitar?",
+            "weakness": "A paixão alimenta a Besta: resistir ao frenesi é mais difícil para um Brujah.",
+            "source_url": "https://whitewolf.fandom.com/wiki/Brujah"
+          }
         },
         {
           "id": "gangrel",
@@ -29570,7 +29622,33 @@
             11,
             3,
             12
-          ]
+          ],
+          "guide": {
+            "epithet": "A cidade também é uma selva",
+            "description": "Instinto, independência e sobrevivência. Combina com quem imagina um explorador urbano, guardião de território ou predador próximo dos animais.",
+            "ideology": "Autonomia não precisa ser solidão. Sobreviver pode significar conhecer o território e escolher bem em quem confiar.",
+            "archetypes": [
+              "Guardião de território",
+              "Viajante solitário",
+              "Explorador urbano"
+            ],
+            "beginner_level": "Bom para começar",
+            "beginner_reason": "Sobrevivência e instinto dão um objetivo fácil de imaginar.",
+            "beginner_tip": "Comece por um lugar que você chama de lar e pelo motivo de continuar protegendo-o.",
+            "attribute_tips": [
+              "Vigor",
+              "Destreza",
+              "Determinação"
+            ],
+            "skill_tips": [
+              "Sobrevivência",
+              "Emp. c/Animais",
+              "Prontidão"
+            ],
+            "story_hook": "O que você chama de lar, mesmo sem precisar de uma casa?",
+            "weakness": "Cada frenesi deixa uma marca animal permanente; cinco marcas reduzem um Atributo Social em um ponto.",
+            "source_url": "https://whitewolf.fandom.com/wiki/Gangrel_%28VTM%29"
+          }
         },
         {
           "id": "giovanni",
@@ -29579,7 +29657,33 @@
             2,
             18,
             5
-          ]
+          ],
+          "guide": {
+            "epithet": "Os mortos ainda negociam",
+            "description": "Família, ambição e negócios com os mortos. Um nome respeitável pode esconder um investigador de fantasmas, herdeiro ou negociador do impossível.",
+            "ideology": "Legado e obrigação caminham juntos. Conexões podem atravessar a morte, mas nenhuma dívida desaparece só porque alguém morreu.",
+            "archetypes": [
+              "Herdeiro inquieto",
+              "Investigador de fantasmas",
+              "Negociador da família"
+            ],
+            "beginner_level": "Pede preparação",
+            "beginner_reason": "Necromancia e obrigações familiares ficam melhores combinadas com o narrador.",
+            "beginner_tip": "Pense numa obrigação familiar e numa pessoa falecida que seu personagem gostaria de reencontrar. Escolha a linhagem inicial de Necromancia com ajuda.",
+            "attribute_tips": [
+              "Inteligência",
+              "Manipulação",
+              "Determinação"
+            ],
+            "skill_tips": [
+              "Finanças",
+              "Ocultismo",
+              "Investigação"
+            ],
+            "story_hook": "O que os vivos exigem de você, e o que os mortos ainda cobram?",
+            "weakness": "Seu Beijo causa dor intensa e o dobro de dano aos mortais de quem se alimenta.",
+            "source_url": "https://whitewolf.fandom.com/wiki/Giovanni"
+          }
         },
         {
           "id": "lasombra",
@@ -29588,7 +29692,33 @@
             2,
             5,
             13
-          ]
+          ],
+          "guide": {
+            "epithet": "A vontade por trás da sombra",
+            "description": "Autocontrole, ambição e poder nas sombras. Ideal para um estrategista, líder ou sobrevivente que prefere conduzir a situação a depender da sorte.",
+            "ideology": "Vontade e adaptação conquistam espaço. O desafio é decidir quanto de você permanece depois de cada vitória.",
+            "archetypes": [
+              "Estrategista discreto",
+              "Líder austero",
+              "Sobrevivente ambicioso"
+            ],
+            "beginner_level": "Intermediário",
+            "beginner_reason": "Funciona bem com um objetivo de poder e limites pessoais claros.",
+            "beginner_tip": "Defina o que significa vencer para você e o preço que ainda não aceita pagar por essa vitória.",
+            "attribute_tips": [
+              "Manipulação",
+              "Determinação",
+              "Força"
+            ],
+            "skill_tips": [
+              "Intimidação",
+              "Liderança",
+              "Estratégia"
+            ],
+            "story_hook": "Qual é o seu preço para chegar ao topo?",
+            "weakness": "Não produz reflexos nem imagens comuns; a exposição ao sol causa um nível adicional de dano.",
+            "source_url": "https://whitewolf.fandom.com/wiki/Lasombra"
+          }
         },
         {
           "id": "malkavian",
@@ -29597,7 +29727,33 @@
             0,
             17,
             4
-          ]
+          ],
+          "guide": {
+            "epithet": "Verdades fora de foco",
+            "description": "Percepção inquietante, presságios e perspectivas incomuns. Um observador, conselheiro ou investigador pode enxergar sentidos que passam despercebidos aos demais.",
+            "ideology": "Uma perspectiva incomum pode revelar novas perguntas. Sua visão não precisa ser compartilhada para ter valor na história.",
+            "archetypes": [
+              "Oráculo urbano",
+              "Conselheiro inquietante",
+              "Observador perspicaz"
+            ],
+            "beginner_level": "Pede preparação",
+            "beginner_reason": "Combine a interpretação com o narrador; presságios não precisam atrapalhar a mesa.",
+            "beginner_tip": "Combine a perturbação com o narrador, incluindo como aparece e como interpretá-la sem transformar a personagem em piada ou interromper os outros.",
+            "attribute_tips": [
+              "Raciocínio",
+              "Inteligência",
+              "Determinação"
+            ],
+            "skill_tips": [
+              "Percepção",
+              "Empatia",
+              "Investigação"
+            ],
+            "story_hook": "Que verdade você percebe e ainda não consegue explicar?",
+            "weakness": "Carrega ao menos uma perturbação permanente; ela pode ser contida temporariamente, nunca eliminada de vez.",
+            "source_url": "https://whitewolf.fandom.com/wiki/Malkavian_%28VTM%29"
+          }
         },
         {
           "id": "nosferatu",
@@ -29606,7 +29762,33 @@
             11,
             4,
             5
-          ]
+          ],
+          "guide": {
+            "epithet": "Todo segredo tem um guardião",
+            "description": "Segredos, discrição e sobrevivência longe dos holofotes. Pode ser um espião, pesquisador ou protetor de pessoas que a cidade prefere ignorar.",
+            "ideology": "A aparência não mede o valor de uma pessoa. Conhecimento, solidariedade e discrição podem alcançar o que a força não alcança.",
+            "archetypes": [
+              "Informante subterrâneo",
+              "Pesquisador invisível",
+              "Protetor dos esquecidos"
+            ],
+            "beginner_level": "Intermediário",
+            "beginner_reason": "Bom para investigar e ajudar pelos bastidores; Aparência é fixa em zero.",
+            "beginner_tip": "Decida quem ainda conhece a pessoa por trás do rosto e qual segredo você guarda para protegê-la.",
+            "attribute_tips": [
+              "Inteligência",
+              "Raciocínio",
+              "Destreza"
+            ],
+            "skill_tips": [
+              "Furtividade",
+              "Tecnologia",
+              "Investigação"
+            ],
+            "story_hook": "Quem ainda enxerga você para além da aparência?",
+            "weakness": "Aparência é sempre 0 e não pode ser aumentada com XP; o Abraço transforma seu corpo.",
+            "source_url": "https://whitewolf.fandom.com/wiki/Nosferatu_%28VTM%29"
+          }
         },
         {
           "id": "ravnos",
@@ -29615,7 +29797,33 @@
             11,
             4,
             14
-          ]
+          ],
+          "guide": {
+            "epithet": "A realidade também conta mentiras",
+            "description": "Liberdade, histórias e aparências que enganam. Ilusões favorecem um artista itinerante, aventureiro ou trapaceiro que vive inventando saídas.",
+            "ideology": "A primeira versão de uma história nem sempre é a verdadeira. Liberdade e imaginação abrem caminhos, mas escolhas ainda têm consequências.",
+            "archetypes": [
+              "Ilusionista de rua",
+              "Artista viajante",
+              "Aventureiro inventivo"
+            ],
+            "beginner_level": "Intermediário",
+            "beginner_reason": "Criatividade com ilusões pede conversa sobre o que é possível na cena.",
+            "beginner_tip": "Escolha uma tentação jogável, como apostar ou inventar histórias, e um motivo para continuar voltando à campanha.",
+            "attribute_tips": [
+              "Manipulação",
+              "Destreza",
+              "Carisma"
+            ],
+            "skill_tips": [
+              "Enganação",
+              "Atuação",
+              "Manha"
+            ],
+            "story_hook": "Qual tentação sempre coloca seus planos em risco?",
+            "weakness": "Uma tentação pessoal de engano ou transgressão exige autocontrole quando surge a oportunidade de satisfazê-la.",
+            "source_url": "https://whitewolf.fandom.com/wiki/Ravnos"
+          }
         },
         {
           "id": "setita",
@@ -29624,7 +29832,33 @@
             4,
             7,
             15
-          ]
+          ],
+          "guide": {
+            "epithet": "O desejo abre todas as portas",
+            "description": "Desejo, segredos e crenças capazes de mudar uma vida. Combina com um negociador, pregador ou sedutor que descobre o que cada pessoa procura.",
+            "ideology": "Entender um desejo é entender uma pessoa. Crenças, ofertas e segredos podem transformar relações sem uma luta sequer.",
+            "archetypes": [
+              "Negociador de segredos",
+              "Pregador noturno",
+              "Dono de clube"
+            ],
+            "beginner_level": "Intermediário",
+            "beginner_reason": "Ideal para conversas, segredos e ofertas tentadoras.",
+            "beginner_tip": "Escolha uma verdade em que você acredita e uma oferta tentadora que costuma fazer aos outros.",
+            "attribute_tips": [
+              "Manipulação",
+              "Carisma",
+              "Determinação"
+            ],
+            "skill_tips": [
+              "Persuasão",
+              "Enganação",
+              "Ocultismo"
+            ],
+            "story_hook": "O que você oferece às pessoas que ninguém mais oferece?",
+            "weakness": "O sol o fere ainda mais, e luz muito intensa prejudica suas ações.",
+            "source_url": "https://whitewolf.fandom.com/wiki/Followers_of_Set"
+          }
         },
         {
           "id": "toreador",
@@ -29633,7 +29867,33 @@
             0,
             1,
             5
-          ]
+          ],
+          "guide": {
+            "epithet": "A beleza ainda faz o sangue pulsar",
+            "description": "Arte, presença e emoções que sobrevivem à morte. Pode ser músico, fotógrafo, estilista ou alguém fascinado pelas pessoas e pelos momentos da vida mortal.",
+            "ideology": "Preservar a sensibilidade pode ser uma forma de resistir à morte. Arte e relações mantêm uma ponte com a vida mortal.",
+            "archetypes": [
+              "Músico da madrugada",
+              "Fotógrafo obsessivo",
+              "Anfitrião magnético"
+            ],
+            "beginner_level": "Bom para começar",
+            "beginner_reason": "Uma paixão artística ou humana cria vínculos e cenas com facilidade.",
+            "beginner_tip": "Escolha aquilo que ainda faz seu personagem sentir que está vivo e por que ele quer preservá-lo.",
+            "attribute_tips": [
+              "Carisma",
+              "Destreza",
+              "Raciocínio"
+            ],
+            "skill_tips": [
+              "Performance",
+              "Empatia",
+              "Atuação"
+            ],
+            "story_hook": "O que ainda faz você sentir que está vivo?",
+            "weakness": "Uma beleza extraordinária pode prendê-lo em fascínio e deixá-lo alheio aos perigos ao redor.",
+            "source_url": "https://whitewolf.fandom.com/wiki/Toreador_%28VTM%29"
+          }
         },
         {
           "id": "tremere",
@@ -29642,7 +29902,33 @@
             8,
             0,
             2
-          ]
+          ],
+          "guide": {
+            "epithet": "Todo segredo cobra um preço",
+            "description": "Conhecimento oculto, estudo e magia do sangue. Um pesquisador ou aprendiz ambicioso aprende que todo segredo oferece poder e também cobra um preço.",
+            "ideology": "Conhecimento oferece poder e responsabilidade. Aprender inclui escolher quais segredos vale a pena abrir.",
+            "archetypes": [
+              "Aprendiz ambicioso",
+              "Pesquisador ocultista",
+              "Guardião de um arquivo"
+            ],
+            "beginner_level": "Pede preparação",
+            "beginner_reason": "Magia e rituais têm mais opções; escolha sua primeira linha com ajuda.",
+            "beginner_tip": "Defina uma pergunta proibida que seu personagem quer responder e escolha com ajuda sua linha inicial de Taumaturgia.",
+            "attribute_tips": [
+              "Inteligência",
+              "Determinação",
+              "Raciocínio"
+            ],
+            "skill_tips": [
+              "Ocultismo",
+              "Erudição",
+              "Investigação"
+            ],
+            "story_hook": "Qual pergunta proibida você quer responder?",
+            "weakness": "A iniciação cria um laço inicial com os anciões; superiores do clã têm mais facilidade para dominá-lo.",
+            "source_url": "https://whitewolf.fandom.com/wiki/Tremere_%28VTM%29"
+          }
         },
         {
           "id": "tzimisce",
@@ -29651,7 +29937,33 @@
             11,
             2,
             25
-          ]
+          ],
+          "guide": {
+            "epithet": "A forma é apenas o começo",
+            "description": "Transformação, território e o limite entre criação e monstruosidade. Um estudioso, médico ou artista do corpo pode procurar uma forma de superar a própria natureza.",
+            "ideology": "Identidade e forma podem ser questionadas. Transformar algo é também assumir responsabilidade pelo que se cria.",
+            "archetypes": [
+              "Escultor inquietante",
+              "Médico transformador",
+              "Guardião de uma propriedade"
+            ],
+            "beginner_level": "Pede preparação",
+            "beginner_reason": "Transformação corporal e território exigem alinhar expectativas com a mesa.",
+            "beginner_tip": "Escolha um lugar do passado que importa para você e por que ainda carrega um pouco da terra dele.",
+            "attribute_tips": [
+              "Inteligência",
+              "Determinação",
+              "Destreza"
+            ],
+            "skill_tips": [
+              "Medicina",
+              "Ocultismo",
+              "Ofícios"
+            ],
+            "story_hook": "O que você mudaria em si, e o que jamais permitiria perder?",
+            "weakness": "Precisa dormir junto de terra pessoalmente significativa; sem ela, suas capacidades enfraquecem até conseguir descansar adequadamente.",
+            "source_url": "https://whitewolf.fandom.com/wiki/Tzimisce"
+          }
         },
         {
           "id": "ventrue",
@@ -29660,11 +29972,75 @@
             2,
             3,
             7
-          ]
+          ],
+          "guide": {
+            "epithet": "A coroa pesa sobre quem a deseja",
+            "description": "Liderança, responsabilidade e influência. Pode ser um empresário, organizador ou protetor que quer construir algo duradouro e acredita saber como conduzi-lo.",
+            "ideology": "Liderar é tomar decisões e responder por elas. A autoridade que você busca pode ser construída, herdada ou colocada à prova.",
+            "archetypes": [
+              "Organizador da comunidade",
+              "Executivo noturno",
+              "Protetor de um legado"
+            ],
+            "beginner_level": "Bom para começar",
+            "beginner_reason": "Liderança é um ponto de partida claro; defina uma presa viável com o narrador.",
+            "beginner_tip": "Defina quem seu personagem lidera, pelo que se sente responsável e um tipo de presa viável na campanha.",
+            "attribute_tips": [
+              "Carisma",
+              "Manipulação",
+              "Determinação"
+            ],
+            "skill_tips": [
+              "Liderança",
+              "Etiqueta",
+              "Persuasão"
+            ],
+            "story_hook": "Quem depende das suas decisões?",
+            "weakness": "Só se alimenta de um tipo específico de mortal, escolhido na criação; vitae vampírica é uma exceção.",
+            "source_url": "https://whitewolf.fandom.com/wiki/Ventrue_%28VTM%29"
+          }
+        },
+        {
+          "id": "caitiff",
+          "name": "Caitiff",
+          "disciplines": [],
+          "discipline_choices": [
+            11,
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            7
+          ],
+          "guide": {
+            "epithet": "Seu sangue não escolhe por você",
+            "description": "Sem uma linhagem que decida seu caminho, você constrói sua identidade na prática. Pode ser um recém-criado abandonado ou alguém que procura suas origens.",
+            "ideology": "Nenhum sobrenome precisa determinar o seu futuro. A ausência de uma linhagem deixa espaço para construir o próprio caminho.",
+            "archetypes": [
+              "Recém-criado abandonado",
+              "Sobrevivente sem linhagem",
+              "Buscador das próprias origens"
+            ],
+            "beginner_level": "Peça uma mão",
+            "beginner_reason": "Você escolhe os dons: pense no conceito primeiro e peça ajuda com a combinação.",
+            "beginner_tip": "Comece por seu passado mortal. Escolha dons que expliquem como sobrevive e peça ajuda para combinar três deles.",
+            "attribute_tips": [],
+            "skill_tips": [
+              "Sobrevivência",
+              "Prontidão",
+              "Manha"
+            ],
+            "story_hook": "O que você quer ser quando ninguém lhe entrega uma identidade?",
+            "weakness": "Não tem fraqueza de clã inerente; também não recebe a proteção e os privilégios de uma linhagem.",
+            "source_url": "https://whitewolf.fandom.com/wiki/Caitiff"
+          }
         }
       ]
     },
-    "catalog_version": 1
+    "catalog_version": 1,
+    "clan_guide_version": 1
   },
   "schema_version": 9,
   "_revision": 0,
