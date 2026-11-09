@@ -21,6 +21,7 @@ import { imageData } from './image-data.js';
 import { publicMap, validateScale, validateMapPosition } from './map-state.js';
 import { publicIntel, validateIntel } from './intel-state.js';
 import { validateRewardAccount } from './reward-state.js';
+import { validateChronicle, validateAchievements, chronicleVisibility } from './chronicle-state.js';
 export function coordinate(value) {
   if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > 1)
     fail('Posição fora do mapa.');
@@ -307,6 +308,7 @@ export function validateWorkspace(source) {
       if (!Array.isArray(n.read_by)) fail('Leituras de notificação inválidas.');
     }
     list(c.deleted_characters, 'fichas removidas');
+    validateChronicle(c);
     list(c.deleted_maps, 'mapas removidos');
   }
   for (const a of root.accounts) {
@@ -337,6 +339,7 @@ export function validateWorkspace(source) {
     a.bio ??= '';
     a.memberships ??= {};
     validateRewardAccount(a);
+    validateAchievements(a);
     for (const [id, ids] of Object.entries(a.memberships)) {
       const c = root.campaigns.find((c) => c.id === id);
       if (!c || !Array.isArray(ids) || ids.some((pid) => !c.characters.some((p) => p.id === pid)))
@@ -377,6 +380,9 @@ export function publicNote(note, doc) {
 export function publicCampaign(c, a) {
   const privateKeys = new Set([
     'accounts',
+    'recaps',
+    'feedbacks',
+    'documents',
     'sessions',
     'format',
     'snapshots',
@@ -387,6 +393,7 @@ export function publicCampaign(c, a) {
     'xp_distributions'
   ]);
   const result = clone(Object.fromEntries(Object.entries(c).filter(([k]) => !privateKeys.has(k))));
+  Object.assign(result, clone(chronicleVisibility(c, a)));
   result.roster = c.roster || [
     ...c.characters.map((p) => ({ id: p.id, char: p.char })),
     ...(c.retired_roster || [])

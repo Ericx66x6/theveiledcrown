@@ -1,9 +1,9 @@
-# Validação · A Coroa Velada 10.0 oficial
+# Validação · A Coroa Velada 10.1 oficial
 
-A entrega passou em **246 testes, sem falhas**, além da compilação e da revisão no navegador em desktop e telas de 360/390 px.
+A entrega passou em **259 testes, sem falhas**, além da compilação e da revisão no navegador em desktop e telas mobile de 360/390 px.
 
-- [Relatório completo](docs/VALIDACAO-V10.md)
-- [Comparação de desempenho e metodologia](docs/DESEMPENHO-10.md)
-- [Atualização sem reiniciar a campanha](ATUALIZAR.md)
+- [Relatório da versão 10.1](docs/VALIDACAO-V101.md)
+- [Medição anterior da arquitetura 10.0](docs/DESEMPENHO-10.md)
+- [Atualização com preservação das campanhas](ATUALIZAR.md)
 
-A validação usa dados descartáveis. Nenhum serviço de produção ou dado do usuário foi alterado.
+Foram conferidos relatos e feedback com XP manual, documentos privados, galeria por conta, laços de sangue, evolução em modal e carregamento central. Dados de teste e banco descartável; nenhum serviço ou dado de produção foi alterado.

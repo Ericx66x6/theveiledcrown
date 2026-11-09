@@ -215,7 +215,7 @@ test('v10 HTTP: manutenção deixa health disponível e impede leituras e altera
   const f = await fixture(t, { maintenance: true }),
     before = f.sql.calls.length;
   const health = await (await f.req('/api/health', { token: null })).json();
-  assert.equal(health.version, '10.0.0');
+  assert.equal(health.version, '10.1.0');
   assert.equal(health.maintenance, true);
   for (const [path, method] of [
     ['/auth/status', 'GET'],

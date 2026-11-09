@@ -9,6 +9,12 @@ export const esc = (value) =>
   );
 export const crown = `<svg viewBox="0 0 80 64" fill="none" aria-hidden="true"><path d="M13 19l9 31h36l9-31-18 14-9-23-9 23-18-14zM23 56h34" stroke="currentColor" stroke-width="2"/><path d="M40 2v5M5 13l5 3M75 13l-5 3M40 32v12" stroke="currentColor"/><circle cx="13" cy="17" r="2" fill="currentColor"/><circle cx="40" cy="8" r="2" fill="currentColor"/><circle cx="67" cy="17" r="2" fill="currentColor"/></svg>`;
 const paths = {
+  recaps: 'M4 3h13l3 3v15H4zM8 7h6M8 11h8M8 15h5M16 18h1',
+  documents: 'M7 3h10l4 4v14H7zM3 7v14h14M16 3v5h5M10 12h8M10 16h8',
+  feedbacks: 'M3 4h18v13H9l-6 4zM7 8h10M7 12h6',
+  achievements:
+    'M7 3h10v7a5 5 0 0 1-10 0zM7 5H3v4a5 5 0 0 0 5 5M17 5h4v4a5 5 0 0 1-5 5M12 15v5M7 21h10',
+  'blood-bonds': 'M8 7l3-3a5 5 0 0 1 7 7l-3 3M16 17l-3 3a5 5 0 0 1-7-7l3-3M8 16l8-8',
   intel: 'M3 4h18v16H3zM7 8h10M7 12h6M7 16h4',
   legacies: 'M12 2S5 10 5 15a7 7 0 0 0 14 0c0-5-7-13-7-13z',
   social: 'M3 4h18v12H9l-6 5zM7 8h10M7 12h6',

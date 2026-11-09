@@ -51,12 +51,7 @@ export async function api(
             : 'Salvando na crônica…',
         () => controller.abort(),
         {
-          blocking:
-            blocking ??
-            (!document.querySelector('#main-content') ||
-              /\/api\/(json\/|exchange\/import|admin\/reset|campaigns\/[^/]+\/select|media\/portable)/.test(
-                path
-              ))
+          blocking: blocking ?? true
         }
       );
   try {

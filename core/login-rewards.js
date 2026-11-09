@@ -35,6 +35,7 @@ export function loginRewardState(doc, account, now) {
         .filter(
           (e) =>
             !e.seen_at &&
+            e.kind !== 'achievement' &&
             e.campaign_id === doc.id &&
             (!e.character_id || account.character_ids.includes(e.character_id))
         )

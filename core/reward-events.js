@@ -1,4 +1,5 @@
 import { newId, timestamp } from './model.js';
+import { rememberProgress } from './chronicle-state.js';
 export function rewardEvent(doc, account, data) {
   if (!account || account.role !== 'player') return;
   account.reward_events ??= [];
@@ -10,6 +11,7 @@ export function rewardEvent(doc, account, data) {
     seen_at: null
   };
   account.reward_events.push(event);
+  rememberProgress(account, event);
   // Keep pending celebrations first; old acknowledged receipts are expendable.
   const pending = account.reward_events.filter((e) => !e.seen_at).slice(-500);
   const seen = account.reward_events.filter((e) => e.seen_at).slice(-50);

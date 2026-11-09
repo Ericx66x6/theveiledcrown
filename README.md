@@ -1,11 +1,17 @@
-# The Veiled Crown · A Coroa Velada 10.0 oficial
+# The Veiled Crown · A Coroa Velada 10.1 oficial
 
 Portal de RPG exclusivamente online: **Vercel → API Node.js no Render → Supabase**.
 
-Já usa uma versão anterior? Siga **[ATUALIZAR.md](ATUALIZAR.md)**: a 10.0 inclui uma migração SQL obrigatória, conversão controlada e instruções de retorno. Para instalar do zero, leia **[TUTORIAL.md](TUTORIAL.md)**. Os dados e o livro de regras atual são preservados; não importe o game-data inicial para atualizar.
+Já usa uma versão anterior? Siga **[ATUALIZAR.md](ATUALIZAR.md)**: quem já usa a 10.0 não precisa de SQL novo. A 10.1 converte a organização dos documentos durante uma pausa de manutenção, com instruções de retorno. Para instalar do zero, leia **[TUTORIAL.md](TUTORIAL.md)**. Os dados e o livro de regras atual são preservados; não importe o game-data inicial para atualizar.
 
-A 10.0 reduz o trabalho de cada operação: grava somente registros alterados, busca mudanças por revisão, carrega imagens privadas separadamente e aproveita a resposta do salvamento para atualizar a tela. Salvamentos comuns usam um indicador discreto, sem cobrir a navegação. Veja o [relatório de desempenho](docs/DESEMPENHO-10.md) e a [validação da entrega](docs/VALIDACAO-V10.md).
+A 10.0 reduz o trabalho de cada operação: grava somente registros alterados, busca mudanças por revisão, carrega imagens privadas separadamente e aproveita a resposta do salvamento para atualizar a tela. As ações que aguardam o servidor usam um indicador central com fundo escuro; consultas locais e sincronização silenciosa não bloqueiam a navegação. Veja o [relatório de desempenho](docs/DESEMPENHO-10.md) e a [validação da entrega 10.1](docs/VALIDACAO-V101.md).
 
+- **Onde paramos?** por personagem, rascunhos e envio guiado: o narrador pede complemento, registra a leitura ou concede +1 XP uma vez.
+- **Galeria da eternidade** da conta: evoluções e disciplinas registradas, feitos e títulos concedidos pelo narrador, com celebração no próximo acesso.
+- **Documentos da crônica** em texto/imagem, liberados à campanha inteira ou a jogadores selecionados.
+- **Voz da mesa**: feedback privado, resposta do narrador e recompensa variável de XP.
+- **Laços de sangue** com foto, descrição, direção, níveis 0–5, desgaste narrativo e animações de domínio/libertação.
+- Revisão de evolução em diálogo com custo/saldo, sem consulta extra; a confirmação continua validada no servidor.
 - Celebrações de XP, evolução e novos dons; recibos pendentes aparecem no próximo acesso.
 - Presença diária configurável por campanha (padrão: cinco dias consecutivos, 1 XP), com resgate para um personagem.
 - Cadastro público com foto, aprovação do narrador e liberação de campanhas.
@@ -71,4 +77,4 @@ A versão 9.2.1 organiza a criação em passos obrigatórios, uma categoria por 
 
 A versão 9.3.0 adiciona recompensas de presença, cadastro sujeito à aprovação, celebrações persistentes e um repertório ampliado de rituais. Leia [docs/JOGO-VIVO.md](docs/JOGO-VIVO.md) e [docs/IMPORTACAO.md](docs/IMPORTACAO.md).
 
-O indicador central permanece para operações que exigem espera, como entrar e importar dados. O modo de manutenção temporário bloqueia a API durante conversões sem derrubar o health check. O histórico das versões anteriores está em `docs/HISTORICO-ATUALIZACOES-V9.md`.
+O indicador central cobre carregamentos e salvamentos iniciados pelo usuário, sem atraso artificial mínimo. O modo de manutenção temporário bloqueia a API durante conversões sem derrubar o health check. O histórico das versões anteriores está em `docs/HISTORICO-ATUALIZACOES-V9.md`.

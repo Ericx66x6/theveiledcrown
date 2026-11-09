@@ -60,7 +60,7 @@ function update() {
         el.showModal();
         playSound('loading');
         document.querySelector('#app')?.setAttribute('aria-busy', 'true');
-      }, 220);
+      }, 90);
   } else {
     clearTimeout(timer);
     timer = null;

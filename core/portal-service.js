@@ -1,4 +1,7 @@
 import { commerceRequest } from './commerce-service.js';
+import { chronicleRequest, isChroniclePath } from './chronicle-service.js';
+import { bloodBondsRequest } from './blood-bonds-service.js';
+import { galleryState } from './chronicle-state.js';
 import { rewardsRequest, loginRewardState } from './login-rewards.js';
 import { registrationRequest } from './registration-service.js';
 import { communityRequest, socialSnapshot } from './community-service.js';
@@ -20,6 +23,9 @@ import { submissionsRequest, submissionPackage, importSubmission } from './submi
 export class PortalService extends CampaignService {
   async request(path, options = {}) {
     const { method = 'GET', data = {}, token } = options;
+    if (isChroniclePath(path)) return chronicleRequest(this, path, options);
+    if (/^\/api\/characters\/\d+\/blood-bonds(?:\/|$)/.test(path))
+      return bloodBondsRequest(this, path, options);
     if (path === '/auth/register' || path.startsWith('/api/admin/registrations'))
       return registrationRequest(this, path, method, data, token);
     const special =
@@ -50,6 +56,7 @@ export class PortalService extends CampaignService {
     if (path === '/api/portal-state' && a.role !== 'admin' && !a._campaign_member)
       return {
         account: publicAccount(a),
+        gallery: galleryState(a, { summary: true }),
         campaign: {
           id: 'no-campaign',
           title: 'Suas campanhas',
@@ -108,6 +115,7 @@ export class PortalService extends CampaignService {
       }
       return {
         account: publicAccount(a),
+        gallery: galleryState(a, { summary: true }),
         rewards:
           a.role === 'player'
             ? loginRewardState(doc, a, new Date(this.now ? this.now() : Date.now()))

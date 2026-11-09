@@ -1,5 +1,6 @@
 import { isImageSource } from './media-reference.js';
 import { imageData } from './image-data.js';
+import { validateBloodBonds } from './blood-bond-state.js';
 import { jsonDestinationError } from './json-kind.js';
 import { limits, xpCost, newId } from '../shared/rules.js';
 export { limits, xpCost, newId };
@@ -47,6 +48,7 @@ export function normalize(source) {
   for (const key of [
     ...stats,
     'disciplines',
+    'blood_bonds',
     'rituals',
     'caracteristics',
     'moralityes',
@@ -254,6 +256,7 @@ export function validatePlayer(source, game) {
     p.profilepicture !== 'image_link'
   )
     fail('O retrato precisa ser uma imagem local.');
+  validateBloodBonds(p.blood_bonds);
   return p;
 }
 export function publicPlayer(p) {

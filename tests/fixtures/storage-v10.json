@@ -1,0 +1,220 @@
+{
+  "revision": 7,
+  "root": {
+    "format": "coroa-hub-v2",
+    "schema_version": 9,
+    "revision": 7,
+    "active_campaign_id": "campanha-antiga",
+    "default_game": {
+      "title": "Livro anterior"
+    },
+    "accounts": [
+      {
+        "id": "jogador-antigo",
+        "role": "player",
+        "display_name": "Jogador anterior",
+        "memberships": {
+          "campanha-antiga": [
+            234567
+          ]
+        }
+      }
+    ],
+    "deleted_accounts": [],
+    "sessions": [
+      {
+        "token": "sessao-ficticia-do-teste-v10",
+        "account": "jogador-antigo",
+        "version": 0,
+        "expires": null
+      }
+    ],
+    "campaigns": [
+      {
+        "id": "campanha-antiga",
+        "title": "Campanha anterior",
+        "game": {
+          "title": "Livro anterior"
+        },
+        "characters": [
+          {
+            "id": 234567,
+            "char": "Uma história anterior",
+            "xp": 17,
+            "history": [
+              {
+                "id": "log-anterior",
+                "action": "Registro anterior",
+                "details": "Não perder esta memória."
+              }
+            ],
+            "transactions": [],
+            "rolls": []
+          }
+        ],
+        "maps": [],
+        "network": {
+          "nodes": [],
+          "links": []
+        },
+        "notes": [],
+        "quests": [],
+        "social": [],
+        "intel": [],
+        "submissions": [],
+        "notifications": [],
+        "snapshots": [],
+        "deleted_characters": [],
+        "deleted_maps": []
+      }
+    ]
+  },
+  "documents": {
+    "default_game.json": {
+      "title": "Livro anterior"
+    },
+    "accounts/jogador-antigo.json": {
+      "id": "jogador-antigo",
+      "role": "player",
+      "display_name": "Jogador anterior",
+      "memberships": {
+        "campanha-antiga": [
+          234567
+        ]
+      }
+    },
+    "accounts/index.json": {
+      "format": "coroa-list-v10",
+      "items": [
+        "accounts/jogador-antigo.json"
+      ]
+    },
+    "accounts.json": {
+      "format": "coroa-account-index-v10",
+      "index": "accounts/index.json"
+    },
+    "deleted_accounts/index.json": {
+      "format": "coroa-list-v10",
+      "items": []
+    },
+    "__server/sessions/0d5b091e9c63363ee4d8b825f4a55b2aac48be486c5634722ab6acf2699f4c37.json": {
+      "id": "0d5b091e9c63363ee4d8b825f4a55b2aac48be486c5634722ab6acf2699f4c37",
+      "session": {
+        "token": "sessao-ficticia-do-teste-v10",
+        "account": "jogador-antigo",
+        "version": 0,
+        "expires": null
+      }
+    },
+    "__server/sessions/index.json": {
+      "format": "coroa-list-v10",
+      "items": [
+        "__server/sessions/0d5b091e9c63363ee4d8b825f4a55b2aac48be486c5634722ab6acf2699f4c37.json"
+      ]
+    },
+    "campaigns/campanha-antiga/game_data.json": {
+      "title": "Livro anterior"
+    },
+    "campaigns/campanha-antiga/character-logs/234567/history/f569009558fa4eb91ad09bf8c28e3298ed7927fa3be0db52a09c6da254082b17.json": {
+      "id": "log-anterior",
+      "action": "Registro anterior",
+      "details": "Não perder esta memória."
+    },
+    "campaigns/campanha-antiga/characters/234567.json": {
+      "id": 234567,
+      "char": "Uma história anterior",
+      "xp": 17,
+      "_coroa_character_logs": {
+        "history": [
+          "campaigns/campanha-antiga/character-logs/234567/history/f569009558fa4eb91ad09bf8c28e3298ed7927fa3be0db52a09c6da254082b17.json"
+        ],
+        "transactions": [],
+        "rolls": []
+      }
+    },
+    "campaigns/campanha-antiga/characters/index.json": {
+      "format": "coroa-list-v10",
+      "items": [
+        "campaigns/campanha-antiga/characters/234567.json"
+      ]
+    },
+    "campaigns/campanha-antiga/maps/index.json": {
+      "format": "coroa-list-v10",
+      "items": []
+    },
+    "campaigns/campanha-antiga/notes/index.json": {
+      "format": "coroa-list-v10",
+      "items": []
+    },
+    "campaigns/campanha-antiga/quests/index.json": {
+      "format": "coroa-list-v10",
+      "items": []
+    },
+    "campaigns/campanha-antiga/social/index.json": {
+      "format": "coroa-list-v10",
+      "items": []
+    },
+    "campaigns/campanha-antiga/intel/index.json": {
+      "format": "coroa-list-v10",
+      "items": []
+    },
+    "campaigns/campanha-antiga/submissions/index.json": {
+      "format": "coroa-list-v10",
+      "items": []
+    },
+    "campaigns/campanha-antiga/notifications/index.json": {
+      "format": "coroa-list-v10",
+      "items": []
+    },
+    "campaigns/campanha-antiga/snapshots/index.json": {
+      "format": "coroa-list-v10",
+      "items": []
+    },
+    "campaigns/campanha-antiga/deleted_characters/index.json": {
+      "format": "coroa-list-v10",
+      "items": []
+    },
+    "campaigns/campanha-antiga/deleted_maps/index.json": {
+      "format": "coroa-list-v10",
+      "items": []
+    },
+    "campaigns/campanha-antiga/network.json": {
+      "nodes": [],
+      "links": []
+    },
+    "campaigns/campanha-antiga/campaign.json": {
+      "id": "campanha-antiga",
+      "title": "Campanha anterior",
+      "_coroa_files": {
+        "game": "campaigns/campanha-antiga/game_data.json",
+        "characters": "campaigns/campanha-antiga/characters/index.json",
+        "maps": "campaigns/campanha-antiga/maps/index.json",
+        "notes": "campaigns/campanha-antiga/notes/index.json",
+        "quests": "campaigns/campanha-antiga/quests/index.json",
+        "social": "campaigns/campanha-antiga/social/index.json",
+        "intel": "campaigns/campanha-antiga/intel/index.json",
+        "submissions": "campaigns/campanha-antiga/submissions/index.json",
+        "notifications": "campaigns/campanha-antiga/notifications/index.json",
+        "snapshots": "campaigns/campanha-antiga/snapshots/index.json",
+        "deleted_characters": "campaigns/campanha-antiga/deleted_characters/index.json",
+        "deleted_maps": "campaigns/campanha-antiga/deleted_maps/index.json",
+        "network": "campaigns/campanha-antiga/network.json"
+      }
+    },
+    "portal.json": {
+      "format": "coroa-storage-v10",
+      "meta": {
+        "format": "coroa-hub-v2",
+        "schema_version": 9,
+        "active_campaign_id": "campanha-antiga"
+      },
+      "game": "default_game.json",
+      "accounts": "accounts.json",
+      "deleted": "deleted_accounts/index.json",
+      "sessions": "__server/sessions/index.json",
+      "campaigns": [
+        "campaigns/campanha-antiga/campaign.json"
+      ]
+    }
+  }
+}

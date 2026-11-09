@@ -64,13 +64,37 @@ export function validateRewardAccount(account) {
   }
   if (account.reward_events !== undefined) {
     for (const e of list(account.reward_events, 'Recibos de recompensa', 550)) {
-      if (!['xp', 'upgrade', 'discipline', 'check-in', 'streak-break'].includes(e.kind))
+      if (
+        ![
+          'xp',
+          'upgrade',
+          'discipline',
+          'check-in',
+          'streak-break',
+          'achievement',
+          'blood-bond'
+        ].includes(e.kind)
+      )
         fail('Tipo de recibo inválido.');
       text(e.campaign_id, 'Campanha do recibo', 100, true);
       stamp(e.created_at, 'Data do recibo');
       stamp(e.seen_at, 'Data de leitura', true);
       if (e.character_id !== undefined) number(e.character_id, 'Personagem do recibo', 0, 999999);
       if (e.kind === 'xp') number(e.amount, 'XP recebido', 1);
+      if (e.kind === 'achievement') {
+        text(e.name, 'Conquista', 300, true);
+        text(e.icon, 'Ícone', 24, true);
+        text(e.achievement_id, 'Conquista', 100, true);
+      }
+      if (e.kind === 'blood-bond') {
+        text(e.subject, 'Vínculo', 150, true);
+        number(e.level, 'Nível do vínculo', 0, 5);
+        if (
+          !['bound', 'dominion', 'release', 'loss'].includes(e.polarity) ||
+          !['bound_to', 'holds'].includes(e.direction)
+        )
+          fail('Recibo de laço inválido.');
+      }
       if (
         ['discipline', 'upgrade'].includes(e.kind) &&
         (!Array.isArray(e.changes) || e.changes.length > 50)

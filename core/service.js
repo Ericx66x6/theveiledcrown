@@ -43,6 +43,8 @@ export function accountRecord(data, passwordHash) {
     _campaign_member: true,
     avatar: '',
     bio: '',
+    achievements: [],
+    achievement_schema: 1,
     preferences: {
       audio_enabled: true,
       music_enabled: true,

@@ -30,6 +30,21 @@ const MIME = {
   '.xml': 'application/xml; charset=utf-8'
 };
 const routes = [
+  [/^\/api\/recaps$/, ['GET', 'POST']],
+  [/^\/api\/recaps\/[^/]+$/, ['GET', 'PATCH', 'DELETE']],
+  [/^\/api\/recaps\/[^/]+\/(submit|review)$/, ['POST']],
+  [/^\/api\/feedbacks$/, ['GET', 'POST']],
+  [/^\/api\/feedbacks\/[^/]+$/, ['GET', 'PATCH', 'DELETE']],
+  [/^\/api\/feedbacks\/[^/]+\/review$/, ['POST']],
+  [/^\/api\/documents$/, ['GET', 'POST']],
+  [/^\/api\/documents\/[^/]+$/, ['GET', 'PATCH', 'DELETE']],
+  [/^\/api\/documents\/[^/]+\/read$/, ['POST']],
+  [/^\/api\/achievements$/, ['GET', 'POST']],
+  [/^\/api\/achievements\/ack$/, ['POST']],
+  [/^\/api\/achievements\/[^/]+$/, ['DELETE']],
+  [/^\/api\/characters\/\d+\/blood-bonds$/, ['GET', 'POST']],
+  [/^\/api\/characters\/\d+\/blood-bonds\/[^/]+$/, ['PATCH', 'DELETE']],
+  [/^\/api\/characters\/\d+\/blood-bonds\/[^/]+\/(renew|weaken)$/, ['POST']],
   [/^\/api\/media\/portable$/, ['POST']],
   [/^\/api\/media\/[a-f0-9]{64}\.(jpg|png|webp)$/, ['GET', 'HEAD']],
   [/^\/auth\/(bootstrap|login|logout|password|register)$/, ['POST']],
@@ -238,8 +253,8 @@ export function createPortalServer({
       if (url.pathname === '/api/health') {
         await respond(200, {
           status: 'ok',
-          version: '10.0.0',
-          storage: 'incremental-v10',
+          version: '10.1.0',
+          storage: 'incremental-v10.1',
           maintenance
         });
         return;

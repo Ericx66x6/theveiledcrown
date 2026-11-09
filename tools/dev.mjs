@@ -52,6 +52,21 @@ if (!qa) {
     `document.querySelectorAll('[data-width]').forEach(b=>b.onclick=()=>document.querySelector('iframe').style.width=b.dataset.width+'px');document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>document.querySelector('iframe').src=b.dataset.page+'.html');`
   );
   const { repository, close } = await previewRepository(root);
+  // Optional disposable QA latency, never loaded by npm start.
+  let saveDelay = 0;
+  try {
+    saveDelay = Math.min(
+      5000,
+      Math.max(0, Number(await readFile('.qa/save-delay-ms', 'utf8')) || 0)
+    );
+  } catch {}
+  if (saveDelay) {
+    const save = repository.save.bind(repository);
+    repository.save = async (...args) => {
+      await new Promise((r) => setTimeout(r, saveDelay));
+      return save(...args);
+    };
+  }
   const server = createPortalServer({
     repository,
     bootstrapToken: 'instalacao-ficticia-da-previa-0123456789',

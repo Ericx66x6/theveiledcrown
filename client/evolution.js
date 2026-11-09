@@ -2,7 +2,19 @@ import { powerPool } from './power-pool.js';
 import { powerAccess } from '../core/power-access.js';
 import { powerAccessLabel } from './power-access.js';
 import { fold } from '../core/power-tests.js';
-import { $, esc, icon, button, dots, empty, modal, field, area, toast } from '../shared/ui.js';
+import {
+  $,
+  esc,
+  icon,
+  button,
+  dots,
+  empty,
+  modal,
+  closeModal,
+  field,
+  area,
+  toast
+} from '../shared/ui.js';
 import { labels } from '../shared/rules.js';
 import { api } from './api.js';
 import { upgradeQuote, mechanics } from '../core/settings.js';
@@ -270,14 +282,82 @@ export async function evolutionAction(action, data, ctx) {
     return true;
   }
   if (action === 'evolution-review') {
-    u.quote = await api(`/api/characters/${u.characterId}/upgrade-preview`, {
-      data: { key: u.key, id: u.id, target: u.target }
-    });
+    compute(ctx, u);
     if (!u.quote.affordable) throw new Error('XP insuficiente para esta evolução.');
-    u.stage = 'review';
+    const quote = structuredClone(u.quote),
+      accountId = ctx.state.account.id,
+      campaignId = ctx.state.campaign.id;
     u.reviewOpenedAt = Date.now();
-    uiSound('swoosh', sounds(ctx));
-    ctx.draw();
+    clearInterval(timer);
+    modal(
+      'Confirmar sua ascensão?',
+      `<div class="evolution-confirm-dialog"><span class="eyebrow">${esc(ctx.player().char)}</span><h3>${esc(u.name)}</h3><div class="evolution-dialog-journey"><strong>${quote.from}</strong>${icon('arrow')}<strong>${quote.target}</strong></div><div class="evolution-dialog-wallet"><span>Investimento <strong>${quote.cost} XP</strong></span><span>Saldo depois <strong>${quote.remaining} XP</strong></span></div><p>Confirme este investimento para registrar a evolução na ficha e na sua galeria.</p><p class="evolution-dialog-countdown" data-review-wait></p></div>`,
+      async () => {
+        if (Date.now() < u.reviewOpenedAt + ctx.state.game.progression.confirmation_seconds * 1000)
+          throw new Error('Aguarde a confirmação ser liberada.');
+        if (
+          ctx.player()?.id !== u.characterId ||
+          ctx.state.account.id !== accountId ||
+          ctx.state.campaign.id !== campaignId
+        )
+          throw new Error('A visão mudou. Abra a evolução novamente.');
+        u.busy = true;
+        try {
+          const result = await api(`/api/characters/${u.characterId}/upgrade`, {
+            method: 'POST',
+            data: {
+              key: u.key,
+              id: u.id,
+              target: quote.target,
+              revision: quote.revision,
+              confirmed: true,
+              quoted_cost: quote.cost
+            }
+          });
+          ctx.state.player = result;
+          u.stage = 'success';
+          u.error = '';
+          u.busy = false;
+          await ctx.refresh();
+        } catch (error) {
+          u.busy = false;
+          if (error.status === 409) {
+            closeModal();
+            await ctx.refresh();
+            compute(ctx, u);
+            u.error = 'A ficha ou as regras mudaram. Confira o novo custo e revise novamente.';
+            ctx.draw();
+            toast(u.error, true);
+            return;
+          }
+          throw error;
+        } finally {
+          clearInterval(timer);
+        }
+      },
+      { saveLabel: `Confirmar evolução · ${quote.cost} XP`, onCancel: () => clearInterval(timer) }
+    );
+    const control = $('#dialog-form [type=submit]');
+    const update = () => {
+      if (!control.isConnected) {
+        clearInterval(timer);
+        return;
+      }
+      const wait = Math.max(
+        0,
+        Math.ceil(
+          (u.reviewOpenedAt + ctx.state.game.progression.confirmation_seconds * 1000 - Date.now()) /
+            1000
+        )
+      );
+      control.disabled = wait > 0;
+      $('[data-review-wait]').textContent = wait
+        ? `Confirmação liberada em ${wait}s`
+        : 'Pronto para confirmar seu próximo nível.';
+      if (!wait) clearInterval(timer);
+    };
+    update();
+    if (control.disabled) timer = setInterval(update, 100);
     return true;
   }
   if (action === 'evolution-confirm') {

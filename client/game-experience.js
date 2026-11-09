@@ -39,7 +39,9 @@ export function queueExperience(ctx) {
     identity = key;
   }
   context = ctx;
-  const fresh = (ctx.state.rewards?.events || []).filter((e) => !known.has(e.id));
+  const fresh = [...(ctx.state.rewards?.events || []), ...(ctx.state.gallery?.events || [])].filter(
+    (e) => !known.has(e.id)
+  );
   fresh.forEach((e) => known.add(e.id));
   queue.push(...groupRewards(fresh));
   if (!timer && !active && queue.length) timer = setTimeout(flush, 450);
@@ -82,30 +84,59 @@ function show(event) {
   const broken = event.kind === 'streak-break',
     check = event.kind === 'check-in',
     xp = event.kind === 'xp',
-    learned = event.kind === 'discipline';
-  const title = broken
-    ? 'A corrente se partiu.'
-    : check
-      ? event.completed
-        ? 'Você honrou a noite.'
-        : 'Mais uma marca na eternidade.'
-      : xp
-        ? 'Seu legado cresceu.'
-        : learned
-          ? 'O sangue revelou um segredo.'
-          : 'Você ultrapassou seus limites.';
-  const subtitle = broken
-    ? 'A noite não espera. A sua história continua.'
-    : check
-      ? 'Sua presença faz parte desta crônica.'
-      : xp
-        ? 'Cada escolha deixa poder em suas mãos.'
-        : learned
-          ? 'Um novo dom agora faz parte de você.'
-          : 'Seu esforço deixou uma nova marca no sangue.';
+    learned = event.kind === 'discipline',
+    achievement = event.kind === 'achievement',
+    bond = event.kind === 'blood-bond',
+    bound = bond && event.polarity === 'bound',
+    dominion = bond && event.polarity === 'dominion',
+    released = bond && event.polarity === 'release';
+  const title = achievement
+    ? 'Seu nome entrou para a eternidade.'
+    : bond
+      ? bound
+        ? 'O sangue fechou as correntes.'
+        : dominion
+          ? 'Sua vontade deixou uma marca.'
+          : released
+            ? 'As correntes começam a ceder.'
+            : 'Seu domínio enfraquece.'
+      : broken
+        ? 'A corrente se partiu.'
+        : check
+          ? event.completed
+            ? 'Você honrou a noite.'
+            : 'Mais uma marca na eternidade.'
+          : xp
+            ? 'Seu legado cresceu.'
+            : learned
+              ? 'O sangue revelou um segredo.'
+              : 'Você ultrapassou seus limites.';
+  const subtitle = achievement
+    ? 'Uma conquista do jogador. Uma marca que acompanha suas histórias.'
+    : bond
+      ? bound
+        ? 'Uma presença ocupa seus pensamentos. O vínculo agora faz parte de você.'
+        : dominion
+          ? 'Seu sangue atravessou outra vontade e firmou seu domínio.'
+          : released
+            ? 'O chamado perde força. Sua vontade encontra espaço para respirar.'
+            : 'O sangue distante já não sustenta as mesmas correntes.'
+      : broken
+        ? 'A noite não espera. A sua história continua.'
+        : check
+          ? 'Sua presença faz parte desta crônica.'
+          : xp
+            ? 'Cada escolha deixa poder em suas mãos.'
+            : learned
+              ? 'Um novo dom agora faz parte de você.'
+              : 'Seu esforço deixou uma nova marca no sangue.';
   const liveCharacter = context.state.players.find((p) => p.id === event.character_id);
   let body;
-  if (xp)
+  if (achievement)
+    body = `<div class="achievement-finale-medallion" aria-hidden="true">${esc(event.icon)}</div><p class="achievement-finale-name">${esc(event.name)}</p><p class="reward-reason prose">${esc(event.description || 'O narrador reconheceu um momento da sua jornada.')}</p><span class="reward-balance">GUARDADO NA SUA GALERIA</span>`;
+  else if (bond)
+    body = `<div class="blood-finale-chain ${bound ? 'closing' : dominion ? 'dominion' : released ? 'releasing' : 'fading'}" aria-hidden="true"><i></i><span>${icon(bound ? 'lock' : dominion ? 'accounts' : 'blood')}</span><i></i></div><p class="reward-character">${esc(event.subject)}</p><div class="blood-finale-level"><strong>${event.level}</strong><small>${event.level ? 'NÍVEL DO LAÇO' : 'VÍNCULO ROMPIDO'}</small>${dots(event.level)}</div><p class="reward-reason">${esc(event.character_name)} · ${event.direction === 'bound_to' ? 'Um laço sobre a sua vontade.' : 'Um vínculo sob o seu domínio.'}</p>`;
+  else if (xp)
     body = `<div class="reward-number"><span aria-hidden="true" data-count>+0</span><span class="sr-only">+${event.amount}</span><small>XP RECEBIDOS</small></div><p class="reward-character">${esc(event.character_name)}</p><p class="reward-reason">${esc(event.reason)}</p>${liveCharacter ? `<span class="reward-balance">SALDO ATUAL <strong>${liveCharacter.xp} XP</strong></span>` : ''}`;
   else if (check)
     body = `${seals(event.progress, event.days)}<div class="reward-number"><span>${event.progress}<em> / ${event.days}</em></span><small>DIAS DO CICLO</small></div><p class="reward-reason">${event.completed ? `Você conquistou <strong>${event.xp} XP</strong>. Escolha um personagem em Presença na crônica para receber.` : `A cada ${event.days} dias consecutivos, ${event.xp} XP esperam por um personagem seu.`}</p>`;
@@ -121,10 +152,10 @@ function show(event) {
       .join(
         ''
       )}</div><p class="reward-character">${esc(event.character_name)}</p>${learned ? '<p class="reward-reason">O dom foi aprendido. Use XP para desenvolver os níveis que ainda não possui.</p>' : ''}`;
-  dialog.className = `game-finale ${broken ? 'chain-broken' : check ? 'presence-finale' : xp ? 'xp-finale' : 'ascension-finale'} ${reduced() ? 'still' : ''}`;
+  dialog.className = `game-finale ${achievement ? 'achievement-finale' : bond ? 'blood-bond-finale ' + event.polarity : broken ? 'chain-broken' : check ? 'presence-finale' : xp ? 'xp-finale' : 'ascension-finale'} ${reduced() ? 'still' : ''}`;
   dialog.setAttribute('aria-labelledby', 'reward-title');
   dialog.setAttribute('aria-describedby', 'reward-description');
-  dialog.innerHTML = `<div class="reward-scene" aria-hidden="true"><div class="reward-halo"></div><div class="reward-ring"></div><div class="reward-ring outer"></div>${reduced() ? '' : Array.from({ length: 36 }, (_, i) => `<i class="reward-spark" style="--i:${i};--angle:${i * 137.5}deg;--travel:${70 + (i % 7) * 25}px"></i>`).join('')}</div><div class="reward-content"><span class="reward-crest">${crown}</span><span class="eyebrow">${broken ? 'UM NOVO COMEÇO' : check ? 'PRESENÇA NA CRÔNICA' : 'A NOITE RECONHECE VOCÊ'}</span><h2 id="reward-title">${title}</h2><p id="reward-description">${subtitle}</p>${body}<button type="button" class="button primary reward-continue">Continuar ${icon('arrow')}</button><span class="reward-footnote">${xp ? 'O XP já está salvo na sua ficha.' : check ? 'Um registro por dia · horário da campanha.' : 'Sua história fica registrada.'}</span></div>`;
+  dialog.innerHTML = `<div class="reward-scene" aria-hidden="true"><div class="reward-halo"></div><div class="reward-ring"></div><div class="reward-ring outer"></div>${reduced() ? '' : Array.from({ length: 36 }, (_, i) => `<i class="reward-spark" style="--i:${i};--angle:${i * 137.5}deg;--travel:${70 + (i % 7) * 25}px"></i>`).join('')}</div><div class="reward-content"><span class="reward-crest">${crown}</span><span class="eyebrow">${broken ? 'UM NOVO COMEÇO' : check ? 'PRESENÇA NA CRÔNICA' : 'A NOITE RECONHECE VOCÊ'}</span><h2 id="reward-title">${title}</h2><p id="reward-description">${subtitle}</p>${body}<button type="button" class="button primary reward-continue">Continuar ${icon('arrow')}</button><span class="reward-footnote">${achievement ? 'O feito pertence à sua conta e já está salvo.' : bond ? 'O vínculo já está registrado na ficha.' : xp ? 'O XP já está salvo na sua ficha.' : check ? 'Um registro por dia · horário da campanha.' : 'Sua história fica registrada.'}</span></div>`;
   active = dialog;
   document.body.append(dialog);
   document.body.classList.add('game-finale-open');
@@ -135,10 +166,18 @@ function show(event) {
     document.body.classList.remove('game-finale-open');
     if (opener?.isConnected) opener.focus();
     const ctx = context;
-    api('/api/rewards/ack', { method: 'POST', data: { ids: event.ids }, silent: true })
+    api(achievement ? '/api/achievements/ack' : '/api/rewards/ack', {
+      method: 'POST',
+      data: { ids: event.ids },
+      silent: true
+    })
       .then(() => {
         if (context === ctx && ctx?.state.rewards)
           ctx.state.rewards.events = ctx.state.rewards.events.filter(
+            (e) => !event.ids.includes(e.id)
+          );
+        if (context === ctx && ctx?.state.gallery)
+          ctx.state.gallery.events = ctx.state.gallery.events.filter(
             (e) => !event.ids.includes(e.id)
           );
       })
@@ -148,17 +187,21 @@ function show(event) {
   dialog.querySelector('button').onclick = () => dialog.close();
   dialog.showModal();
   playSound(
-    broken
-      ? 'surrender'
-      : check
-        ? event.completed
-          ? 'victory'
-          : 'confirm'
-        : xp
-          ? 'xp-gain'
-          : learned
-            ? 'discipline-learn'
-            : 'level-up'
+    achievement || dominion || released
+      ? 'victory'
+      : bond
+        ? 'surrender'
+        : broken
+          ? 'surrender'
+          : check
+            ? event.completed
+              ? 'victory'
+              : 'confirm'
+            : xp
+              ? 'xp-gain'
+              : learned
+                ? 'discipline-learn'
+                : 'level-up'
   );
   if (xp) {
     const node = dialog.querySelector('[data-count]'),

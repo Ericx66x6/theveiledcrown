@@ -82,6 +82,7 @@ export function gameSettings(source) {
     time_zone: 'America/Sao_Paulo',
     ...g.login_rewards
   };
+  g.chronicle = { recap_min_words: 80, ...g.chronicle };
   g.character_creation = {
     enabled: true,
     require_approval: true,
@@ -203,6 +204,7 @@ export function validateSettings(g) {
   number(g.dice.success_on, 'Dificuldade', 1, g.dice.sides);
   number(g.dice.max_pool, 'Limite de dados', 1, 100);
   number(g.quests.max_xp_reward, 'XP máximo de missão', 0, 1000000);
+  number(g.chronicle.recap_min_words, 'Palavras mínimas do relato', 50, 600);
   number(g.quests.max_money_reward, 'Dinheiro máximo de missão', 0, 1000000000);
   if (g.quests.require_narrator_completion !== true)
     fail('A entrega das recompensas precisa continuar sob confirmação do narrador.');

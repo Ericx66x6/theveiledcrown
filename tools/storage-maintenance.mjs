@@ -39,7 +39,7 @@ const revision =
 console.log(
   JSON.stringify({
     status: 'concluido',
-    format: action === 'legacy' ? 'compatível com 9.3.1' : 'incremental v10',
+    format: action === 'legacy' ? 'v4 compatível com 9.3.1 e 10.0' : 'incremental v10.1',
     revision,
     campaigns: loaded.root.campaigns.length,
     characters: loaded.root.campaigns.reduce((n, c) => n + c.characters.length, 0),
@@ -48,5 +48,5 @@ console.log(
 );
 if (action === 'legacy')
   console.log(
-    'Publique o backend 9.3.1 antes de desativar a manutenção. Nenhum ponto, personagem ou conta foi reiniciado.'
+    'Publique o backend anterior compatível com v4 antes de desativar a manutenção. Nenhum ponto, personagem ou conta foi reiniciado.'
   );

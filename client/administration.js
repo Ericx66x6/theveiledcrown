@@ -250,6 +250,25 @@ export async function administrationAction(action, data, ctx) {
     const n = s.notifications.find((n) => n.id === data.id);
     await api('/api/notifications/' + n.id + '/read', { method: 'POST' });
     await ctx.refresh();
+    if (n.kind === 'recap') {
+      s.recapId = n.target;
+      await ctx.go('recap-detail');
+      return true;
+    }
+    if (n.kind === 'document') {
+      s.documentId = n.target;
+      await ctx.go('document-detail');
+      return true;
+    }
+    if (n.kind === 'feedback') {
+      await ctx.go('feedbacks');
+      await chronicleAction('feedback-open', { id: n.target }, ctx);
+      return true;
+    }
+    if (n.kind === 'achievement') {
+      await ctx.go('achievements');
+      return true;
+    }
     if (n.kind === 'challenge') {
       await ctx.go('social');
       await showChallenge(ctx, n.target);
@@ -362,3 +381,4 @@ export async function administrationAction(action, data, ctx) {
   }
   return false;
 }
+import { chronicleAction } from './chronicle.js';

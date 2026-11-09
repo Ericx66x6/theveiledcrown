@@ -1,6 +1,7 @@
 import { clone, newId, timestamp } from './model.js';
 import { gameSettings } from './settings.js';
 import { migrateAspirations } from './aspirations.js';
+import { rememberProgress } from './chronicle-state.js';
 export const emptyMap = () => ({ image: '', width: 0, height: 0, pins: [] });
 export function normalizeCampaign(source) {
   const c = clone(source);
@@ -39,6 +40,9 @@ export function normalizeCampaign(source) {
   }));
   for (const key of [
     'notes',
+    'recaps',
+    'feedbacks',
+    'documents',
     'intel',
     'social',
     'quests',
@@ -63,6 +67,11 @@ export function normalizeRoot(source) {
   root.active_campaign_id ??= root.campaigns[0]?.id || null;
   root.campaigns = root.campaigns.map(normalizeCampaign);
   for (const a of root.accounts) {
+    a.achievements ??= [];
+    if (a.achievement_schema !== 1) {
+      for (const event of a.reward_events || []) rememberProgress(a, event);
+      a.achievement_schema = 1;
+    }
     const firstAudioUpdate = a.preferences?.audio_defaults_version !== 2;
     a.preferences = {
       audio_enabled: a.preferences?.ui_sound !== false,

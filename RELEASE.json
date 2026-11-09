@@ -1,13 +1,14 @@
 {
   "product": "A Coroa Velada",
-  "version": "10.0.0",
+  "version": "10.1.0",
   "channel": "oficial",
-  "release_date": "2026-11-08",
-  "based_on": "2f067155f357836e557538c9eca51295670f338e",
-  "storage_format": "coroa-storage-v10",
+  "release_date": "2026-11-09",
+  "based_on": "81cdba908475d06d231fc5782dcaaa50bb07f482",
+  "storage_format": "coroa-storage-v10.1",
   "portable_schema_version": 9,
   "required_migration": "supabase/migrations/202611080001_incremental_v10.sql",
   "update_guide": "ATUALIZAR.md",
-  "tests_passed": 246,
-  "performance_report": "docs/DESEMPENHO-10.json"
+  "tests_passed": 259,
+  "performance_report": "docs/DESEMPENHO-10.json",
+  "validation_report": "docs/VALIDACAO-V101.md"
 }

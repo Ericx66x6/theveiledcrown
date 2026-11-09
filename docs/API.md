@@ -1,4 +1,4 @@
-# API da versão 9
+# API · A Coroa Velada 10.1
 
 Servidor: `server/index.mjs`. As operações usam JSON. O site autentica por cookie HttpOnly; clientes programáticos podem usar `Authorization: Bearer <token>`. Login e instalação retornam token somente no modo Bearer. `X-Campaign-ID` seleciona explicitamente uma campanha autorizada; o servidor conserva uma escolha por sessão quando esse cabeçalho está ausente.
 
@@ -164,3 +164,38 @@ O contrato anterior continua disponível. O frontend 10 envia `X-Coroa-Client: 1
 - `COROA_MAINTENANCE=1` mantém `GET /api/health` disponível e responde 503 / `MAINTENANCE` às demais rotas de dados e autenticação. A configuração é aplicada ao iniciar o processo.
 
 O codec de persistência `coroa-storage-v10` é interno. Backups continuam no formato portátil existente. Escritas usam revisão esperada e uma transação SQL; somente conflitos conhecidos podem ser reavaliados automaticamente. Uma falha de confirmação não é repetida cegamente. As RPCs novas `coroa_poll_state` e `coroa_commit_documents` são exclusivas de `service_role` e exigem a migração documentada em `ATUALIZAR.md`.
+
+## Memórias, documentos e conquistas (10.1)
+
+Estas rotas usam a mesma sessão e `X-Campaign-ID`. Operações fora do papel ou da propriedade autorizada são recusadas no servidor.
+
+| Rota | Contrato principal |
+| --- | --- |
+| `GET/POST /api/recaps` | Lista autorizada; jogador cria rascunho com `character_id`, `title`, `scene`, `events`, `pending`, `next`, `cast` |
+| `GET/PATCH/DELETE /api/recaps/:id` | Jogador edita rascunho/complemento do próprio relato com `revision`; narrador lê e remove |
+| `POST /api/recaps/:id/submit` | Autor envia com `revision`; exige estrutura, mínimo configurado, ausência de cópia exata e de outro relato pendente naquela ficha |
+| `POST /api/recaps/:id/review` | Narrador: `revision`, `outcome: reward/changes/review`, `note`; recompensa exige também `character_revision` e `confirmed:true` |
+| `GET/POST /api/feedbacks` | Autor e narrador consultam; criação recebe `kind`, `title`, `content`, `impact`, `suggestion` |
+| `GET/PATCH/DELETE /api/feedbacks/:id` | Autor edita/remove antes da avaliação com `revision`; narrador pode remover depois |
+| `POST /api/feedbacks/:id/review` | Narrador: `revision`, `reply`, `xp`; positivo exige `character_id`, `character_revision`, `confirmed:true` e ficha ativa do autor |
+| `GET/POST /api/documents` | Lista filtrada; criação pelo narrador com título, `kind`, `body`, `issuer`, `caption`, `image`, `access`, `account_ids` |
+| `GET/PATCH/DELETE /api/documents/:id` | Leitura autorizada; alterações só narrador com `revision` |
+| `POST /api/documents/:id/read` | Registra a leitura do destinatário, idempotente |
+| `GET /api/achievements` | Galeria da própria conta; narrador pode passar `account_id` de membro da campanha |
+| `POST /api/achievements` | Narrador concede `account_id`, `request_id`, `name`, `icon`, `description`, `confirmed:true`; repetir o mesmo `request_id` devolve o feito existente |
+| `DELETE /api/achievements/:id` | Narrador remove da conta indicada em `account_id`, com `confirmed:true` |
+| `POST /api/achievements/ack` | Própria conta confirma recibos em `ids`; disponível também sem campanha vinculada |
+| `GET/POST /api/characters/:id/blood-bonds` | Responsável ou narrador; criação exige `character_revision` e `confirmed:true` |
+| `PATCH/DELETE /api/characters/:id/blood-bonds/:bond` | Edição/remoção com `revision` do vínculo, `character_revision` e confirmação |
+| `POST /api/characters/:id/blood-bonds/:bond/renew` | Mesmo controle de revisão; `last_scene` e `strengthen` opcional |
+| `POST /api/characters/:id/blood-bonds/:bond/weaken` | Mesmo controle; exige estágio `fading`, reduz exatamente um nível |
+
+Relatos usam `game.chronicle.recap_min_words` (padrão 80, entre 50 e 600). Cada tópico também tem mínimo próprio; variedade de palavras e completude não substituem a avaliação humana. `changes` exige observação, `reward` entrega +1 XP uma vez à ficha original ainda pertencente ao autor. Feedback pode ser avaliado com zero XP e recompensado depois; só há uma entrega positiva.
+
+`kind` de feedback: `narration`, `story`, `system`, `bug`, `idea`, `praise`. Documentos: `letter`, `news`, `decree`, `evidence`, `lore`; `access: campaign/restricted`. Em acesso restrito, `account_ids:[]` reserva aos narradores. Respostas para jogadores removem a lista de destinatários e leituras alheias. Imagens mantêm a autorização em `/api/media`.
+
+Laços recebem `name`, `description`, `last_scene`, `image`, `direction: bound_to/holds`, `level:0..5` e `stage:fervor/echo/distant/ashes/fading`. O estágio não modifica o nível automaticamente. Renovar retorna a `fervor`; `strengthen:true` aumenta um nível até 5. Vínculo rompido só é reatado com reforço explícito. Desgaste volta a `distant` se ainda houver níveis. Todas as alterações são registradas no histórico da ficha.
+
+A galeria pertence à conta: entradas automáticas de evolução/disciplinas e títulos manuais. O portal inicial traz contagem, últimas marcas e recibos; a lista completa é buscada ao abrir a galeria. Os recibos manuais são reconhecidos por `/api/achievements/ack`; XP/evolução/laços continuam usando `/api/rewards/ack`.
+
+O formato interno é `coroa-storage-v10.1`, com leitura de v10 e v4. O protocolo HTTP `X-Coroa-Client:10` e o formato dos backups portáteis permanecem compatíveis. Não é necessária RPC ou migração SQL nova para quem já aplicou a da 10.0. Revisar evolução no cliente calcula a cotação localmente; `upgrade-preview` continua disponível a integrações, e `upgrade` valida a compra no servidor.

@@ -24,6 +24,7 @@ export function applyPortalState(state, payload, playerTestId = '') {
     state[key] = payload.campaign[key];
   for (const key of ['accounts', 'social']) state[key] = payload[key];
   state.rewards = payload.rewards || null;
+  state.gallery = payload.gallery || { entries: [], events: [] };
   state.registrations = payload.registrations || [];
   return true;
 }

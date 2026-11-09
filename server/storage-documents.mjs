@@ -13,12 +13,15 @@ export const canonicalJSON = (value) =>
       : item
   );
 const digest = (value) => createHash('sha256').update(canonicalJSON(value)).digest('hex');
-const format = 'coroa-storage-v10';
+const format = 'coroa-storage-v10.1';
 const omit = (value, keys) =>
   Object.fromEntries(Object.entries(value).filter(([k]) => !keys.includes(k)));
 const logKeys = ['history', 'transactions', 'rolls'];
 const campaignLists = [
   'notes',
+  'recaps',
+  'feedbacks',
+  'documents',
   'quests',
   'social',
   'intel',
@@ -41,7 +44,7 @@ export function storageDocuments(root) {
       const key = /^[a-zA-Z0-9_-]{1,100}$/.test(id) ? id : digest(id);
       const occurrence = seen.get(key) || 0;
       seen.set(key, occurrence + 1);
-      const path = prefix + '/' + key + (occurrence ? '_' + occurrence : '') + '.json';
+      const path = prefix + '/entry-' + digest([key, occurrence]) + '.json';
       docs[path] = encode(row, path);
       items.push(path);
     }
@@ -64,7 +67,13 @@ export function storageDocuments(root) {
   docs['default_game.json'] = clone(root.default_game);
   docs['accounts.json'] = {
     format: 'coroa-account-index-v10',
-    index: recordList('accounts', root.accounts)
+    index: recordList('accounts', root.accounts, (a, path) => {
+      const refs = {},
+        keys = ['achievements', 'reward_events'];
+      for (const key of keys)
+        if (Object.hasOwn(a, key)) refs[key] = recordList(path.slice(0, -5) + '/' + key, a[key]);
+      return { ...omit(a, keys), _coroa_account_lists: refs };
+    })
   };
   const deleted = recordList('deleted_accounts', root.deleted_accounts);
   const sessions = recordList(
@@ -128,7 +137,7 @@ export function storageDocuments(root) {
 }
 
 export function assembleStorage(documents, revision) {
-  if (documents['portal.json']?.format !== format) {
+  if (![format, 'coroa-storage-v10'].includes(documents['portal.json']?.format)) {
     const root = assembleDocuments(documents);
     root.sessions = clone(documents['__server/sessions.json']?.sessions || []);
     return root;
@@ -159,7 +168,12 @@ export function assembleStorage(documents, revision) {
     ...clone(m.meta),
     revision,
     default_game: clone(get(m.game)),
-    accounts: list(get(m.accounts).index),
+    accounts: list(get(m.accounts).index, (a) => {
+      if (!a._coroa_account_lists) return clone(a);
+      const result = omit(a, ['_coroa_account_lists']);
+      for (const [key, path] of Object.entries(a._coroa_account_lists)) result[key] = list(path);
+      return result;
+    }),
     deleted_accounts: list(m.deleted),
     sessions: list(m.sessions, (s) => clone(s.session)),
     campaigns: m.campaigns.map((path) => {
@@ -177,14 +191,16 @@ export function assembleStorage(documents, revision) {
         network: clone(get(f.network))
       };
       for (const key of campaignLists)
-        result[key] = list(f[key], (row) =>
-          row._coroa_snapshot_character
-            ? {
-                ...omit(row, ['_coroa_snapshot_character']),
-                data: character(get(row._coroa_snapshot_character))
-              }
-            : clone(row)
-        );
+        result[key] = f[key]
+          ? list(f[key], (row) =>
+              row._coroa_snapshot_character
+                ? {
+                    ...omit(row, ['_coroa_snapshot_character']),
+                    data: character(get(row._coroa_snapshot_character))
+                  }
+                : clone(row)
+            )
+          : clone(c[key] || []);
       return result;
     })
   };

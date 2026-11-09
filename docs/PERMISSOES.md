@@ -1,4 +1,4 @@
-# Permissões · Coroa Velada 9
+# Permissões · Coroa Velada 10.1
 
 | Recurso | Narrador | Jogador |
 |---|---|---|
@@ -65,3 +65,24 @@ O narrador pode criar, mover e remover posições de personagens ativos. Cada jo
 Jogadores distribuem os pontos iniciais e bônus em uma proposta; não alteram os custos do catálogo, não digitam livremente geração/XP/capital e não aprovam personagens. O servidor reconstrói a ficha pelas escolhas, valida limites, exige gasto integral das reservas e calcula Geração e Recursos. Com o assistente ativo, jogadores não podem enviar nem reenviar uma ficha removendo o plano de pontos. Qualidades e defeitos usam os pontos bônus. Um clã personalizado continua dependendo da aprovação manual.
 
 O narrador consulta o livro sem abrir edição; Gerenciar livro habilita os formulários. Continua podendo transcrever fichas, ajustar propostas e aprovar exceções justificadas. Atualizar regras não recalcula fichas antigas nem concede capital novamente. Propostas legadas sem etapas registradas precisam de conferência manual.
+
+## Memórias e vínculos (10.1)
+
+| Recurso | Narrador | Jogador |
+| --- | --- | --- |
+| Onde paramos? | Lê relatos das fichas, solicita complemento, registra leitura, concede +1 XP uma vez e remove registros | Escreve rascunhos de personagens próprios, envia e complementa quando solicitado; não aprova nem premia |
+| XP de relato | Entrega somente à ficha do relato ainda pertencente ao autor | Recebe, com histórico e notificação; não escolhe outro destinatário |
+| Galeria da eternidade | Consulta galerias de jogadores da campanha, concede/remove feitos e títulos | Consulta a própria galeria de todas as campanhas; pode reconhecer a celebração mesmo sem campanha vinculada |
+| Documentos | Cria, edita, remove, escolhe destinatários e consulta todos | Lê somente os públicos da campanha ou destinados à própria conta |
+| Voz da mesa | Lê feedbacks, responde, concede XP variável uma vez para uma ficha do autor e remove | Envia feedback privado; edita/remove antes da avaliação; consulta resposta e recompensa |
+| Laços de sangue | Consulta e ajusta fichas, com revisão e histórico | Mantém os vínculos dos próprios personagens; não lê nem altera vínculos alheios |
+
+Os relatos acompanham a história da ficha. Transferir o personagem permite ao novo responsável consultar esse histórico, mas não editar relatos de outro autor nem receber a recompensa pelo texto dele. Um jogador pode manter vários relatos independentes em personagens diferentes. Feedback pertence ao autor e permanece privado entre ele e os narradores.
+
+Acesso restrito a documento usa IDs de contas da campanha, não de personagens. Uma lista vazia restringe aos narradores. A API filtra conteúdo e imagem; ocultar a opção na interface não é a proteção. Recolher acesso não apaga cópias que alguém já tenha baixado.
+
+Conquistas pertencem à pessoa: transferir/excluir uma ficha ou mudar de campanha não apaga o que ela conquistou. Remover uma marca da galeria é controle do narrador e não desfaz níveis, XP ou histórico de ficha. A avaliação de qualidade dos relatos/feedbacks continua humana; quantidade de palavras nunca concede XP automaticamente.
+
+Laços usam tempo narrativo manual, sem calendário. Alterar estágio não reduz nível; enfraquecimento exige confirmação. Quem controla a ficha pode ajustar os níveis para refletir o roleplay, sempre registrado no histórico. O narrador continua sendo o único que pode apagar o histórico da ficha.
+
+As novas áreas também funcionam no modo Testar como jogador dentro do workspace temporário. Relatos, feedbacks e alterações de vínculo desse teste não são gravados na campanha real.

@@ -230,7 +230,12 @@ async function run(label, source) {
 }
 try {
   if (baseline) samples.push(await run('9.3.1', resolve(baseline)));
-  samples.push(await run('10.0.0', resolve(import.meta.dirname, '..')));
+  samples.push(
+    await run(
+      JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8')).version,
+      resolve(import.meta.dirname, '..')
+    )
+  );
   const report = {
     generated_at: new Date().toISOString(),
     method:

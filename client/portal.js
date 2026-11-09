@@ -1,4 +1,21 @@
 import { isImageSource } from '../core/media-reference.js';
+import {
+  recapsPage,
+  recapEditorPage,
+  recapDetailPage,
+  feedbackPage,
+  documentsPage,
+  documentDetailPage,
+  chronicleAction,
+  bindChronicle
+} from './chronicle.js';
+import {
+  achievementsPage,
+  achievementAction,
+  bindAchievements,
+  loadGallery
+} from './achievements.js';
+import { bloodBondsPage, bloodBondAction } from './blood-bonds.js';
 import { NavigationTrail } from './navigation.js';
 import { queueExperience, disposeExperience, animatePage } from './game-experience.js';
 import { loyaltyPage, loyaltyAction } from './loyalty.js';
@@ -138,9 +155,13 @@ const nav = [
   ['aspirations', 'Ambição e desejo'],
   ['attributes', 'Atributos e habilidades'],
   ['powers', 'Sangue e poderes'],
+  ['blood-bonds', 'Laços de sangue'],
   ['world', 'Influência e favores'],
   ['possessions', 'Inventário e dinheiro'],
   ['notes', 'Anotações'],
+  ['recaps', 'Onde paramos?'],
+  ['documents', 'Documentos da crônica'],
+  ['feedbacks', 'Voz da mesa'],
   ['quests', 'Missões'],
   ['map', 'Mapa da campanha'],
   ['social', 'Salão da campanha'],
@@ -151,6 +172,7 @@ const nav = [
   ['dice', 'Rolagem de dados']
 ];
 const sharedNav = [
+  ['achievements', 'Galeria da eternidade'],
   ['campaigns', 'Minhas campanhas'],
   ['my-characters', 'Meus personagens'],
   ['profile', 'Meu perfil'],
@@ -170,12 +192,16 @@ const adminNav = [
   ['trash', 'Lixeira']
 ];
 const internalNav = [
+  ['recap-write', 'Escrever onde parei'],
+  ['recap-detail', 'Memória do personagem'],
+  ['document-detail', 'Documento da crônica'],
   ['evolution', 'Evoluir personagem'],
   ['power-detail', 'Consultar poder'],
   ['proposal-editor', 'Criar proposta'],
   ['review-submission', 'Avaliar proposta']
 ];
 const sheetViews = [
+  'blood-bonds',
   'overview',
   'aspirations',
   'attributes',
@@ -228,9 +254,13 @@ function renderNavigation() {
   const personal = !state.campaigns?.length
     ? []
     : admin()
-      ? [['dashboard', 'Conselho do narrador']]
+      ? [
+          ['dashboard', 'Conselho do narrador'],
+          ['achievements', 'Galeria dos jogadores']
+        ]
       : [
           ['my-characters', 'Meus personagens'],
+          ['achievements', 'Galeria da eternidade'],
           ['submissions', 'Minhas propostas']
         ];
   const navButtons = (items) =>
@@ -294,7 +324,7 @@ function initShell() {
   document.body.classList.remove('login-page');
   document.querySelector('.skip-link')?.setAttribute('href', '#main-content');
   $('#app').innerHTML =
-    `<aside id="sidebar" class="sidebar"><a href="#campaigns" class="brand"><span class="brand-crest">${crown}</span><span>A COROA VELADA<small>ONDE AS HISTÓRIAS VIVEM</small></span></a><button type="button" data-action="close-menu" class="icon-button drawer-close" aria-label="Fechar navegação">${icon('close')}</button><div data-nav-root></div><div class="sidebar-footer"><p>O sangue lembra.<br><span>A noite nunca esquece.</span></p><span class="version">PORTAL ONLINE · V10.0 OFICIAL</span></div></aside><div class="workspace"><header class="topbar"><div class="breadcrumb"><button data-action="menu" class="icon-button mobile-menu" aria-label="Abrir navegação">${icon('menu')}</button><span class="campaign-breadcrumb"></span><i>/</i><strong id="breadcrumb-current"></strong></div><div class="topbar-right">${button(icon('search'), 'global-search', 'aria-label="Pesquisar em toda a campanha" title="Pesquisar"', 'icon-button')}${soundButton()}${button(icon('download') + ' <span>Salvar JSON</span>', 'backup-table', 'aria-label="Salvar JSONs do portal"', 'button ghost top-export')}<button type="button" class="icon-button notification-button" data-action="nav-notifications" aria-label="Notificações">${icon('notes')}<span data-notification-count hidden></span></button><button type="button" class="user-button" data-action="nav-profile" aria-label="Abrir meu perfil" title="Meu perfil"><span class="avatar small" data-user-avatar></span><span data-user-name></span></button><button class="icon-button" data-action="logout" aria-label="Sair">${icon('logout')}</button></div></header><div class="connection-banner"><span>${icon('save')} <span data-sync-label></span></span><span>Atualização automática da campanha</span></div><div class="route-toolbar" aria-label="Navegação da página"><button type="button" class="button ghost" data-action="route-back"><span class="back-arrow">${icon('arrow')}</span> Voltar</button><span data-route-label></span><button type="button" class="text-button" data-action="route-home">Início</button></div><div id="xp-hud"></div><main id="main-content" tabindex="-1"></main><footer class="app-footer"><span>A COROA VELADA</span><span>Suas histórias, além do véu.</span><span>◇</span></footer></div><button type="button" class="drawer-backdrop" data-action="close-menu" aria-label="Fechar menu"></button><nav class="mobile-bottom" aria-label="Navegação principal"></nav>`;
+    `<aside id="sidebar" class="sidebar"><a href="#campaigns" class="brand"><span class="brand-crest">${crown}</span><span>A COROA VELADA<small>ONDE AS HISTÓRIAS VIVEM</small></span></a><button type="button" data-action="close-menu" class="icon-button drawer-close" aria-label="Fechar navegação">${icon('close')}</button><div data-nav-root></div><div class="sidebar-footer"><p>O sangue lembra.<br><span>A noite nunca esquece.</span></p><span class="version">PORTAL ONLINE · V10.1 OFICIAL</span></div></aside><div class="workspace"><header class="topbar"><div class="breadcrumb"><button data-action="menu" class="icon-button mobile-menu" aria-label="Abrir navegação">${icon('menu')}</button><span class="campaign-breadcrumb"></span><i>/</i><strong id="breadcrumb-current"></strong></div><div class="topbar-right">${button(icon('search'), 'global-search', 'aria-label="Pesquisar em toda a campanha" title="Pesquisar"', 'icon-button')}${soundButton()}${button(icon('download') + ' <span>Salvar JSON</span>', 'backup-table', 'aria-label="Salvar JSONs do portal"', 'button ghost top-export')}<button type="button" class="icon-button notification-button" data-action="nav-notifications" aria-label="Notificações">${icon('notes')}<span data-notification-count hidden></span></button><button type="button" class="user-button" data-action="nav-profile" aria-label="Abrir meu perfil" title="Meu perfil"><span class="avatar small" data-user-avatar></span><span data-user-name></span></button><button class="icon-button" data-action="logout" aria-label="Sair">${icon('logout')}</button></div></header><div class="connection-banner"><span>${icon('save')} <span data-sync-label></span></span><span>Atualização automática da campanha</span></div><div class="route-toolbar" aria-label="Navegação da página"><button type="button" class="button ghost" data-action="route-back"><span class="back-arrow">${icon('arrow')}</span> Voltar</button><span data-route-label></span><button type="button" class="text-button" data-action="route-home">Início</button></div><div id="xp-hud"></div><main id="main-content" tabindex="-1"></main><footer class="app-footer"><span>A COROA VELADA</span><span>Suas histórias, além do véu.</span><span>◇</span></footer></div><button type="button" class="drawer-backdrop" data-action="close-menu" aria-label="Fechar menu"></button><nav class="mobile-bottom" aria-label="Navegação principal"></nav>`;
   document.addEventListener('click', handleClick, { signal: events.signal });
   document.querySelector('.route-toolbar').insertAdjacentHTML('beforebegin', playerTestBanner());
   document.addEventListener('submit', handleSubmit, { signal: events.signal });
@@ -398,6 +428,7 @@ async function refreshAll({ silent = false } = {}) {
   const mapVersion = state.campaign?.maps?.map((m) => m.id + ':' + m._revision).join('|');
   const knownNotifications = new Set((state.notifications || []).map((n) => n.id));
   await loadFeatureState(state, { silent });
+  if (state.view === 'achievements') await loadGallery(context(), { silent });
   queueExperience(context());
   if (
     silent &&
@@ -424,6 +455,12 @@ async function refreshAll({ silent = false } = {}) {
 }
 async function reloadCampaign() {
   clearPending();
+  state.recapDraft = null;
+  state.recapId = null;
+  state.documentId = null;
+  state.recapCharacter = '';
+  state.galleryAccountId = null;
+  state.openGallery = null;
   state.player = null;
   state.editor = null;
   state.archived = false;
@@ -480,9 +517,15 @@ function render() {
   refreshViewCache(state);
   if (
     !state.campaigns?.length &&
-    !['campaigns', 'profile', 'storage', 'trash', 'notifications', 'registrations'].includes(
-      state.view
-    )
+    ![
+      'campaigns',
+      'profile',
+      'storage',
+      'trash',
+      'notifications',
+      'registrations',
+      'achievements'
+    ].includes(state.view)
   )
     state.view = 'campaigns';
   if (admin() && state.view === 'network') state.view = 'dashboard';
@@ -540,6 +583,14 @@ function render() {
     .forEach((el) => (el.textContent = compactSyncLabel()));
   const ctx = context(),
     featureViews = {
+      recaps: recapsPage,
+      'recap-write': recapEditorPage,
+      'recap-detail': recapDetailPage,
+      feedbacks: feedbackPage,
+      documents: documentsPage,
+      'document-detail': documentDetailPage,
+      achievements: achievementsPage,
+      'blood-bonds': bloodBondsPage,
       campaigns: campaignHub,
       rewards: loyaltyPage,
       registrations: registrationsPage,
@@ -636,6 +687,8 @@ function render() {
   bindEvolution(ctx);
   bindRulebook(ctx);
   bindFeatureViews(ctx);
+  bindChronicle(ctx);
+  bindAchievements(ctx);
   bindCommunity(ctx);
   bindCommerce(ctx);
   bindCanvas(ctx);
@@ -1039,6 +1092,9 @@ async function handleClick(event) {
     if (await evolutionAction(action, control.dataset, context())) return;
     if (await administrationAction(action, control.dataset, context())) return;
     if (await rulebookAction(action, control.dataset, context())) return;
+    if (await chronicleAction(action, control.dataset, context())) return;
+    if (await achievementAction(action, control.dataset, context())) return;
+    if (await bloodBondAction(action, control.dataset, context())) return;
     if (await featureAction(action, control.dataset, context())) return;
     if (await canvasAction(action, control.dataset, context())) return;
     switch (action) {
@@ -1531,6 +1587,16 @@ async function editFull(p) {
   await go('new-player');
 }
 const routeKeys = [
+  'recapId',
+  'recapDraft',
+  'recapFilter',
+  'recapCharacter',
+  'documentId',
+  'documentFilter',
+  'feedbackFilter',
+  'galleryAccountId',
+  'achievementFilter',
+  'bondFilter',
   'world',
   'query',
   'archived',
@@ -1594,6 +1660,7 @@ async function restoreRoute(point) {
       }
     } else state.player = null;
     state.view = point.view;
+    if (state.view === 'achievements') await loadGallery(context());
     clearPending();
     render();
     requestAnimationFrame(() => window.scrollTo({ top: point.scroll || 0, behavior: 'instant' }));
@@ -1606,19 +1673,42 @@ async function restoreRoute(point) {
 function rememberRoutePosition() {
   if (trail.current) {
     trail.current.point.scroll = window.scrollY;
-    for (const key of ['traitQuery', 'ruleQuery', 'intelQuery', 'query', 'diceDraft'])
+    for (const key of ['traitQuery', 'ruleQuery', 'intelQuery', 'query', 'diceDraft', 'recapDraft'])
       trail.current.point.route[key] = state[key];
   }
 }
 async function go(view, options = {}) {
   if (options === true) options = { replace: true };
+  if (
+    state.view === 'recap-write' &&
+    view !== 'recap-write' &&
+    $('#recap-editor')?.dataset.dirty === 'true'
+  ) {
+    const leave = await new Promise((resolve) =>
+      modal(
+        'Seu relato ainda não foi salvo.',
+        '<p>Você pode voltar e salvar o rascunho antes de sair. Se continuar, o último texto salvo permanece no servidor.</p>',
+        async () => resolve(true),
+        { saveLabel: 'Continuar sem salvar', onCancel: () => resolve(false) }
+      )
+    );
+    if (!leave) return;
+  }
   rememberRoutePosition();
   const previousView = state.view;
   navigating = true;
   try {
     if (
       !state.campaigns?.length &&
-      !['campaigns', 'profile', 'storage', 'trash', 'notifications', 'registrations'].includes(view)
+      ![
+        'campaigns',
+        'profile',
+        'storage',
+        'trash',
+        'notifications',
+        'registrations',
+        'achievements'
+      ].includes(view)
     )
       view = 'campaigns';
     if (view !== state.view) clearPending();
@@ -1630,6 +1720,7 @@ async function go(view, options = {}) {
     if (view === 'social') state.social = await api('/api/social');
     if (view === 'storage') state.storageMarkup = await storageView();
     if (view === 'trash') state.trash = await api('/api/admin/trash');
+    if (view === 'achievements') await loadGallery(context());
     if (view === 'new-player' && !state.editor) await makeEditor();
     closeModal();
     render();
@@ -1692,6 +1783,10 @@ export async function startPortal() {
   state.game = null;
   state.campaign = null;
   state.rewards = null;
+  state.recapDraft = null;
+  state.recapId = null;
+  state.documentId = null;
+  state.openGallery = null;
   events.abort();
   events = new AbortController();
   state.editor = null;
@@ -1714,6 +1809,7 @@ export async function startPortal() {
   if (state.view === 'accounts' && admin()) state.accounts = await api('/api/admin/accounts');
   if (state.view === 'storage' && admin()) state.storageMarkup = await storageView();
   if (state.view === 'trash' && admin()) state.trash = await api('/api/admin/trash');
+  if (state.view === 'achievements') await loadGallery(context());
   trail = new NavigationTrail();
   initShell();
   document.addEventListener(

@@ -40,6 +40,68 @@ async function fixture(t) {
   return { ...f, map, source, repository, base, request };
 }
 
+test('HTTP 10.1: relatos, feedbacks e vínculos do jogador de testes não alteram a campanha real', async (t) => {
+  const f = await fixture(t);
+  await f.request('/api/feedbacks', {
+    method: 'POST',
+    token: f.one.token,
+    data: {
+      kind: 'idea',
+      title: 'Feedback real reservado',
+      content: 'Uma contribuição do jogador original para a campanha.'
+    }
+  });
+  await f.request('/api/documents', {
+    method: 'POST',
+    data: {
+      title: 'Carta reservada real',
+      kind: 'letter',
+      body: 'Conteúdo fora do teste.',
+      access: 'restricted',
+      account_ids: [f.one.account.id]
+    }
+  });
+  const before = await f.repository.load();
+  const started = await f.request('/api/player-test', {
+    method: 'POST',
+    data: { campaign_id: f.campaign, character_id: 234567 }
+  });
+  const scope = { testId: started.body.player_test.id, campaign: started.body.campaign_id };
+  const portal = await f.request('/api/portal-state', scope);
+  assert.deepEqual(portal.body.campaign.feedbacks, []);
+  assert.deepEqual(portal.body.campaign.documents, []);
+  assert.deepEqual(portal.body.campaign.recaps, []);
+  for (const [path, data] of [
+    ['/api/recaps', { character_id: 234567, scene: 'Uma lembrança somente de teste.' }],
+    [
+      '/api/feedbacks',
+      {
+        kind: 'bug',
+        title: 'Teste isolado',
+        content: 'Um relato fictício de problema no modo de testes.'
+      }
+    ],
+    [
+      '/api/characters/234567/blood-bonds',
+      {
+        name: 'Vínculo de testes',
+        direction: 'holds',
+        stage: 'fervor',
+        level: 2,
+        character_revision: 0,
+        confirmed: true
+      }
+    ]
+  ]) {
+    const result = await f.request(path, { ...scope, method: 'POST', data });
+    assert.equal(result.status, 200, JSON.stringify(result.body));
+  }
+  assert.equal((await f.request('/api/feedbacks', scope)).body.length, 1);
+  assert.deepEqual(await f.repository.load(), before);
+  await f.request('/api/player-test', { ...scope, method: 'DELETE' });
+  assert.deepEqual(await f.repository.load(), before);
+});
+
 test('HTTP: modo jogador não grava no Supabase, usa permissões de jogador e restaura o narrador', async (t) => {
   const f = await fixture(t);
   const started = await f.request('/api/player-test', {

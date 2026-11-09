@@ -3,6 +3,7 @@ import { CampaignStore } from '../../core/store.js';
 import { PortalService } from '../../core/portal-service.js';
 import { blank, documentSeed } from '../../core/model.js';
 import { gameSettings } from '../../core/settings.js';
+import { upgradeQuote } from '../../core/settings.js';
 export async function previewFixture() {
   const game = gameSettings(
       JSON.parse(await readFile(new URL('../../data/game_data.json', import.meta.url), 'utf8'))
@@ -277,6 +278,100 @@ export async function previewFixture() {
     confirmed: true
   });
   const campaign_id = store.root.active_campaign_id;
+  const playerCall = (path, method = 'GET', data = {}) =>
+    service.request(path, { method, data, token: player.token });
+  let memory = await playerCall('/api/recaps', 'POST', {
+    character_id: 234567,
+    title: 'A carta sob o cais',
+    scene:
+      'Parei na saída do armazém do porto, acompanhando Isadora enquanto a guarda procurava uma testemunha que desapareceu.',
+    events:
+      'Negociei acesso ao arquivo oferecendo um favor futuro. Descobri que as remessas eram financiadas por alguém do conselho, mas ainda não conheço seu nome. Escolhi esconder a carta original no meu refúgio e entregar uma cópia para a informante. Essa decisão fez a guarda desconfiar de mim e colocou minha promessa anterior em risco.',
+    pending:
+      'Ainda preciso descobrir quem retirou a página do livro e cumprir o favor prometido. Também devo explicar ao meu aliado por que abandonei nosso encontro.',
+    next: 'Quero procurar o barqueiro antes que ele deixe a cidade e comparar os símbolos da carta com os registros antigos.',
+    cast: 'Isadora, o barqueiro e a guarda do cais'
+  });
+  await playerCall('/api/recaps/' + memory.id + '/submit', 'POST', { revision: memory._revision });
+  await playerCall('/api/recaps', 'POST', {
+    character_id: 345678,
+    title: 'O silêncio do casarão',
+    scene: 'Lucien está diante do portão do casarão, aguardando uma resposta do guardião.',
+    events: 'A conversa com a corte mudou o rumo da investigação.',
+    pending: 'Preciso descobrir por que o nome da família foi apagado.',
+    next: 'Conversar com o guardião antes de entrar.',
+    cast: 'O guardião do casarão'
+  });
+  await playerCall('/api/feedbacks', 'POST', {
+    kind: 'story',
+    title: 'As consequências no porto fizeram diferença',
+    content:
+      'Gostei de perceber que entregar uma cópia da carta mudou a atitude da guarda. Senti que a escolha realmente teve peso na história.',
+    impact: 'Fiquei mais interessado em pensar nas consequências antes de decidir.',
+    suggestion: 'Seria legal reencontrar a informante para descobrir o preço desse favor.'
+  });
+  const second = (await request('/api/admin/accounts')).find((a) => a.username === 'qa-segundo');
+  await request('/api/documents', 'POST', {
+    title: 'Decreto da corte',
+    kind: 'decree',
+    issuer: 'O Conselho sob o Véu',
+    caption: 'Um selo vermelho. Uma ordem que atravessa a cidade.',
+    body: 'Àqueles que caminham sob o véu,\n\nNenhum nome será apagado dos arquivos sem que a corte conheça o motivo. Aqueles que guardam cartas, testemunhas ou promessas devem preservar seus registros.\n\nA cidade tem memória. O sangue também.',
+    access: 'campaign',
+    account_ids: []
+  });
+  await request('/api/documents', 'POST', {
+    title: 'A carta que não chegou ao porto',
+    kind: 'letter',
+    issuer: 'Uma mão desconhecida',
+    caption: 'Um recado reservado a um único jogador.',
+    body: 'O armazém nove estará vazio quando os sinos pararem. Procure o símbolo sob a porta.',
+    image,
+    access: 'restricted',
+    account_ids: [second.id]
+  });
+  let current = await playerCall('/api/characters/234567');
+  for (const [name, direction, level, stage] of [
+    ['Isadora', 'bound_to', 2, 'echo'],
+    ['Maurício, o vigia', 'holds', 1, 'distant']
+  ]) {
+    current = await playerCall('/api/characters/234567/blood-bonds', 'POST', {
+      name,
+      direction,
+      level,
+      stage,
+      image,
+      description:
+        direction === 'bound_to'
+          ? 'Uma ligação que nasceu de uma promessa no cais e se tornou difícil de ignorar.'
+          : 'O vigia mantém uma lealdade que vai além das palavras.',
+      last_scene: 'Depois do encontro no armazém, antes da visita à corte.',
+      character_revision: current._revision,
+      confirmed: true
+    });
+  }
+  const quote = upgradeQuote(current, await request('/api/game'), 'talents', 0, 1);
+  await playerCall('/api/characters/234567/upgrade', 'POST', {
+    key: 'talents',
+    id: 0,
+    target: 1,
+    revision: current._revision,
+    quoted_cost: quote.cost,
+    confirmed: true
+  });
+  const oldEffects = (await playerCall('/api/rewards')).events.filter((e) =>
+    ['blood-bond', 'upgrade'].includes(e.kind)
+  );
+  if (oldEffects.length)
+    await playerCall('/api/rewards/ack', 'POST', { ids: oldEffects.map((e) => e.id) });
+  await request('/api/achievements', 'POST', {
+    account_id: player.account.id,
+    request_id: 'qa_feito_do_jogador_101',
+    name: 'Seu nome atravessou o véu',
+    icon: '👑',
+    description: 'Por transformar escolhas em histórias que a mesa vai lembrar.',
+    confirmed: true
+  });
   return {
     root: await store.workspace(),
     identities: { admin: { ...admin, campaign_id }, player: { ...player, campaign_id } }
